@@ -1,0 +1,5 @@
+This is the configuration for the metabuildbot - buildbot.buildbot.net
+
+The slave passwords are not included here - they are in *.pass files on the local machine, which are read by the MySlave class.
+
+Note that this file is not intended as a good example of a buildbot configuration - it's just what works for us!
