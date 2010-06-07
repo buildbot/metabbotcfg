@@ -8,6 +8,67 @@ from buildbot.steps.python_twisted import Trial
 
 from metabbotcfg.slaves import slaves
 
+builders = []
+
+#### docs
+
+# build on any of the slaves that can build docs
+# TODO: make the results available somewhere
+
+docs_factory = factory.BuildFactory()
+docs_factory.addStep(Git(repourl='git://github.com/djmitche/buildbot.git', mode="update"))
+docs_factory.addStep(ShellCommand(command="make docs", name="create docs"))
+builders.append({
+	'name' : 'docs',
+	'slavenames' : [ sl.slavename for sl in slaves if sl.has_texinfo ],
+	'workdir' : 'docs',
+	'factory' : docs_factory,
+	'category' : 'docs' })
+
+#### simple slaves
+
+# some slaves just do "simple" builds: get the source, run the tests.  These are mostly
+# windows machines where we don't have a lot of flexibility to mess around with virtualenv
+def mksimplefactory(slave):
+	f = factory.BuildFactory()
+	f.addSteps([
+	Git(repourl='git://github.com/djmitche/buildbot.git', mode="copy"),
+	#FileDownload(mastersrc="bbimport.py", slavedest="bbimport.py", flunkOnFailure=True),
+	#ShellCommand(workdir="build/master", env={'PYTHONPATH' : '.;.'}, command=r"python ..\bbimport.py"),
+	# use workdir instead of testpath because setuptools sticks its own eggs (including
+	# the running version of buildbot) into sys.path *before* PYTHONPATH, but includes
+	# "." in sys.path even before the eggs
+	Trial(workdir="build/slave", testpath=".",
+		env={ 'PYTHON_EGG_CACHE' : '../' },
+		tests='buildslave.test',
+		usePTY=False,
+		name='test slave'),
+	])
+	if slave.test_master:
+		f.addStep(
+		Trial(workdir="build/master", testpath=".",
+			env={ 'PYTHON_EGG_CACHE' : '../' },
+			tests='buildbot.test',
+			usePTY=False,
+			name='test master'),
+		)
+	return f
+
+for sl in slaves:
+	if not sl.use_simple: continue
+	name = sl.slavename
+	builders.append({
+		'name' : 'slave-%s' % name,
+		'slavenames' : [ name ],
+		'workdir' : 'slave-%s' % name,
+		'factory' : mksimplefactory(sl),
+		'category' : 'slave' })
+
+#### full slaves
+
+# this will eventually run against a variety of Twisted and Python versions on
+# slaves that can support it, but for now it's a lot like the simple builders, except
+# that it uses virtualenv
 def mkfactory(*tests):
 	f = factory.BuildFactory()
 	f.addSteps([
@@ -19,62 +80,52 @@ def mkfactory(*tests):
 		PYTHON=../sandbox/bin/python; PATH=../sandbox/bin:$PATH; 
 		export PYTHON_EGG_CACHE=$PWD/..;
 		# and somehow the install_requires in setup.py doesn't always work:
-		$PYTHON -c 'import json' || $PYTHON -c 'import simplejson' ||
+		$PYTHON -c 'import json' 2>/dev/null || $PYTHON -c 'import simplejson' ||
 					../sandbox/bin/easy_install simplejson || exit 1;
-		$PYTHON -c 'import sqlite3' || $PYTHON -c 'import pysqlite2.dbapi2' ||
+		$PYTHON -c 'import sqlite3' 2>/dev/null || $PYTHON -c 'import pysqlite2.dbapi2' ||
 					../sandbox/bin/easy_install pysqlite || exit 1;
+		../sandbox/bin/easy_install twisted || exit 1;
+		../sandbox/bin/easy_install jinja2 || exit 1;
 		../sandbox/bin/easy_install mock || exit 1;
-		$PYTHON setup.py build install || exit 1;
 	"""),
 		flunkOnFailure=True,
-		name="virtualenv install and build"),
+		haltOnFailure=True,
+		name="virtualenv setup"),
 	ShellCommand(usePTY=False, command=textwrap.dedent("""
 		PYTHON=../sandbox/bin/python; PATH=../sandbox/bin:$PATH; 
 		export PYTHON_EGG_CACHE=$PWD/..;
-		$PYTHON -c 'print "USING VIRTUALENV"; import sys; print sys.version; import twisted; print twisted.version'
+		$PYTHON -c 'import sys; print "Python:", sys.version; import twisted; print "Twisted:", twisted.version'
 	"""),
 		name="versions"),
-	Trial(testpath=".",
-		env={ 'PYTHON_EGG_CACHE' : '../' },
-		tests=list(tests),
-		trial="../sandbox/bin/trial", usePTY=False),
+	# see note above about workdir vs. testpath
+	Trial(workdir="build/slave", testpath='.',
+		env={ 'PYTHON_EGG_CACHE' : '../../' },
+		tests='buildslave.test',
+		trial="../../sandbox/bin/trial",
+		usePTY=False,
+		name='test slave'),
+	Trial(workdir="build/master", testpath='.',
+		env={ 'PYTHON_EGG_CACHE' : '../../' },
+		tests='buildbot.test',
+		trial="../../sandbox/bin/trial",
+		usePTY=False,
+		name='test master'),
 	])
 	return f
 
-def mksimplefactory(*tests):
-	f = factory.BuildFactory()
-	f.addSteps([
-	Git(repourl='git://github.com/djmitche/buildbot.git', mode="copy"),
-	Trial(testpath=".",
-		env={ 'PYTHON_EGG_CACHE' : '../' },
-		tests=list(tests),
-		usePTY=False),
-	])
-	return f
-
-virtualenv_factory = mkfactory('buildbot.test')
-simple_factory = mksimplefactory('buildbot.test')
-
-docs_factory = factory.BuildFactory()
-docs_factory.addStep(Git(repourl='git://github.com/djmitche/buildbot.git', mode="update"))
-docs_factory.addStep(ShellCommand(command="make docs", name="create docs"))
-
-builders = []
-builders.append({
-	'name' : 'docs',
-	'slavenames' : [ sl.slavename for sl in slaves if sl.has_texinfo ],
-	'builddir' : 'docs',
-	'factory' : docs_factory,
-	'category' : 'docs' })
 
 for sl in slaves:
+	if sl.use_simple: continue
 	name = sl.slavename
-	fact = virtualenv_factory
-	if sl.use_simple:
-		fact = simple_factory
 	builders.append({
 		'name' : 'slave-%s' % name,
 		'slavenames' : [ name ],
-		'builddir' : 'slave-%s' % name,
-		'factory' : fact,
+		'workdir' : 'slave-%s' % name,
+		'factory' : mkfactory(sl),
 		'category' : 'full' })
+
+##### sdist
+
+# TODO
+# build buildbot and buildslave source distributions, then untar them, build/install them into a new
+# virtualenv, and run the tests there

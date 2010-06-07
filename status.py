@@ -1,7 +1,17 @@
 status = []
 
 from buildbot.status import html
-status.append(html.WebStatus(http_port=8010, allowForce=False, order_console_by_time=True,
+from buildbot.status.web.authz import Authz
+from buildbot.status.web.auth import BasicAuth
+
+users = [ ('dev', 'bbot!')] # it's not *that* secret..
+authz = Authz(auth=BasicAuth(users),
+	forceBuild='auth',
+)
+status.append(html.WebStatus(
+		http_port=8010,
+		authz=authz,
+		order_console_by_time=True,
 		revlink="http://github.com/djmitche/buildbot/commit/%s",
 		changecommentlink=(r'\b#(\d+)\b', r'http://buildbot.net/trac/ticket/\1',
 				   r'Ticket \g<0>')))
