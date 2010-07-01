@@ -81,7 +81,7 @@ slaves = [
 
 	# Zmanda (EC2)
 	MyEC2LatentBuildSlave('ec2slave', 'm1.small', 'linux', '25',
-		ami='ami-46668e2f',
+		ami='ami-5a749c33',
 		keypair_name='buildbot-setup',
 		security_name='buildslaves',
 		),
