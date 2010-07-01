@@ -82,7 +82,7 @@ def mkfactory(*tests):
 		# and somehow the install_requires in setup.py doesn't always work:
 		$PYTHON -c 'import json' 2>/dev/null || $PYTHON -c 'import simplejson' ||
 					../sandbox/bin/easy_install simplejson || exit 1;
-		$PYTHON -c 'import sqlite3' 2>/dev/null || $PYTHON -c 'import pysqlite2.dbapi2' ||
+		$PYTHON -c 'import sqlite3, sys; assert sys.version_info >= (2,6)' 2>/dev/null || $PYTHON -c 'import pysqlite2.dbapi2' ||
 					../sandbox/bin/easy_install pysqlite || exit 1;
 		../sandbox/bin/easy_install twisted || exit 1;
 		../sandbox/bin/easy_install jinja2 || exit 1;
