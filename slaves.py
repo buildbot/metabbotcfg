@@ -53,6 +53,11 @@ class MyEC2LatentBuildSlave(EC2LatentBuildSlave):
 		return open(path).read().strip().split(" ")
 
 slaves = [
+	# Local
+	MySlave('buildbot.net', 'linux', '25',
+		has_texinfo=True,
+		),
+
 	# Steve 'Ashcrow' Milner
 	MySlave('centos_5_python2_4', "linux", "24",
 		),
