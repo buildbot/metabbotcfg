@@ -16,7 +16,7 @@ builders = []
 # TODO: make the results available somewhere
 
 docs_factory = factory.BuildFactory()
-docs_factory.addStep(Git(repourl='git://github.com/djmitche/buildbot.git', mode="update"))
+docs_factory.addStep(Git(repourl='git://github.com/buildbot/buildbot.git', mode="update"))
 docs_factory.addStep(ShellCommand(command="make docs", name="create docs"))
 docs_factory.addStep(ShellCommand(command=textwrap.dedent("""\
 		tar -C /home/buildbot/html/buildbot/docs -zvxf docs/docs.tgz latest/ &&
@@ -42,7 +42,7 @@ builders.append({
 def mksimplefactory(slave):
 	f = factory.BuildFactory()
 	f.addSteps([
-	Git(repourl='git://github.com/djmitche/buildbot.git', mode="copy"),
+	Git(repourl='git://github.com/buildbot/buildbot.git', mode="copy"),
 	#FileDownload(mastersrc="bbimport.py", slavedest="bbimport.py", flunkOnFailure=True),
 	#ShellCommand(workdir="build/master", env={'PYTHONPATH' : '.;.'}, command=r"python ..\bbimport.py"),
 	# use workdir instead of testpath because setuptools sticks its own eggs (including
@@ -82,7 +82,7 @@ for sl in slaves:
 def mkfactory(*tests):
 	f = factory.BuildFactory()
 	f.addSteps([
-	Git(repourl='git://github.com/djmitche/buildbot.git', mode="copy"),
+	Git(repourl='git://github.com/buildbot/buildbot.git', mode="copy"),
 	FileDownload(mastersrc="virtualenv.py", slavedest="virtualenv.py", flunkOnFailure=True),
 	ShellCommand(usePTY=False, command=textwrap.dedent("""
 		test -z "$PYTHON" && PYTHON=python;
