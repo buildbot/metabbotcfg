@@ -4,7 +4,7 @@ from buildbot.ec2buildslave import EC2LatentBuildSlave
 
 class MySlave(BuildSlave):
 	def __init__(self, name, os, py, has_texinfo=False, use_simple=False,
-			test_master=True, **kwargs):
+			test_master=True, run_tests=True, **kwargs):
 		password = self.get_pass(name)
 		BuildSlave.__init__(self, name, password, **kwargs)
 		self.slavename = name
@@ -17,6 +17,8 @@ class MySlave(BuildSlave):
 		self.use_simple = use_simple
 		# true if this box can test the buildmaster
 		self.test_master = test_master
+		# false if this box should not actually run tests
+		self.run_tests = run_tests
 
 	def get_pass(self, name):
 		# get the password based on the name
@@ -26,7 +28,7 @@ class MySlave(BuildSlave):
 
 class MyEC2LatentBuildSlave(EC2LatentBuildSlave):
 	def __init__(self, name, ec2type, os, py, has_texinfo=False, use_simple=False,
-			test_master=True, **kwargs):
+			test_master=True, run_tests=True, **kwargs):
 		password = self.get_pass(name)
 		identifier, secret_identifier = self.get_ec2_creds(name)
 		EC2LatentBuildSlave.__init__(self, name, password, ec2type,
@@ -41,6 +43,8 @@ class MyEC2LatentBuildSlave(EC2LatentBuildSlave):
 		self.use_simple = use_simple
 		# true if this box can test the buildmaster
 		self.test_master = test_master
+		# false if this box should not actually run tests
+		self.run_tests = run_tests
 
 	def get_pass(self, name):
 		# get the password based on the name
@@ -56,6 +60,7 @@ slaves = [
 	# Local
 	MySlave('buildbot.net', 'linux', '25',
 		has_texinfo=True,
+		run_tests=False,
 		),
 
 	# Steve 'Ashcrow' Milner

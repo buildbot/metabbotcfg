@@ -66,6 +66,7 @@ def mksimplefactory(slave):
 
 for sl in slaves:
 	if not sl.use_simple: continue
+	if not sl.run_tests: continue
 	name = sl.slavename
 	builders.append({
 		'name' : 'slave-%s' % name,
@@ -126,6 +127,7 @@ def mkfactory(*tests):
 
 for sl in slaves:
 	if sl.use_simple: continue
+	if not sl.run_tests: continue
 	name = sl.slavename
 	builders.append({
 		'name' : 'slave-%s' % name,
