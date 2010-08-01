@@ -19,13 +19,13 @@ docs_factory = factory.BuildFactory()
 docs_factory.addStep(Git(repourl='git://github.com/buildbot/buildbot.git', mode="update"))
 docs_factory.addStep(ShellCommand(command="make docs", name="create docs"))
 docs_factory.addStep(ShellCommand(command=textwrap.dedent("""\
-		tar -C /home/buildbot/html/buildbot/docs -zvxf docs/docs.tgz latest/ &&
+		tar -C /home/buildbot/html/buildbot/docs -zvxf master/docs/docs.tgz latest/ &&
 		chmod -R a+rx /home/buildbot/html/buildbot/docs/latest
 		"""), name="docs to web", flunkOnFailure=True, haltOnFailure=True))
+docs_factory.addStep(ShellCommand(command="make apidocs", name="create apidocs",
+			flunkOnFailure=True, haltOnFailure=True))
 docs_factory.addStep(ShellCommand(command=textwrap.dedent("""\
-		cd docs &&
-		./gen-reference &&
-		tar -cf - reference | tar -C /home/buildbot/html/buildbot/docs/latest -xf - &&
+		tar -C /home/buildbot/html/buildbot/docs/latest -zxf apidocs/reference.tgz &&
 		chmod -R a+rx /home/buildbot/html/buildbot/docs/latest/reference
 		"""), name="api docs to web", flunkOnFailure=True, haltOnFailure=True))
 builders.append({
