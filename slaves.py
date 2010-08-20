@@ -83,6 +83,9 @@ slaves = [
 		),
 
 	# Mozilla
+	MySlave('cm-bbot-linux-001', 'linux', '26',
+		),
+
 	MySlave('cm-bbot-linux-002', 'linux', '26',
 		),
 

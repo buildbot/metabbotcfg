@@ -1,6 +1,8 @@
 schedulers = []
 
-from buildbot.scheduler import Scheduler, Periodic
+from buildbot.schedulers.basic import Scheduler
+from buildbot.schedulers.timed import Periodic
+from buildbot.schedulers.trysched import Try_Userpass
 from metabbotcfg.slaves import slaves
 
 schedulers.append(Scheduler(name="all", branch='master',
@@ -8,5 +10,3 @@ schedulers.append(Scheduler(name="all", branch='master',
                                  builderNames=
 					[ 'docs', ] +
 					[ 'slave-%s' % sl.slavename for sl in slaves if sl.run_tests ]))
-
-
