@@ -46,7 +46,7 @@ def mkfactory(twisted_version='twisted'):
 	ShellCommand(usePTY=False, command=textwrap.dedent("""
 		test -z "$PYTHON" && PYTHON=python;
 		$PYTHON virtualenv.py --distribute --no-site-packages ../sandbox || exit 1;
-		PYTHON=../sandbox/bin/python; PATH=../sandbox/bin:$PATH; 
+		PYTHON=$PWD/../sandbox/bin/python; PATH=../sandbox/bin:$PATH; 
 		export PYTHON_EGG_CACHE=$PWD/..;
 		# and somehow the install_requires in setup.py doesn't always work:
 		$PYTHON -c 'import json' 2>/dev/null || $PYTHON -c 'import simplejson' ||
@@ -56,7 +56,6 @@ def mkfactory(twisted_version='twisted'):
 		../sandbox/bin/easy_install %(twisted_version)s || exit 1;
 		../sandbox/bin/easy_install jinja2 || exit 1;
 		../sandbox/bin/easy_install mock || exit 1;
-		../sandbox/bin/easy_install coverage || exit 1;
 	""" % dict(twisted_version=twisted_version)),
 		flunkOnFailure=True,
 		haltOnFailure=True,
@@ -83,6 +82,44 @@ def mkfactory(twisted_version='twisted'):
 	])
 	return f
 
+coverage_factory = factory.BuildFactory()
+coverage_factory.addSteps([
+	Git(repourl='git://github.com/buildbot/buildbot.git', mode="copy"),
+	FileDownload(mastersrc="virtualenv.py", slavedest="virtualenv.py", flunkOnFailure=True),
+	ShellCommand(usePTY=False, command=textwrap.dedent("""
+		test -z "$PYTHON" && PYTHON=python;
+		$PYTHON virtualenv.py --distribute --no-site-packages ../sandbox || exit 1;
+		PYTHON=$PWD/../sandbox/bin/python; PATH=../sandbox/bin:$PATH; 
+		export PYTHON_EGG_CACHE=$PWD/..;
+		# and somehow the install_requires in setup.py doesn't always work:
+		$PYTHON -c 'import json' 2>/dev/null || $PYTHON -c 'import simplejson' ||
+					../sandbox/bin/easy_install simplejson || exit 1;
+		$PYTHON -c 'import sqlite3, sys; assert sys.version_info >= (2,6)' 2>/dev/null || $PYTHON -c 'import pysqlite2.dbapi2' ||
+					../sandbox/bin/easy_install pysqlite || exit 1;
+		../sandbox/bin/easy_install Twisted || exit 1;
+		../sandbox/bin/easy_install jinja2 || exit 1;
+		../sandbox/bin/easy_install mock || exit 1;
+		../sandbox/bin/easy_install coverage || exit 1;
+		(cd master; $PYTHON setup.py develop) || exit 1;
+		(cd slave; $PYTHON setup.py develop) || exit 1;
+	"""),
+		flunkOnFailure=True,
+		haltOnFailure=True,
+		name="virtualenv setup"),
+	ShellCommand(usePTY=False, command=textwrap.dedent("""
+		PYTHON=$PWD/../sandbox/bin/python; PATH=../sandbox/bin:$PATH; 
+		export PYTHON_EGG_CACHE=$PWD/..;
+		../sandbox/bin/coverage run --rcfile=.coveragerc \
+			../sandbox/bin/trial buildbot.test buildslave.test \
+			|| exit 1;
+		../sandbox/bin/coverage html -i --rcfile=.coveragerc \
+			-d /home/buildbot/html/buildbot/coverage \
+			|| exit 1;
+		chmod -R a+rx /home/buildbot/html/buildbot/coverage || exit 1
+	"""),
+		name='coverage report'),
+])
+
 
 docs_factory = factory.BuildFactory()
 docs_factory.addStep(Git(repourl='git://github.com/buildbot/buildbot.git', mode="update"))
@@ -98,13 +135,20 @@ docs_factory.addStep(ShellCommand(command=textwrap.dedent("""\
 		chmod -R a+rx /home/buildbot/html/buildbot/docs/latest/reference
 		"""), name="api docs to web", flunkOnFailure=True, haltOnFailure=True))
 
-#### docs
+#### docs & coverage
 
 builders.append({
 	'name' : 'docs',
-	'slavenames' : names(get_slaves(buildbot_net=1)),
+	'slavenames' : names(get_slaves(buildbot_net=True)),
 	'workdir' : 'docs',
 	'factory' : docs_factory,
+	'category' : 'docs' })
+
+builders.append({
+	'name' : 'coverage',
+	'slavenames' : names(get_slaves(buildbot_net=True)),
+	'workdir' : 'coverage',
+	'factory' : coverage_factory,
 	'category' : 'docs' })
 
 #### single-slave builders
