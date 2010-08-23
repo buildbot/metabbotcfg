@@ -98,6 +98,18 @@ slaves = [
 		run_config=True,
 		),
 
+	MySlave('cm-bbot-xp-001',
+		use_simple=True,
+		),
+
+	MySlave('cm-bbot-xp-002',
+		use_simple=True,
+		),
+
+	MySlave('cm-bbot-xp-003',
+		use_simple=True,
+		),
+
 	# Zmanda (EC2)
 	MyEC2LatentBuildSlave('ec2slave', 'm1.small',
 		ami='ami-5a749c33',
