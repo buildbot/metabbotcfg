@@ -18,8 +18,13 @@ class MySlaveBase(object):
 	run_single = True
 
 	# true if this slave can contribute to the virtualenv-managed pool of
-	# specific-configuration builders
+	# specific-configuration builders.  Specific supported python versions
+	# are given, too
 	run_config = False
+	py24 = False
+	py25 = False
+	py26 = False
+	py27 = False
 
 	def extract_attrs(self, name, **kwargs):
 		self.slavename = name
@@ -68,45 +73,69 @@ slaves = [
 
  	# Dustin Mitchell
 	MySlave('knuth.r.igoro.us',
+		max_builds=2,
 		run_single=False,
 		run_config=True,
+		py24=True,
+		py25=True,
+		py26=True,
 		),
 
 	# maruel
 	MySlave('xp-cygwin-1.7',
+		max_builds=1,
 		use_simple=True,
 		test_master=False, # master doesn't work on cygwin
 		),
 
 	MySlave('win7-py26',
+		max_builds=1,
 		use_simple=True,
 		),
 
 	# Mozilla
 	MySlave('cm-bbot-linux-001',
+		max_builds=3,
 		run_single=False,
 		run_config=True,
+		py24=True,
+		py25=True,
+		py26=True,
+		py27=True,
 		),
 
 	MySlave('cm-bbot-linux-002',
+		max_builds=3,
 		run_single=False,
 		run_config=True,
+		py24=True,
+		py25=True,
+		py26=True,
+		py27=True,
 		),
 
 	MySlave('cm-bbot-linux-003',
+		max_builds=3,
 		run_single=False,
 		run_config=True,
+		py24=True,
+		py25=True,
+		py26=True,
+		py27=True,
 		),
 
 	MySlave('cm-bbot-xp-001',
+		max_builds=1,
 		use_simple=True,
 		),
 
 	MySlave('cm-bbot-xp-002',
+		max_builds=1,
 		use_simple=True,
 		),
 
 	MySlave('cm-bbot-xp-003',
+		max_builds=1,
 		use_simple=True,
 		),
 
@@ -142,8 +171,10 @@ def get_slaves(*args, **kwargs):
 		rv.update(arg)
 	for sl in slaves:
 		for k in kwargs:
-			if getattr(sl, k) == kwargs[k]:
-				rv[sl.slavename] = sl
+			if getattr(sl, k) != kwargs[k]:
+				break
+		else:
+			rv[sl.slavename] = sl
 	return rv
 
 def names(slavedict):

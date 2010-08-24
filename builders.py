@@ -38,45 +38,49 @@ def mksimplefactory(test_master=True):
 	return f
 
 # much like simple buidlers, but it uses virtualenv
-def mkfactory(twisted_version='twisted'):
+def mkfactory(twisted_version='twisted', python_version='python'):
+	subs = dict(twisted_version=twisted_version, python_version=python_version)
 	f = factory.BuildFactory()
 	f.addSteps([
 	Git(repourl='git://github.com/buildbot/buildbot.git', mode="copy"),
 	FileDownload(mastersrc="virtualenv.py", slavedest="virtualenv.py", flunkOnFailure=True),
 	ShellCommand(usePTY=False, command=textwrap.dedent("""
-		test -z "$PYTHON" && PYTHON=python;
-		$PYTHON virtualenv.py --distribute --no-site-packages ../sandbox || exit 1;
-		PYTHON=$PWD/../sandbox/bin/python; PATH=../sandbox/bin:$PATH; 
+		test -z "$PYTHON" && PYTHON=%(python_version)s;
+		SANDBOX=../sandbox-%(python_version)s;
+		$PYTHON virtualenv.py --distribute --no-site-packages $SANDBOX || exit 1;
+		PYTHON=$PWD/$SANDBOX/bin/python; PATH=$PWD/$SANDBOX/bin:$PATH; 
 		export PYTHON_EGG_CACHE=$PWD/..;
 		# and somehow the install_requires in setup.py doesn't always work:
 		$PYTHON -c 'import json' 2>/dev/null || $PYTHON -c 'import simplejson' ||
-					../sandbox/bin/easy_install simplejson || exit 1;
-		$PYTHON -c 'import sqlite3, sys; assert sys.version_info >= (2,6)' 2>/dev/null || $PYTHON -c 'import pysqlite2.dbapi2' ||
-					../sandbox/bin/easy_install pysqlite || exit 1;
-		../sandbox/bin/easy_install %(twisted_version)s || exit 1;
-		../sandbox/bin/easy_install jinja2 || exit 1;
-		../sandbox/bin/easy_install mock || exit 1;
-	""" % dict(twisted_version=twisted_version)),
+					$SANDBOX/bin/easy_install simplejson || exit 1;
+		$PYTHON -c 'import sqlite3, sys; assert sys.version_info >= (2,6)' 2>/dev/null ||
+					$PYTHON -c 'import pysqlite2.dbapi2' ||
+					$SANDBOX/bin/easy_install pysqlite || exit 1;
+		$SANDBOX/bin/easy_install %(twisted_version)s || exit 1;
+		$SANDBOX/bin/easy_install jinja2 || exit 1;
+		$SANDBOX/bin/easy_install mock || exit 1;
+	""" % subs),
 		flunkOnFailure=True,
 		haltOnFailure=True,
 		name="virtualenv setup"),
 	ShellCommand(usePTY=False, command=textwrap.dedent("""
-		PYTHON=../sandbox/bin/python; PATH=../sandbox/bin:$PATH; 
+		PYTHON=../sandbox-%(python_version)s/bin/python;
+		PATH=../sandbox-%(python_version)s/bin:$PATH; 
 		export PYTHON_EGG_CACHE=$PWD/..;
 		$PYTHON -c 'import sys; print "Python:", sys.version; import twisted; print "Twisted:", twisted.version'
-	"""),
+	""" % subs),
 		name="versions"),
 	# see note above about workdir vs. testpath
 	Trial(workdir="build/slave", testpath='.',
 		env={ 'PYTHON_EGG_CACHE' : '../../' },
 		tests='buildslave.test',
-		trial="../../sandbox/bin/trial",
+		trial="../../sandbox-%(python_version)s/bin/trial" % subs,
 		usePTY=False,
 		name='test slave'),
 	Trial(workdir="build/master", testpath='.',
 		env={ 'PYTHON_EGG_CACHE' : '../../' },
 		tests='buildbot.test',
-		trial="../../sandbox/bin/trial",
+		trial="../../sandbox-%(python_version)s/bin/trial" % subs,
 		usePTY=False,
 		name='test master'),
 	])
@@ -175,13 +179,24 @@ twisted_versions = dict(
 	tw1010='Twisted==10.1.0',
 )
 
-config_slaves = names(get_slaves(run_config=True))
+python_versions = dict(
+	py24='python2.4',
+	py25='python2.5',
+	py26='python2.6',
+	py27='python2.7',
+)
 
-for tw, twisted_version in twisted_versions.items():
-	f = mkfactory(twisted_version=twisted_version)
-	name = "%s-%s" % ('py26', tw)
-	builders.append({
-		'name' : name,
-		'slavenames' : config_slaves,
-		'factory' : f,
-		'category' : 'config' })
+for py, python_version in python_versions.items():
+	config_slaves = names(get_slaves(run_config=True, **{py:True}))
+	print py, config_slaves
+	if not config_slaves:
+		continue
+
+	for tw, twisted_version in twisted_versions.items():
+		f = mkfactory(twisted_version=twisted_version, python_version=python_version)
+		name = "%s-%s" % (py, tw)
+		builders.append({
+			'name' : name,
+			'slavenames' : config_slaves,
+			'factory' : f,
+			'category' : 'config' })
