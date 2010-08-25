@@ -98,10 +98,10 @@ slaves = [
 		max_builds=3,
 		run_single=False,
 		run_config=True,
-		py24=True,
+		#py24=True, ## not there?
 		py25=True,
 		py26=True,
-		py27=True,
+		#py27=True, ## not there?
 		),
 
 	MySlave('cm-bbot-linux-002',

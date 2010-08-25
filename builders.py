@@ -48,7 +48,7 @@ def mkfactory(twisted_version='twisted', python_version='python'):
 		test -z "$PYTHON" && PYTHON=%(python_version)s;
 		SANDBOX=../sandbox-%(python_version)s;
 		$PYTHON virtualenv.py --distribute --no-site-packages $SANDBOX || exit 1;
-		PYTHON=$PWD/$SANDBOX/bin/python; PATH=$PWD/$SANDBOX/bin:$PATH; 
+		PYTHON=$PWD/$SANDBOX/bin/python; PATH=$PWD/$SANDBOX/bin:/usr/local/bin:$PATH; 
 		export PYTHON_EGG_CACHE=$PWD/..;
 		# and somehow the install_requires in setup.py doesn't always work:
 		$PYTHON -c 'import json' 2>/dev/null || $PYTHON -c 'import simplejson' ||
@@ -65,7 +65,7 @@ def mkfactory(twisted_version='twisted', python_version='python'):
 		name="virtualenv setup"),
 	ShellCommand(usePTY=False, command=textwrap.dedent("""
 		PYTHON=../sandbox-%(python_version)s/bin/python;
-		PATH=../sandbox-%(python_version)s/bin:$PATH; 
+		PATH=../sandbox-%(python_version)s/bin:/usr/local/bin:$PATH; 
 		export PYTHON_EGG_CACHE=$PWD/..;
 		$PYTHON -c 'import sys; print "Python:", sys.version; import twisted; print "Twisted:", twisted.version'
 	""" % subs),
@@ -93,7 +93,7 @@ coverage_factory.addSteps([
 	ShellCommand(usePTY=False, command=textwrap.dedent("""
 		test -z "$PYTHON" && PYTHON=python;
 		$PYTHON virtualenv.py --distribute --no-site-packages ../sandbox || exit 1;
-		PYTHON=$PWD/../sandbox/bin/python; PATH=../sandbox/bin:$PATH; 
+		PYTHON=$PWD/../sandbox/bin/python; PATH=../sandbox/bin:/usr/local/bin:$PATH; 
 		export PYTHON_EGG_CACHE=$PWD/..;
 		# and somehow the install_requires in setup.py doesn't always work:
 		$PYTHON -c 'import json' 2>/dev/null || $PYTHON -c 'import simplejson' ||
@@ -111,7 +111,7 @@ coverage_factory.addSteps([
 		haltOnFailure=True,
 		name="virtualenv setup"),
 	ShellCommand(usePTY=False, command=textwrap.dedent("""
-		PYTHON=$PWD/../sandbox/bin/python; PATH=../sandbox/bin:$PATH; 
+		PYTHON=$PWD/../sandbox/bin/python; PATH=../sandbox/bin:/usr/local/bin:$PATH; 
 		export PYTHON_EGG_CACHE=$PWD/..;
 		../sandbox/bin/coverage run --rcfile=.coveragerc \
 			../sandbox/bin/trial buildbot.test buildslave.test \
