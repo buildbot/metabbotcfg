@@ -12,7 +12,7 @@ status.append(html.WebStatus(
 		http_port=8010,
 		authz=authz,
 		order_console_by_time=True,
-		revlink="http://github.com/djmitche/buildbot/commit/%s",
+		revlink="http://github.com/buildbot/buildbot/commit/%s",
 		changecommentlink=(r'\b#(\d+)\b', r'http://buildbot.net/trac/ticket/\1',
 				   r'Ticket \g<0>')))
 
