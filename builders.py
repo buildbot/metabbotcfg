@@ -48,7 +48,8 @@ def mkfactory(twisted_version='twisted', python_version='python'):
 		test -z "$PYTHON" && PYTHON=%(python_version)s;
 		SANDBOX=../sandbox-%(python_version)s;
 		$PYTHON virtualenv.py --distribute --no-site-packages $SANDBOX || exit 1;
-		PYTHON=$PWD/$SANDBOX/bin/python; PATH=$PWD/$SANDBOX/bin:/usr/local/bin:$PATH; 
+		PATH=$PWD/$SANDBOX/bin:/usr/local/bin:$PATH; 
+		PYTHON=$PWD/$SANDBOX/bin/python;
 		export PYTHON_EGG_CACHE=$PWD/..;
 		# and somehow the install_requires in setup.py doesn't always work:
 		$PYTHON -c 'import json' 2>/dev/null || $PYTHON -c 'import simplejson' ||
@@ -93,7 +94,8 @@ coverage_factory.addSteps([
 	ShellCommand(usePTY=False, command=textwrap.dedent("""
 		test -z "$PYTHON" && PYTHON=python;
 		$PYTHON virtualenv.py --distribute --no-site-packages ../sandbox || exit 1;
-		PYTHON=$PWD/../sandbox/bin/python; PATH=../sandbox/bin:/usr/local/bin:$PATH; 
+		PATH=$PWD/$SANDBOX/bin:/usr/local/bin:$PATH; 
+		PYTHON=$PWD/../sandbox/bin/python;
 		export PYTHON_EGG_CACHE=$PWD/..;
 		# and somehow the install_requires in setup.py doesn't always work:
 		$PYTHON -c 'import json' 2>/dev/null || $PYTHON -c 'import simplejson' ||
