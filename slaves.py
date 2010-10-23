@@ -1,6 +1,5 @@
 import sys, os
 from buildbot.buildslave import BuildSlave
-from buildbot.ec2buildslave import EC2LatentBuildSlave
 
 class MySlaveBase(object):
 	# true if this box is buildbot.net, and can build docs, etc.
@@ -52,13 +51,13 @@ class MySlave(MySlaveBase, BuildSlave):
 		kwargs = self.extract_attrs(name, **kwargs)
 		BuildSlave.__init__(self, name, password, **kwargs)
 
-class MyEC2LatentBuildSlave(MySlaveBase, EC2LatentBuildSlave):
-	def __init__(self, name, ec2type, **kwargs):
-		password = self.get_pass(name)
-		identifier, secret_identifier = self.get_ec2_creds(name)
-		kwargs = self.extract_attrs(name, **kwargs)
-		EC2LatentBuildSlave.__init__(self, name, password, ec2type,
-			identifier=identifier, secret_identifier=secret_identifier, **kwargs)
+#class MyEC2LatentBuildSlave(MySlaveBase, EC2LatentBuildSlave):
+#	def __init__(self, name, ec2type, **kwargs):
+#		password = self.get_pass(name)
+#		identifier, secret_identifier = self.get_ec2_creds(name)
+#		kwargs = self.extract_attrs(name, **kwargs)
+#		EC2LatentBuildSlave.__init__(self, name, password, ec2type,
+#			identifier=identifier, secret_identifier=secret_identifier, **kwargs)
 
 slaves = [
 	# Local
@@ -139,12 +138,12 @@ slaves = [
 		use_simple=True,
 		),
 
-	# Zmanda (EC2)
-	MyEC2LatentBuildSlave('ec2slave', 'm1.small',
-		ami='ami-5a749c33',
-		keypair_name='buildbot-setup',
-		security_name='buildslaves',
-		),
+	# (EC2 - kept here as an indication of how to set it up)
+#	MyEC2LatentBuildSlave('ec2slave', 'm1.small',
+#		ami='ami-5a749c33',
+#		keypair_name='buildbot-setup',
+#		security_name='buildslaves',
+#		),
 ]
 
 # these are slaves that haven't been up and from whose owners I have not heard in a while
