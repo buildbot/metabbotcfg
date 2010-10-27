@@ -141,7 +141,13 @@ docs_factory.addStep(ShellCommand(command=textwrap.dedent("""\
 		chmod -R a+rx /home/buildbot/html/buildbot/docs/latest/reference
 		"""), name="api docs to web", flunkOnFailure=True, haltOnFailure=True))
 
-#### docs & coverage
+linty_factory = factory.BuildFactory()
+linty_factory.addStep(Git(repourl='git://github.com/buildbot/buildbot.git', mode="update"))
+linty_factory.addStep(ShellCommand(command="pyflakes master/buildbot", name="pyflakes - master"))
+# slave doesn't work yet
+#linty_factory.addStep(ShellCommand(command="pyflakes slave/buildslave", name="pyflakes - slave"))
+
+#### docs, coverage, etc.
 
 builders.append({
 	'name' : 'docs',
@@ -155,6 +161,13 @@ builders.append({
 	'slavenames' : names(get_slaves(buildbot_net=True)),
 	'workdir' : 'coverage',
 	'factory' : coverage_factory,
+	'category' : 'docs' })
+
+builders.append({
+	'name' : 'linty',
+	'slavenames' : names(get_slaves(buildbot_net=True)),
+	'workdir' : 'linty',
+	'factory' : linty_factory,
 	'category' : 'docs' })
 
 #### single-slave builders
