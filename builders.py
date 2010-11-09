@@ -141,11 +141,12 @@ docs_factory.addStep(ShellCommand(command=textwrap.dedent("""\
 		chmod -R a+rx /home/buildbot/html/buildbot/docs/latest/reference
 		"""), name="api docs to web", flunkOnFailure=True, haltOnFailure=True))
 
+from buildbot.steps.python import PyFlakes
 linty_factory = factory.BuildFactory()
 linty_factory.addStep(Git(repourl='git://github.com/buildbot/buildbot.git', mode="update"))
-linty_factory.addStep(ShellCommand(command="pyflakes master/buildbot", name="pyflakes - master"))
+linty_factory.addStep(PyFlakes(command="pyflakes master/buildbot", name="pyflakes - master"))
 # slave doesn't work yet
-#linty_factory.addStep(ShellCommand(command="pyflakes slave/buildslave", name="pyflakes - slave"))
+#linty_factory.addStep(PyFlakes(command="pyflakes slave/buildslave", name="pyflakes - slave"))
 
 #### docs, coverage, etc.
 
