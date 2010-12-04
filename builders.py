@@ -89,8 +89,9 @@ def mkfactory(twisted_version='twisted', python_version='python'):
 
 coverage_factory = factory.BuildFactory()
 coverage_factory.addSteps([
-	Git(repourl='git://github.com/buildbot/buildbot.git', mode="copy"),
+	Git(repourl='git://github.com/buildbot/buildbot.git', mode="update"),
 	FileDownload(mastersrc="virtualenv.py", slavedest="virtualenv.py", flunkOnFailure=True),
+	ShellCommand(command=r"find . -name '*.pyc' -exec rm \{} \;"),
 	ShellCommand(usePTY=False, command=textwrap.dedent("""
 		test -z "$PYTHON" && PYTHON=python;
 		$PYTHON virtualenv.py --distribute --no-site-packages ../sandbox || exit 1;
@@ -144,7 +145,7 @@ docs_factory.addStep(ShellCommand(command=textwrap.dedent("""\
 from buildbot.steps.python import PyFlakes
 linty_factory = factory.BuildFactory()
 linty_factory.addStep(Git(repourl='git://github.com/buildbot/buildbot.git', mode="update"))
-linty_factory.addStep(PyFlakes(command="pyflakes master/buildbot", name="pyflakes - master"))
+linty_factory.addStep(PyFlakes(command="pyflakes master/buildbot", name="pyflakes - master", flunkOnFailure=True))
 # slave doesn't work yet
 #linty_factory.addStep(PyFlakes(command="pyflakes slave/buildslave", name="pyflakes - slave"))
 
@@ -193,6 +194,7 @@ twisted_versions = dict(
 	tw0900='Twisted==9.0.0',
 	tw1000='Twisted==10.0.0',
 	tw1010='Twisted==10.1.0',
+	tw1020='Twisted==10.2.0',
 )
 
 python_versions = dict(
