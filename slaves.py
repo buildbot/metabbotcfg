@@ -63,6 +63,7 @@ slaves = [
 	# Local
 	MySlave('buildbot.net',
 		buildbot_net=True,
+		run_config=False,
 		run_single=False,
 		),
 
