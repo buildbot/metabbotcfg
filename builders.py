@@ -146,8 +146,7 @@ from buildbot.steps.python import PyFlakes
 linty_factory = factory.BuildFactory()
 linty_factory.addStep(Git(repourl='git://github.com/buildbot/buildbot.git', mode="update"))
 linty_factory.addStep(PyFlakes(command="pyflakes master/buildbot", name="pyflakes - master", flunkOnFailure=True))
-# slave doesn't work yet
-#linty_factory.addStep(PyFlakes(command="pyflakes slave/buildslave", name="pyflakes - slave"))
+linty_factory.addStep(PyFlakes(command="pyflakes slave/buildslave", name="pyflakes - slave", flunkOnFailure=True))
 
 #### docs, coverage, etc.
 
