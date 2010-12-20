@@ -120,9 +120,9 @@ coverage_factory.addSteps([
 			../sandbox/bin/trial buildbot.test buildslave.test \
 			|| exit 1;
 		../sandbox/bin/coverage html -i --rcfile=.coveragerc \
-			-d /home/buildbot/html/buildbot/coverage \
+			-d /home/buildbot/www/buildbot.net/buildbot/coverage \
 			|| exit 1;
-		chmod -R a+rx /home/buildbot/html/buildbot/coverage || exit 1
+		chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/coverage || exit 1
 	"""),
 		name='coverage report'),
 ])
@@ -132,21 +132,22 @@ docs_factory = factory.BuildFactory()
 docs_factory.addStep(Git(repourl='git://github.com/buildbot/buildbot.git', mode="update"))
 docs_factory.addStep(ShellCommand(command="make VERSION=latest docs", name="create docs"))
 docs_factory.addStep(ShellCommand(command=textwrap.dedent("""\
-		tar -C /home/buildbot/html/buildbot/docs -zvxf master/docs/docs.tgz latest/ &&
-		chmod -R a+rx /home/buildbot/html/buildbot/docs/latest
+		tar -C /home/buildbot/www/buildbot.net/buildbot/docs -zvxf master/docs/docs.tgz latest/ &&
+		chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/docs/latest &&
+		find /home/buildbot/www/buildbot.net/buildbot/docs/latest -name '*.html' | xargs python /home/buildbot/www/buildbot.net/buildbot/add-tracking.py
 		"""), name="docs to web", flunkOnFailure=True, haltOnFailure=True))
-docs_factory.addStep(ShellCommand(command="make VERSION=latest apidocs", name="create apidocs",
+docs_factory.addStep(ShellCommand(command="source ~/sandbox/bin/activate && make VERSION=latest apidocs", name="create apidocs",
 			flunkOnFailure=True, haltOnFailure=True))
 docs_factory.addStep(ShellCommand(command=textwrap.dedent("""\
-		tar -C /home/buildbot/html/buildbot/docs/latest -zxf apidocs/reference.tgz &&
-		chmod -R a+rx /home/buildbot/html/buildbot/docs/latest/reference
+		tar -C /home/buildbot/www/buildbot.net/buildbot/docs/latest -zxf apidocs/reference.tgz &&
+		chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/docs/latest/reference
 		"""), name="api docs to web", flunkOnFailure=True, haltOnFailure=True))
 
 from buildbot.steps.python import PyFlakes
 linty_factory = factory.BuildFactory()
 linty_factory.addStep(Git(repourl='git://github.com/buildbot/buildbot.git', mode="update"))
-linty_factory.addStep(PyFlakes(command="pyflakes master/buildbot", name="pyflakes - master", flunkOnFailure=True))
-linty_factory.addStep(PyFlakes(command="pyflakes slave/buildslave", name="pyflakes - slave", flunkOnFailure=True))
+linty_factory.addStep(PyFlakes(command="/home/buildbot/sandbox/bin/pyflakes master/buildbot", name="pyflakes - master", flunkOnFailure=True))
+linty_factory.addStep(PyFlakes(command="/home/buildbot/sandbox/bin/pyflakes slave/buildslave", name="pyflakes - slave", flunkOnFailure=True))
 
 #### docs, coverage, etc.
 
