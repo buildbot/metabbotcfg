@@ -116,7 +116,7 @@ coverage_factory.addSteps([
 	ShellCommand(usePTY=False, command=textwrap.dedent("""
 		PYTHON=$PWD/../sandbox/bin/python; PATH=../sandbox/bin:/usr/local/bin:$PATH; 
 		export PYTHON_EGG_CACHE=$PWD/..;
-		../sandbox/bin/coverage run --rcfile=.coveragerc \
+		../sandbox/bin/coverage run --rcfile=common/coveragerc \
 			../sandbox/bin/trial buildbot.test buildslave.test \
 			|| exit 1;
 		../sandbox/bin/coverage html -i --rcfile=.coveragerc \
