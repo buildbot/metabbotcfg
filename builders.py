@@ -64,9 +64,12 @@ def mkfactory(twisted_version='twisted', python_version='python'):
 		haltOnFailure=True,
 		name="virtualenv setup"),
 	ShellCommand(usePTY=False, command=textwrap.dedent("""
-		PYTHON=../sandbox-%(python_version)s/bin/python;
-		PATH=../sandbox-%(python_version)s/bin:/usr/local/bin:$PATH; 
-		$PYTHON -c 'import sys; print "Python:", sys.version; import twisted; print "Twisted:", twisted.version'
+		SANDBOX=../sandbox-%(python_version)s;
+		PATH=$PWD/$SANDBOX/bin:/usr/local/bin:$PATH; 
+		PYTHON=$PWD/$SANDBOX/bin/python;
+		PIP=$PWD/$SANDBOX/bin/pip;
+		$PYTHON -c 'import sys; print "Python:", sys.version; import twisted; print "Twisted:", twisted.version' || exit 1;
+		$PIP freeze
 	""" % subs),
 		name="versions"),
 	# see note above about workdir vs. testpath
