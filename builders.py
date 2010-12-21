@@ -50,16 +50,15 @@ def mkfactory(twisted_version='twisted', python_version='python'):
 		$PYTHON virtualenv.py --distribute --no-site-packages $SANDBOX || exit 1;
 		PATH=$PWD/$SANDBOX/bin:/usr/local/bin:$PATH; 
 		PYTHON=$PWD/$SANDBOX/bin/python;
-		export PYTHON_EGG_CACHE=$PWD/..;
+		PIP=$PWD/$SANDBOX/bin/pip;
+		$PIP install %(twisted_version)s || exit 1
+		$PIP install --download-cache=$PWD/.. --editable=master/ --editable=slave/ mock || exit 1
 		# and somehow the install_requires in setup.py doesn't always work:
 		$PYTHON -c 'import json' 2>/dev/null || $PYTHON -c 'import simplejson' ||
-					$SANDBOX/bin/easy_install simplejson || exit 1;
+					$PIP install simplejson || exit 1;
 		$PYTHON -c 'import sqlite3, sys; assert sys.version_info >= (2,6)' 2>/dev/null ||
 					$PYTHON -c 'import pysqlite2.dbapi2' ||
-					$SANDBOX/bin/easy_install pysqlite || exit 1;
-		$SANDBOX/bin/easy_install %(twisted_version)s || exit 1;
-		$SANDBOX/bin/easy_install jinja2 || exit 1;
-		$SANDBOX/bin/easy_install mock || exit 1;
+					$PIP install pysqlite || exit 1;
 	""" % subs),
 		flunkOnFailure=True,
 		haltOnFailure=True,
@@ -67,19 +66,16 @@ def mkfactory(twisted_version='twisted', python_version='python'):
 	ShellCommand(usePTY=False, command=textwrap.dedent("""
 		PYTHON=../sandbox-%(python_version)s/bin/python;
 		PATH=../sandbox-%(python_version)s/bin:/usr/local/bin:$PATH; 
-		export PYTHON_EGG_CACHE=$PWD/..;
 		$PYTHON -c 'import sys; print "Python:", sys.version; import twisted; print "Twisted:", twisted.version'
 	""" % subs),
 		name="versions"),
 	# see note above about workdir vs. testpath
 	Trial(workdir="build/slave", testpath='.',
-		env={ 'PYTHON_EGG_CACHE' : '../../' },
 		tests='buildslave.test',
 		trial="../../sandbox-%(python_version)s/bin/trial" % subs,
 		usePTY=False,
 		name='test slave'),
 	Trial(workdir="build/master", testpath='.',
-		env={ 'PYTHON_EGG_CACHE' : '../../' },
 		tests='buildbot.test',
 		trial="../../sandbox-%(python_version)s/bin/trial" % subs,
 		usePTY=False,
@@ -95,20 +91,16 @@ coverage_factory.addSteps([
 	ShellCommand(usePTY=False, command=textwrap.dedent("""
 		test -z "$PYTHON" && PYTHON=python;
 		$PYTHON virtualenv.py --distribute --no-site-packages ../sandbox || exit 1;
+		SANDBOX=../sandbox;
 		PATH=$PWD/$SANDBOX/bin:/usr/local/bin:$PATH; 
-		PYTHON=$PWD/../sandbox/bin/python;
-		export PYTHON_EGG_CACHE=$PWD/..;
+		PYTHON=$PWD/$SANDBOX/bin/python;
+		PIP=$PWD/$SANDBOX/bin/pip;
+		$PIP install --download-cache=$PWD/.. --editable=master/ --editable=slave/ mock coverage || exit 1
 		# and somehow the install_requires in setup.py doesn't always work:
 		$PYTHON -c 'import json' 2>/dev/null || $PYTHON -c 'import simplejson' ||
-					../sandbox/bin/easy_install simplejson || exit 1;
+					$PIP install simplejson || exit 1;
 		$PYTHON -c 'import sqlite3, sys; assert sys.version_info >= (2,6)' 2>/dev/null || $PYTHON -c 'import pysqlite2.dbapi2' ||
-					../sandbox/bin/easy_install pysqlite || exit 1;
-		../sandbox/bin/easy_install Twisted || exit 1;
-		../sandbox/bin/easy_install jinja2 || exit 1;
-		../sandbox/bin/easy_install mock || exit 1;
-		../sandbox/bin/easy_install coverage || exit 1;
-		(cd master; $PYTHON setup.py develop) || exit 1;
-		(cd slave; $PYTHON setup.py develop) || exit 1;
+					$PIP install pysqlite || exit 1;
 	"""),
 		flunkOnFailure=True,
 		haltOnFailure=True,
