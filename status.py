@@ -14,7 +14,9 @@ status.append(html.WebStatus(
 		order_console_by_time=True,
 		revlink="http://github.com/buildbot/buildbot/commit/%s",
 		changecommentlink=(r'\b#(\d+)\b', r'http://buildbot.net/trac/ticket/\1',
-				   r'Ticket \g<0>')))
+				   r'Ticket \g<0>'),
+		change_hook_dialects={ 'github' : True },
+		))
 
 from buildbot.status import words
 status.append(words.IRC(host="irc.freenode.net", nick="metabbot",
@@ -23,6 +25,3 @@ status.append(words.IRC(host="irc.freenode.net", nick="metabbot",
 					'failureToSuccess' : 1,
 				},
                               channels=["#buildbot"]))
-
-
-
