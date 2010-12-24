@@ -71,6 +71,10 @@ slaves = [
 	MySlave('centos_5_python2_4',
 		),
 
+	# Dustin Sallings
+	MySlave('minimata',
+		),
+
  	# Dustin Mitchell
 	MySlave('knuth.r.igoro.us',
 		max_builds=2,
@@ -153,8 +157,6 @@ retired_slaves = [
 	MySlave('ubuntu810-64'),
 	MySlave('minime',
 		max_builds=1),
-	MySlave('minimata',
-		),
 	MySlave('freebsd_7',
 		max_builds=1),
 
