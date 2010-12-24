@@ -51,7 +51,7 @@ def mkfactory(twisted_version='twisted', python_version='python'):
 		PATH=$PWD/$SANDBOX/bin:/usr/local/bin:$PATH; 
 		PYTHON=$PWD/$SANDBOX/bin/python;
 		PIP=$PWD/$SANDBOX/bin/pip;
-		$PIP install %(twisted_version)s || exit 1
+		$PIP install --download-cache=$PWD/.. %(twisted_version)s || exit 1
 		$PIP install --download-cache=$PWD/.. --editable=master/ --editable=slave/ mock || exit 1
 		# and somehow the install_requires in setup.py doesn't always work:
 		$PYTHON -c 'import json' 2>/dev/null || $PYTHON -c 'import simplejson' ||
@@ -110,7 +110,6 @@ coverage_factory.addSteps([
 		name="virtualenv setup"),
 	ShellCommand(usePTY=False, command=textwrap.dedent("""
 		PYTHON=$PWD/../sandbox/bin/python; PATH=../sandbox/bin:/usr/local/bin:$PATH; 
-		export PYTHON_EGG_CACHE=$PWD/..;
 		../sandbox/bin/coverage run --rcfile=common/coveragerc \
 			../sandbox/bin/trial buildbot.test buildslave.test \
 			|| exit 1;
