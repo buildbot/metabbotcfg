@@ -200,7 +200,6 @@ python_versions = dict(
 
 for py, python_version in python_versions.items():
 	config_slaves = names(get_slaves(run_config=True, **{py:True}))
-	print py, config_slaves
 	if not config_slaves:
 		continue
 
