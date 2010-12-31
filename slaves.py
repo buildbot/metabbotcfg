@@ -71,10 +71,6 @@ slaves = [
 	MySlave('centos_5_python2_4',
 		),
 
-	# Dustin Sallings
-	MySlave('minimata',
-		),
-
  	# Dustin Mitchell
 	MySlave('knuth.r.igoro.us',
 		max_builds=2,
@@ -166,6 +162,13 @@ retired_slaves = [
 
 	# Tim Hatch <tim@timhatch.com> (emailed 2/3/10)
 	MySlave('automan'),
+
+### temporarily disabled until the slave is fixed (can't get to github.com)
+	# Dustin Sallings
+	MySlave('minimata',
+		run_config=True,
+		py26=True,
+		),
 ]
 
 def get_slaves(*args, **kwargs):
