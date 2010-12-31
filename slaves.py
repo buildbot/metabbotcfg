@@ -83,6 +83,7 @@ slaves = [
 		py24=True,
 		py25=True,
 		py26=True,
+		py27=True,
 		),
 
 	# maruel
