@@ -136,6 +136,11 @@ docs_factory.addStep(ShellCommand(command=textwrap.dedent("""\
 		tar -C /home/buildbot/www/buildbot.net/buildbot/docs/latest -zxf apidocs/reference.tgz &&
 		chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/docs/latest/reference
 		"""), name="api docs to web", flunkOnFailure=True, haltOnFailure=True))
+docs_factory.addStep(ShellCommand(command=textwrap.dedent("""\
+		cd ~/trac/repos/buildbot.git &&
+		git fetch &&
+		~/sandbox/bin/trac-admin ~/trac repository sync Buildbot
+		"""), name="update trac", flunkOnFailure=True, haltOnFailure=True))
 
 from buildbot.steps.python import PyFlakes
 linty_factory = factory.BuildFactory()
