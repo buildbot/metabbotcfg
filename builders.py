@@ -71,6 +71,8 @@ def mkfactory(twisted_version='twisted', python_version='python'):
 		$PYTHON -c 'import sys; print "Python:", sys.version; import twisted; print "Twisted:", twisted.version' || exit 1;
 		$PIP freeze
 	""" % subs),
+		description="versions",
+		descriptionDone="versions",
 		name="versions"),
 	# see note above about workdir vs. testpath
 	Trial(workdir="build/slave", testpath='.',
@@ -118,6 +120,8 @@ coverage_factory.addSteps([
 			|| exit 1;
 		chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/coverage || exit 1
 	"""),
+		description='coverage',
+		descriptionDone='coverage',
 		name='coverage report'),
 ])
 
