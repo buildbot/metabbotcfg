@@ -25,6 +25,10 @@ class MySlaveBase(object):
 	py26 = False
 	py27 = False
 
+	# operating system, for os-specific builders; this should only be used
+	# for fleets of machines that are basically interchangebale
+	os = None
+
 	def extract_attrs(self, name, **kwargs):
 		self.slavename = name
 		remaining = {}
@@ -91,7 +95,7 @@ slaves = [
 
 	MySlave('win7-py26',
 		max_builds=1,
-		use_simple=True,
+		os='win7',
 		),
 
 	# Mozilla
@@ -125,19 +129,56 @@ slaves = [
 		py27=True,
 		),
 
+	MySlave('cm-bbot-leopard-001',
+		max_builds=3,
+		run_single=False,
+		run_config=True,
+		py24=True,
+		py25=True,
+		py26=True,
+		py27=True,
+		os='leopard',
+		),
+
+# https://bugzilla.mozilla.org/show_bug.cgi?id=631966
+#	MySlave('cm-bbot-leopard-002',
+#		max_builds=3,
+#		run_single=False,
+#		run_config=True,
+#		py24=True,
+#		py25=True,
+#		py26=True,
+#		py27=True,
+#		os='leopard',
+#		),
+
+	MySlave('cm-bbot-leopard-003',
+		max_builds=3,
+		run_single=False,
+		run_config=True,
+		py24=True,
+		py25=True,
+		py26=True,
+		py27=True,
+		os='leopard',
+		),
+
 	MySlave('cm-bbot-xp-001',
 		max_builds=1,
-		use_simple=True,
+		run_single=False,
+		os='winxp',
 		),
 
 	MySlave('cm-bbot-xp-002',
 		max_builds=1,
-		use_simple=True,
+		run_single=False,
+		os='winxp',
 		),
 
 	MySlave('cm-bbot-xp-003',
 		max_builds=1,
-		use_simple=True,
+		run_single=False,
+		os='winxp',
 		),
 
 	# (EC2 - kept here as an indication of how to set it up)

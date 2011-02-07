@@ -189,6 +189,21 @@ for sl in get_slaves(run_single=True).values():
 		'factory' : f,
 		'category' : 'slave' })
 
+#### operating systems
+
+for opsys in set(sl.os for sl in slaves if sl.os is not None):
+	if 'win' in opsys:
+		f = mksimplefactory(test_master=sl.test_master)
+	else:
+		f = mkfactory()
+	builders.append({
+		'name' : 'os-%s' % opsys,
+		'slavenames' : names(get_slaves(os=opsys)),
+		'workdir' : 'os-%s' % opsys,
+		'factory' : f,
+		'category' : 'slave' })
+		
+
 #### config builders
 
 twisted_versions = dict(
