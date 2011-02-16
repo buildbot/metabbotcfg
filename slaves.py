@@ -95,6 +95,7 @@ slaves = [
 
 	MySlave('win7-py26',
 		max_builds=1,
+		run_single=False,
 		os='win7',
 		),
 
@@ -181,6 +182,14 @@ slaves = [
 		os='winxp',
 		),
 
+	# Dustin Sallings
+	MySlave('ubuntu810-64',
+		max_builds=1),
+	MySlave('minime',
+		max_builds=1),
+	MySlave('freebsd_7',
+		max_builds=1),
+
 	# (EC2 - kept here as an indication of how to set it up)
 #	MyEC2LatentBuildSlave('ec2slave', 'm1.small',
 #		ami='ami-5a749c33',
@@ -191,13 +200,6 @@ slaves = [
 
 # these are slaves that haven't been up and from whose owners I have not heard in a while
 retired_slaves = [
-	# Dustin Sallings
-	MySlave('ubuntu810-64'),
-	MySlave('minime',
-		max_builds=1),
-	MySlave('freebsd_7',
-		max_builds=1),
-
 	# "Jeremy C. Reed" <reed@reedmedia.net> (emailed 2/2/10)
 	MySlave('reed.tx.reedmedia.net'),
 
