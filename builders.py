@@ -57,10 +57,10 @@ def mkfactory(twisted_version='twisted', python_version='python'):
 		$PIP install --download-cache=$PWD/.. --editable=master/ --editable=slave/ mock || exit 1
 		# and somehow the install_requires in setup.py doesn't always work:
 		$PYTHON -c 'import json' 2>/dev/null || $PYTHON -c 'import simplejson' ||
-					$PIP install simplejson || exit 1;
+					$PIP install --download-cache=$PWD/.. simplejson || exit 1;
 		$PYTHON -c 'import sqlite3, sys; assert sys.version_info >= (2,6)' 2>/dev/null ||
 					$PYTHON -c 'import pysqlite2.dbapi2' ||
-					$PIP install pysqlite || exit 1;
+					$PIP install --download-cache=$PWD/.. pysqlite || exit 1;
 	""" % subs),
 		flunkOnFailure=True,
 		haltOnFailure=True,
@@ -105,9 +105,9 @@ coverage_factory.addSteps([
 		$PIP install --download-cache=$PWD/.. --editable=master/ --editable=slave/ mock coverage || exit 1
 		# and somehow the install_requires in setup.py doesn't always work:
 		$PYTHON -c 'import json' 2>/dev/null || $PYTHON -c 'import simplejson' ||
-					$PIP install simplejson || exit 1;
+					$PIP install --download-cache=$PWD/.. simplejson || exit 1;
 		$PYTHON -c 'import sqlite3, sys; assert sys.version_info >= (2,6)' 2>/dev/null || $PYTHON -c 'import pysqlite2.dbapi2' ||
-					$PIP install pysqlite || exit 1;
+					$PIP install --download-cache=$PWD/.. pysqlite || exit 1;
 	"""),
 		flunkOnFailure=True,
 		haltOnFailure=True,
@@ -130,13 +130,33 @@ coverage_factory.addSteps([
 
 docs_factory = factory.BuildFactory()
 docs_factory.addStep(Git(repourl='git://github.com/buildbot/buildbot.git', mode="update", retry=GIT_RETRY))
+docs_factory.addStep(FileDownload(mastersrc="virtualenv.py", slavedest="virtualenv.py", flunkOnFailure=True))
 docs_factory.addStep(ShellCommand(command="make VERSION=latest docs", name="create docs"))
 docs_factory.addStep(ShellCommand(command=textwrap.dedent("""\
 		tar -C /home/buildbot/www/buildbot.net/buildbot/docs -zvxf master/docs/docs.tgz latest/ &&
 		chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/docs/latest &&
 		find /home/buildbot/www/buildbot.net/buildbot/docs/latest -name '*.html' | xargs python /home/buildbot/www/buildbot.net/buildbot/add-tracking.py
 		"""), name="docs to web", flunkOnFailure=True, haltOnFailure=True))
-docs_factory.addStep(ShellCommand(command="source ~/sandbox/bin/activate && make VERSION=latest apidocs", name="create apidocs",
+# run epydoc in its own virtualenv, otherwise we end up documenting the version of Buildbot
+# running the metabuildbot!
+docs_factory.addStep(ShellCommand(usePTY=False, command=textwrap.dedent("""
+		test -z "$PYTHON" && PYTHON=python;
+		$PYTHON virtualenv.py --distribute --no-site-packages ../sandbox || exit 1;
+		SANDBOX=../sandbox;
+		PATH=$PWD/$SANDBOX/bin:/usr/local/bin:$PATH; 
+		PYTHON=$PWD/$SANDBOX/bin/python;
+		PIP=$PWD/$SANDBOX/bin/pip;
+		$PIP install --download-cache=$PWD/.. --editable=master/ --editable=slave/ epydoc || exit 1
+		# this stuff can probably go once sqlalchemy is in place
+		$PYTHON -c 'import json' 2>/dev/null || $PYTHON -c 'import simplejson' ||
+					$PIP install --download-cache=$PWD/.. simplejson || exit 1;
+		$PYTHON -c 'import sqlite3, sys; assert sys.version_info >= (2,6)' 2>/dev/null || $PYTHON -c 'import pysqlite2.dbapi2' ||
+					$PIP install --download-cache=$PWD/.. pysqlite || exit 1;
+	"""),
+		flunkOnFailure=True,
+		haltOnFailure=True,
+		name="virtualenv setup"))
+docs_factory.addStep(ShellCommand(command="source ../sandbox/bin/activate && make VERSION=latest apidocs", name="create apidocs",
 			flunkOnFailure=True, haltOnFailure=True))
 docs_factory.addStep(ShellCommand(command=textwrap.dedent("""\
 		tar -C /home/buildbot/www/buildbot.net/buildbot/docs/latest -zxf apidocs/reference.tgz &&
