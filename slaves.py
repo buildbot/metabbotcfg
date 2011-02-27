@@ -164,18 +164,21 @@ slaves = [
 		os='leopard',
 		),
 
+    # 63.245.210.52
 	MySlave('cm-bbot-xp-001',
 		max_builds=1,
 		run_single=False,
 		os='winxp',
 		),
 
+    # 63.245.210.53
 	MySlave('cm-bbot-xp-002',
 		max_builds=1,
 		run_single=False,
 		os='winxp',
 		),
 
+    # 63.245.210.54
 	MySlave('cm-bbot-xp-003',
 		max_builds=1,
 		run_single=False,
@@ -189,6 +192,10 @@ slaves = [
 		max_builds=1),
 	MySlave('freebsd_7',
 		max_builds=1),
+	MySlave('minimata',
+		run_config=True,
+		py26=True,
+		),
 
 	# (EC2 - kept here as an indication of how to set it up)
 #	MyEC2LatentBuildSlave('ec2slave', 'm1.small',
@@ -205,13 +212,6 @@ retired_slaves = [
 
 	# Tim Hatch <tim@timhatch.com> (emailed 2/3/10)
 	MySlave('automan'),
-
-### temporarily disabled until the slave is fixed (can't get to github.com)
-	# Dustin Sallings
-	MySlave('minimata',
-		run_config=True,
-		py26=True,
-		),
 ]
 
 def get_slaves(*args, **kwargs):
