@@ -10,14 +10,16 @@ from metabbotcfg.slaves import slaves, get_slaves, names
 
 builders = []
 
+# slaves seem to have a hard time fetching from github, so retry every 5
+# seconds, 5 times
+GIT_RETRY = (5,5)
+
 # some slaves just do "simple" builds: get the source, run the tests.  These are mostly
 # windows machines where we don't have a lot of flexibility to mess around with virtualenv
 def mksimplefactory(test_master=True):
 	f = factory.BuildFactory()
 	f.addSteps([
-	Git(repourl='git://github.com/buildbot/buildbot.git', mode="copy"),
-	#FileDownload(mastersrc="bbimport.py", slavedest="bbimport.py", flunkOnFailure=True),
-	#ShellCommand(workdir="build/master", env={'PYTHONPATH' : '.;.'}, command=r"python ..\bbimport.py"),
+	Git(repourl='git://github.com/buildbot/buildbot.git', mode="copy", retry=GIT_RETRY),
 	# use workdir instead of testpath because setuptools sticks its own eggs (including
 	# the running version of buildbot) into sys.path *before* PYTHONPATH, but includes
 	# "." in sys.path even before the eggs
@@ -42,7 +44,7 @@ def mkfactory(twisted_version='twisted', python_version='python'):
 	subs = dict(twisted_version=twisted_version, python_version=python_version)
 	f = factory.BuildFactory()
 	f.addSteps([
-	Git(repourl='git://github.com/buildbot/buildbot.git', mode="copy"),
+	Git(repourl='git://github.com/buildbot/buildbot.git', mode="copy", retry=GIT_RETRY),
 	FileDownload(mastersrc="virtualenv.py", slavedest="virtualenv.py", flunkOnFailure=True),
 	ShellCommand(usePTY=False, command=textwrap.dedent("""
 		test -z "$PYTHON" && PYTHON=%(python_version)s;
@@ -90,7 +92,7 @@ def mkfactory(twisted_version='twisted', python_version='python'):
 
 coverage_factory = factory.BuildFactory()
 coverage_factory.addSteps([
-	Git(repourl='git://github.com/buildbot/buildbot.git', mode="update"),
+	Git(repourl='git://github.com/buildbot/buildbot.git', mode="update", retry=GIT_RETRY),
 	FileDownload(mastersrc="virtualenv.py", slavedest="virtualenv.py", flunkOnFailure=True),
 	ShellCommand(command=r"find . -name '*.pyc' -exec rm \{} \;"),
 	ShellCommand(usePTY=False, command=textwrap.dedent("""
@@ -127,7 +129,7 @@ coverage_factory.addSteps([
 
 
 docs_factory = factory.BuildFactory()
-docs_factory.addStep(Git(repourl='git://github.com/buildbot/buildbot.git', mode="update"))
+docs_factory.addStep(Git(repourl='git://github.com/buildbot/buildbot.git', mode="update", retry=GIT_RETRY))
 docs_factory.addStep(ShellCommand(command="make VERSION=latest docs", name="create docs"))
 docs_factory.addStep(ShellCommand(command=textwrap.dedent("""\
 		tar -C /home/buildbot/www/buildbot.net/buildbot/docs -zvxf master/docs/docs.tgz latest/ &&
@@ -148,7 +150,7 @@ docs_factory.addStep(ShellCommand(command=textwrap.dedent("""\
 
 from buildbot.steps.python import PyFlakes
 linty_factory = factory.BuildFactory()
-linty_factory.addStep(Git(repourl='git://github.com/buildbot/buildbot.git', mode="update"))
+linty_factory.addStep(Git(repourl='git://github.com/buildbot/buildbot.git', mode="update", retry=GIT_RETRY))
 linty_factory.addStep(PyFlakes(command="/home/buildbot/sandbox/bin/pyflakes master/buildbot", name="pyflakes - master", flunkOnFailure=True))
 linty_factory.addStep(PyFlakes(command="/home/buildbot/sandbox/bin/pyflakes slave/buildslave", name="pyflakes - slave", flunkOnFailure=True))
 
