@@ -147,6 +147,7 @@ docs_factory.addStep(ShellCommand(usePTY=False, command=textwrap.dedent("""
 		PYTHON=$PWD/$SANDBOX/bin/python;
 		PIP=$PWD/$SANDBOX/bin/pip;
 		$PIP install --download-cache=$PWD/.. --editable=master/ --editable=slave/ epydoc || exit 1
+		$PIP install --download-cache=$PWD/.. --editable=master/ --editable=slave/ sphinx || exit 1
 		# this stuff can probably go once sqlalchemy is in place
 		$PYTHON -c 'import json' 2>/dev/null || $PYTHON -c 'import simplejson' ||
 					$PIP install --download-cache=$PWD/.. simplejson || exit 1;
@@ -156,12 +157,18 @@ docs_factory.addStep(ShellCommand(usePTY=False, command=textwrap.dedent("""
 		flunkOnFailure=True,
 		haltOnFailure=True,
 		name="virtualenv setup"))
-docs_factory.addStep(ShellCommand(command="source ../sandbox/bin/activate && make VERSION=latest apidocs", name="create apidocs",
-			flunkOnFailure=True, haltOnFailure=True))
 docs_factory.addStep(ShellCommand(command=textwrap.dedent("""\
 		tar -C /home/buildbot/www/buildbot.net/buildbot/docs/latest -zxf apidocs/reference.tgz &&
 		chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/docs/latest/reference
 		"""), name="api docs to web", flunkOnFailure=True, haltOnFailure=True))
+docs_factory.addStep(ShellCommand(command="source ../sandbox/bin/activate && make VERSION=latest tutorial", name="create tutorial",
+			flunkOnFailure=True, haltOnFailure=True))
+docs_factory.addStep(ShellCommand(command=textwrap.dedent("""\
+		mkdir -p /home/buildbot/www/buildbot.net/buildbot/tutorial &&
+		tar -C master/docs/tutorial/_build/html -cf - . | tar -C /home/buildbot/www/buildbot.net/buildbot/tutorial -xf - &&
+		chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/tutorial &&
+		find /home/buildbot/www/buildbot.net/buildbot/tutorial -name '*.html' | xargs python /home/buildbot/www/buildbot.net/buildbot/add-tracking.py
+		"""), name="tutorial to web", flunkOnFailure=True, haltOnFailure=True))
 docs_factory.addStep(ShellCommand(command=textwrap.dedent("""\
 		cd ~/trac/repos/buildbot.git &&
 		git fetch &&
