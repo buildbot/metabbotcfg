@@ -192,10 +192,6 @@ slaves = [
 		max_builds=1),
 	MySlave('freebsd_7',
 		max_builds=1),
-	MySlave('minimata',
-		run_config=True,
-		py26=True,
-		),
 
 	# (EC2 - kept here as an indication of how to set it up)
 #	MyEC2LatentBuildSlave('ec2slave', 'm1.small',
@@ -207,11 +203,11 @@ slaves = [
 
 # these are slaves that haven't been up and from whose owners I have not heard in a while
 retired_slaves = [
-	# "Jeremy C. Reed" <reed@reedmedia.net> (emailed 2/2/10)
-	MySlave('reed.tx.reedmedia.net'),
-
-	# Tim Hatch <tim@timhatch.com> (emailed 2/3/10)
-	MySlave('automan'),
+    # Dustin Sallings (gets command timeouts while doing virtualenv install)
+	MySlave('minimata',
+		run_config=True,
+		py26=True,
+		),
 ]
 
 def get_slaves(*args, **kwargs):
