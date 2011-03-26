@@ -5,6 +5,7 @@ from buildbot.steps.source import Git
 from buildbot.steps.shell import Compile, Test, ShellCommand
 from buildbot.steps.transfer import FileDownload
 from buildbot.steps.python_twisted import Trial
+from buildbot.steps.python import PyFlakes
 
 from metabbotcfg.slaves import slaves, get_slaves, names
 
@@ -14,253 +15,300 @@ builders = []
 # seconds, 5 times
 GIT_RETRY = (5,5)
 
+class VirtualenvSetup(ShellCommand):
+    def __init__(self, virtualenv_dir='sandbox', virtualenv_python='python',
+                 virtualenv_packages=[], no_site_packages=False, **kwargs):
+        ShellCommand.__init__(self, **kwargs)
+
+        self.virtualenv_dir = virtualenv_dir
+        self.virtualenv_python = virtualenv_python
+        self.virtualenv_packages = virtualenv_packages
+        self.no_site_packages = no_site_packages
+
+        self.addFactoryArguments(
+                virtualenv_dir=virtualenv_dir,
+                virtualenv_python=virtualenv_python,
+                virtualenv_packages=virtualenv_packages,
+                no_site_packages=no_site_packages)
+
+    def start(self):
+        # set up self.command as a very long sh -c invocation
+        command = []
+        command.append("PYTHON='%s'" % self.virtualenv_python)
+        command.append("VE='%s'" % self.virtualenv_dir)
+        command.append("VEPYTHON='%s/bin/python'" % self.virtualenv_dir)
+        # this corresponds to ~/www/buildbot.net/pkgs on the metabuildbot server
+        command.append("PKG_URL='%s'" % 'http://buildbot.net/pkgs')
+        command.append("PYGET='import urllib, sys; urllib.urlretrieve("
+                       "sys.argv[1], filename=sys.argv[2])'")
+        command.append("NSP_ARG='%s'" %
+                ('--no-site-packages' if self.no_site_packages else ''))
+
+        # set up the virtualenv if it does not already exist
+        command.append(textwrap.dedent("""\
+        # first, set up the virtualenv if it hasn't already been done
+        if ! test -f "$VE/bin/pip"; then
+            echo "Setting up virtualenv $VE"
+            mkdir -p "$VE" || exit 1;
+            # get the prerequisites for building a virtualenv with no pypi access 
+            for prereq in virtualenv.py pip-0.8.2.tar.gz; do
+                [ -f "$VE/$prereq" ] && continue
+                echo "Fetching $PKG_URL/$prereq"
+                python -c "$PYGET" "$PKG_URL/$prereq" "$VE/$prereq" || exit 1;
+            done;
+            echo "Invoking virtualenv.py (this accesses pypi)"
+            "$PYTHON" "$VE/virtualenv.py" --distribute --python="$PYTHON" $NSP_ARG "$VE" || exit 1 
+        else
+            echo "Virtualenv already exists"
+        fi
+        """).strip())
+
+        # now install each requested package
+        for pkg in self.virtualenv_packages:
+            command.append(textwrap.dedent("""\
+            echo "Installing %(pkg)s";
+            "$VE/bin/pip" install --no-index --download-cache="$PWD/.." --find-links="$PKG_URL" %(pkg)s || exit 1 
+            """).strip() % dict(pkg=pkg))
+
+        # and finally, straighten out some preferred versions
+        command.append(textwrap.dedent("""\
+        echo "Checking for simplejson or json";
+        "$VEPYTHON" -c 'import json' 2>/dev/null || "$VEPYTHON" -c 'import simplejson' || 
+                    "$VE/bin/pip" install --no-index --download-cache="$PWD/.." --find-links="$PKG_URL" simplejson || exit 1; 
+        echo "Checking for sqlite3, including pysqlite3 on Python 2.5";
+        "$VEPYTHON" -c 'import sqlite3, sys; assert sys.version_info >= (2,6)' 2>/dev/null || 
+                    "$VEPYTHON" -c 'import pysqlite2.dbapi2' ||
+                    "$VE/bin/pip" install --no-index --download-cache="$PWD/.." --find-links="$PKG_URL" pysqlite || exit 1 
+        """).strip())
+
+        self.command = ';\n'.join(command)
+        return ShellCommand.start(self)
+
 # some slaves just do "simple" builds: get the source, run the tests.  These are mostly
 # windows machines where we don't have a lot of flexibility to mess around with virtualenv
 def mksimplefactory(test_master=True):
-	f = factory.BuildFactory()
-	f.addSteps([
-	Git(repourl='git://github.com/buildbot/buildbot.git', mode="copy", retry=GIT_RETRY),
-	# use workdir instead of testpath because setuptools sticks its own eggs (including
-	# the running version of buildbot) into sys.path *before* PYTHONPATH, but includes
-	# "." in sys.path even before the eggs
-	Trial(workdir="build/slave", testpath=".",
-		env={ 'PYTHON_EGG_CACHE' : '../' },
-		tests='buildslave.test',
-		usePTY=False,
-		name='test slave'),
-	])
-	if test_master:
-		f.addStep(
-		Trial(workdir="build/master", testpath=".",
-			env={ 'PYTHON_EGG_CACHE' : '../' },
-			tests='buildbot.test',
-			usePTY=False,
-			name='test master'),
-		)
-	return f
+    f = factory.BuildFactory()
+    f.addSteps([
+    Git(repourl='git://github.com/buildbot/buildbot.git', mode="copy", retry=GIT_RETRY),
+    # use workdir instead of testpath because setuptools sticks its own eggs (including
+    # the running version of buildbot) into sys.path *before* PYTHONPATH, but includes
+    # "." in sys.path even before the eggs
+    Trial(workdir="build/slave", testpath=".",
+        tests='buildslave.test',
+        usePTY=False,
+        name='test slave'),
+    ])
+    if test_master:
+        f.addStep(
+        Trial(workdir="build/master", testpath=".",
+            tests='buildbot.test',
+            usePTY=False,
+            name='test master'),
+        )
+    return f
 
 # much like simple buidlers, but it uses virtualenv
-def mkfactory(twisted_version='twisted', python_version='python'):
-	subs = dict(twisted_version=twisted_version, python_version=python_version)
-	f = factory.BuildFactory()
-	f.addSteps([
-	Git(repourl='git://github.com/buildbot/buildbot.git', mode="copy", retry=GIT_RETRY),
-	FileDownload(mastersrc="virtualenv.py", slavedest="virtualenv.py", flunkOnFailure=True),
-	ShellCommand(usePTY=False, command=textwrap.dedent("""
-		test -z "$PYTHON" && PYTHON=%(python_version)s;
-		SANDBOX=../sandbox-%(python_version)s;
-		$PYTHON virtualenv.py --distribute --no-site-packages $SANDBOX || exit 1;
-		PATH=$PWD/$SANDBOX/bin:/usr/local/bin:$PATH; 
-		PYTHON=$PWD/$SANDBOX/bin/python;
-		PIP=$PWD/$SANDBOX/bin/pip;
-		$PIP install --download-cache=$PWD/.. %(twisted_version)s || exit 1
-		$PIP install --download-cache=$PWD/.. --editable=master/ --editable=slave/ mock || exit 1
-		# and somehow the install_requires in setup.py doesn't always work:
-		$PYTHON -c 'import json' 2>/dev/null || $PYTHON -c 'import simplejson' ||
-					$PIP install --download-cache=$PWD/.. simplejson || exit 1;
-		$PYTHON -c 'import sqlite3, sys; assert sys.version_info >= (2,6)' 2>/dev/null ||
-					$PYTHON -c 'import pysqlite2.dbapi2' ||
-					$PIP install --download-cache=$PWD/.. pysqlite || exit 1;
-	""" % subs),
-		flunkOnFailure=True,
-		haltOnFailure=True,
-		name="virtualenv setup"),
-	ShellCommand(usePTY=False, command=textwrap.dedent("""
-		SANDBOX=../sandbox-%(python_version)s;
-		PATH=$PWD/$SANDBOX/bin:/usr/local/bin:$PATH; 
-		PYTHON=$PWD/$SANDBOX/bin/python;
-		PIP=$PWD/$SANDBOX/bin/pip;
-		$PYTHON -c 'import sys; print "Python:", sys.version; import twisted; print "Twisted:", twisted.version' || exit 1;
-		$PIP freeze
-	""" % subs),
-		description="versions",
-		descriptionDone="versions",
-		name="versions"),
-	# see note above about workdir vs. testpath
-	Trial(workdir="build/slave", testpath='.',
-		tests='buildslave.test',
-		trial="../../sandbox-%(python_version)s/bin/trial" % subs,
-		usePTY=False,
-		name='test slave'),
-	Trial(workdir="build/master", testpath='.',
-		tests='buildbot.test',
-		trial="../../sandbox-%(python_version)s/bin/trial" % subs,
-		usePTY=False,
-		name='test master'),
-	])
-	return f
+def mktestfactory(twisted_version='twisted', python_version='python'):
+    subs = dict(twisted_version=twisted_version, python_version=python_version)
+    ve = subs['ve'] = "../sandbox-%(python_version)s-%(twisted_version)s" % subs
 
-coverage_factory = factory.BuildFactory()
-coverage_factory.addSteps([
-	Git(repourl='git://github.com/buildbot/buildbot.git', mode="update", retry=GIT_RETRY),
-	FileDownload(mastersrc="virtualenv.py", slavedest="virtualenv.py", flunkOnFailure=True),
-	ShellCommand(command=r"find . -name '*.pyc' -exec rm \{} \;"),
-	ShellCommand(usePTY=False, command=textwrap.dedent("""
-		test -z "$PYTHON" && PYTHON=python;
-		$PYTHON virtualenv.py --distribute --no-site-packages ../sandbox || exit 1;
-		SANDBOX=../sandbox;
-		PATH=$PWD/$SANDBOX/bin:/usr/local/bin:$PATH; 
-		PYTHON=$PWD/$SANDBOX/bin/python;
-		PIP=$PWD/$SANDBOX/bin/pip;
-		$PIP install --download-cache=$PWD/.. --editable=master/ --editable=slave/ mock coverage || exit 1
-		# and somehow the install_requires in setup.py doesn't always work:
-		$PYTHON -c 'import json' 2>/dev/null || $PYTHON -c 'import simplejson' ||
-					$PIP install --download-cache=$PWD/.. simplejson || exit 1;
-		$PYTHON -c 'import sqlite3, sys; assert sys.version_info >= (2,6)' 2>/dev/null || $PYTHON -c 'import pysqlite2.dbapi2' ||
-					$PIP install --download-cache=$PWD/.. pysqlite || exit 1;
-	"""),
-		flunkOnFailure=True,
-		haltOnFailure=True,
-		name="virtualenv setup"),
-	ShellCommand(usePTY=False, command=textwrap.dedent("""
-		PYTHON=$PWD/../sandbox/bin/python; PATH=../sandbox/bin:/usr/local/bin:$PATH; 
-		../sandbox/bin/coverage run --rcfile=common/coveragerc \
-			../sandbox/bin/trial buildbot.test buildslave.test \
-			|| exit 1;
-		../sandbox/bin/coverage html -i --rcfile=.coveragerc \
-			-d /home/buildbot/www/buildbot.net/buildbot/coverage \
-			|| exit 1;
-		chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/coverage || exit 1
-	"""),
-		description='coverage',
-		descriptionDone='coverage',
-		name='coverage report'),
-])
+    f = factory.BuildFactory()
+    f.addSteps([
+    Git(repourl='git://github.com/buildbot/buildbot.git', mode="copy", retry=GIT_RETRY),
+    VirtualenvSetup(name='virtualenv setup',
+        no_site_packages=True,
+        virtualenv_python=python_version,
+        virtualenv_packages=[twisted_version, 'mock', '--editable=master', '--editable=slave'],
+        virtualenv_dir=ve,
+        haltOnFailure=True),
+    ShellCommand(usePTY=False, command=textwrap.dedent("""
+        SANDBOX="%(ve)s";
+        PYTHON="$PWD/$SANDBOX/bin/python";
+        PIP="$PWD/$SANDBOX/bin/pip";
+        $PYTHON -c 'import sys; print "Python:", sys.version; import twisted; print "Twisted:", twisted.version' || exit 1;
+        $PIP freeze
+        """ % subs),
+        description="versions",
+        descriptionDone="versions",
+        name="versions"),
+    # see note above about workdir vs. testpath
+    Trial(workdir="build/slave", testpath='.',
+        tests='buildslave.test',
+        trial="../%(ve)s/bin/trial" % subs,
+        usePTY=False,
+        name='test slave'),
+    Trial(workdir="build/master", testpath='.',
+        tests='buildbot.test',
+        trial="../%(ve)s/bin/trial" % subs,
+        usePTY=False,
+        name='test master'),
+    ])
+    return f
 
+def mkcoveragefactory():
+    f = factory.BuildFactory()
+    f.addSteps([
+    Git(repourl='git://github.com/buildbot/buildbot.git', mode="update", retry=GIT_RETRY),
+    ShellCommand(command=r"find . -name '*.pyc' -exec rm \{} \;"),
+    VirtualenvSetup(name='virtualenv setup',
+        no_site_packages=True,
+        virtualenv_packages=['coverage', 'mock', '--editable=master', '--editable=slave'],
+        virtualenv_dir='sandbox',
+        haltOnFailure=True),
+    ShellCommand(usePTY=False, command=textwrap.dedent("""
+        PYTHON=sandbox/bin/python;
+        sandbox/bin/coverage run --rcfile=common/coveragerc \
+            sandbox/bin/trial buildbot.test buildslave.test \
+            || exit 1;
+        sandbox/bin/coverage html -i --rcfile=.coveragerc \
+            -d /home/buildbot/www/buildbot.net/buildbot/coverage \
+            || exit 1;
+        chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/coverage || exit 1
+    """),
+        description='coverage',
+        descriptionDone='coverage',
+        name='coverage report'),
+    ])
+    return f
 
-docs_factory = factory.BuildFactory()
-docs_factory.addStep(Git(repourl='git://github.com/buildbot/buildbot.git', mode="update", retry=GIT_RETRY))
-docs_factory.addStep(FileDownload(mastersrc="virtualenv.py", slavedest="virtualenv.py", flunkOnFailure=True))
-docs_factory.addStep(ShellCommand(command="make VERSION=latest docs", name="create docs"))
-docs_factory.addStep(ShellCommand(command=textwrap.dedent("""\
-		tar -C /home/buildbot/www/buildbot.net/buildbot/docs -zvxf master/docs/docs.tgz latest/ &&
-		chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/docs/latest &&
-		find /home/buildbot/www/buildbot.net/buildbot/docs/latest -name '*.html' | xargs python /home/buildbot/www/buildbot.net/buildbot/add-tracking.py
-		"""), name="docs to web", flunkOnFailure=True, haltOnFailure=True))
-# run epydoc in its own virtualenv, otherwise we end up documenting the version of Buildbot
-# running the metabuildbot!
-docs_factory.addStep(ShellCommand(usePTY=False, command=textwrap.dedent("""
-		test -z "$PYTHON" && PYTHON=python;
-		$PYTHON virtualenv.py --distribute --no-site-packages ../sandbox || exit 1;
-		SANDBOX=../sandbox;
-		PATH=$PWD/$SANDBOX/bin:/usr/local/bin:$PATH; 
-		PYTHON=$PWD/$SANDBOX/bin/python;
-		PIP=$PWD/$SANDBOX/bin/pip;
-		$PIP install --download-cache=$PWD/.. --editable=master/ --editable=slave/ epydoc || exit 1
-		$PIP install --download-cache=$PWD/.. --editable=master/ --editable=slave/ sphinx || exit 1
-		# this stuff can probably go once sqlalchemy is in place
-		$PYTHON -c 'import json' 2>/dev/null || $PYTHON -c 'import simplejson' ||
-					$PIP install --download-cache=$PWD/.. simplejson || exit 1;
-		$PYTHON -c 'import sqlite3, sys; assert sys.version_info >= (2,6)' 2>/dev/null || $PYTHON -c 'import pysqlite2.dbapi2' ||
-					$PIP install --download-cache=$PWD/.. pysqlite || exit 1;
-	"""),
-		flunkOnFailure=True,
-		haltOnFailure=True,
-		name="virtualenv setup"))
-docs_factory.addStep(ShellCommand(command=textwrap.dedent("""\
-		tar -C /home/buildbot/www/buildbot.net/buildbot/docs/latest -zxf apidocs/reference.tgz &&
-		chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/docs/latest/reference
-		"""), name="api docs to web", flunkOnFailure=True, haltOnFailure=True))
-docs_factory.addStep(ShellCommand(command="source ../sandbox/bin/activate && make VERSION=latest tutorial", name="create tutorial",
-			flunkOnFailure=True, haltOnFailure=True))
-docs_factory.addStep(ShellCommand(command=textwrap.dedent("""\
-		mkdir -p /home/buildbot/www/buildbot.net/buildbot/tutorial &&
-		tar -C master/docs/tutorial/_build/html -cf - . | tar -C /home/buildbot/www/buildbot.net/buildbot/tutorial -xf - &&
-		chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/tutorial &&
-		find /home/buildbot/www/buildbot.net/buildbot/tutorial -name '*.html' | xargs python /home/buildbot/www/buildbot.net/buildbot/add-tracking.py
-		"""), name="tutorial to web", flunkOnFailure=True, haltOnFailure=True))
-docs_factory.addStep(ShellCommand(command=textwrap.dedent("""\
-		cd ~/trac/repos/buildbot.git &&
-		git fetch &&
-		~/sandbox/bin/trac-admin ~/trac repository sync Buildbot
-		"""), name="update trac", flunkOnFailure=True, haltOnFailure=True))
+def mkdocsfactory():
+    f = factory.BuildFactory()
+    f.addSteps([
+        Git(repourl='git://github.com/buildbot/buildbot.git', mode="update", retry=GIT_RETRY),
+        FileDownload(mastersrc="virtualenv.py", slavedest="virtualenv.py", flunkOnFailure=True),
 
-from buildbot.steps.python import PyFlakes
-linty_factory = factory.BuildFactory()
-linty_factory.addStep(Git(repourl='git://github.com/buildbot/buildbot.git', mode="update", retry=GIT_RETRY))
-linty_factory.addStep(PyFlakes(command="/home/buildbot/sandbox/bin/pyflakes master/buildbot", name="pyflakes - master", flunkOnFailure=True))
-linty_factory.addStep(PyFlakes(command="/home/buildbot/sandbox/bin/pyflakes slave/buildslave", name="pyflakes - slave", flunkOnFailure=True))
+        # texinfo docs
+        ShellCommand(command="make VERSION=latest docs", name="create docs"),
+        ShellCommand(command=textwrap.dedent("""\
+        tar -C /home/buildbot/www/buildbot.net/buildbot/docs -zvxf master/docs/docs.tgz latest/ &&
+        chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/docs/latest &&
+        find /home/buildbot/www/buildbot.net/buildbot/docs/latest -name '*.html' | xargs python /home/buildbot/www/buildbot.net/buildbot/add-tracking.py
+        """), name="docs to web", flunkOnFailure=True, haltOnFailure=True),
+
+    # run docs tools in their own virtualenv, otherwise we end up documenting
+    # the version of Buildbot running the metabuildbot!
+    VirtualenvSetup(name='virtualenv setup',
+        no_site_packages=True,
+        virtualenv_packages=['sphinx', 'epydoc', '--editable=master', '--editable=slave'],
+        virtualenv_dir='sandbox',
+        haltOnFailure=True),
+
+    # apidocs
+    ShellCommand(command="source sandbox/bin/activate && make VERSION=latest apidocs", name="create apidocs",
+               flunkOnFailure=True, haltOnFailure=True),
+    ShellCommand(command=textwrap.dedent("""\
+        tar -C /home/buildbot/www/buildbot.net/buildbot/docs/latest -zxf apidocs/reference.tgz &&
+        chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/docs/latest/reference
+        """), name="api docs to web", flunkOnFailure=True, haltOnFailure=True),
+
+    # tutorial
+    ShellCommand(command="source sandbox/bin/activate && make VERSION=latest tutorial", name="create tutorial",
+            flunkOnFailure=True, haltOnFailure=True),
+    ShellCommand(command=textwrap.dedent("""\
+        mkdir -p /home/buildbot/www/buildbot.net/buildbot/tutorial &&
+        tar -C master/docs/tutorial/_build/html -cf - . | tar -C /home/buildbot/www/buildbot.net/buildbot/tutorial -xf - &&
+        chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/tutorial &&
+        find /home/buildbot/www/buildbot.net/buildbot/tutorial -name '*.html' | xargs python /home/buildbot/www/buildbot.net/buildbot/add-tracking.py
+        """), name="tutorial to web", flunkOnFailure=True, haltOnFailure=True),
+
+    # notify trac of the new commit
+    ShellCommand(command=textwrap.dedent("""\
+        cd ~/trac/repos/buildbot.git &&
+        git fetch &&
+        ~/sandbox/bin/trac-admin ~/trac repository sync Buildbot
+        """), name="update trac", flunkOnFailure=True, haltOnFailure=True),
+    ])
+    return f
+
+def mklintyfactory():
+    f = factory.BuildFactory()
+    f.addSteps([
+        Git(repourl='git://github.com/buildbot/buildbot.git', mode="update", retry=GIT_RETRY),
+        PyFlakes(command="/home/buildbot/sandbox/bin/pyflakes master/buildbot", name="pyflakes - master", flunkOnFailure=True),
+        PyFlakes(command="/home/buildbot/sandbox/bin/pyflakes slave/buildslave", name="pyflakes - slave", flunkOnFailure=True),
+    ])
+    return f
 
 #### docs, coverage, etc.
 
 builders.append({
-	'name' : 'docs',
-	'slavenames' : names(get_slaves(buildbot_net=True)),
-	'workdir' : 'docs',
-	'factory' : docs_factory,
-	'category' : 'docs' })
+    'name' : 'docs',
+    'slavenames' : names(get_slaves(buildbot_net=True)),
+    'workdir' : 'docs',
+    'factory' : mkdocsfactory(),
+    'category' : 'docs' })
 
 builders.append({
-	'name' : 'coverage',
-	'slavenames' : names(get_slaves(buildbot_net=True)),
-	'workdir' : 'coverage',
-	'factory' : coverage_factory,
-	'category' : 'docs' })
+    'name' : 'coverage',
+    'slavenames' : names(get_slaves(buildbot_net=True)),
+    'workdir' : 'coverage',
+    'factory' : mkcoveragefactory(),
+    'category' : 'docs' })
 
 builders.append({
-	'name' : 'linty',
-	'slavenames' : names(get_slaves(buildbot_net=True)),
-	'workdir' : 'linty',
-	'factory' : linty_factory,
-	'category' : 'docs' })
+    'name' : 'linty',
+    'slavenames' : names(get_slaves(buildbot_net=True)),
+    'workdir' : 'linty',
+    'factory' : mklintyfactory(),
+    'category' : 'docs' })
 
 #### single-slave builders
 
 for sl in get_slaves(run_single=True).values():
-	if sl.use_simple:
-		f = mksimplefactory(test_master=sl.test_master)
-	else:
-		f = mkfactory()
-	builders.append({
-		'name' : 'slave-%s' % sl.slavename,
-		'slavenames' : [ sl.slavename ],
-		'workdir' : 'slave-%s' % sl.slavename,
-		'factory' : f,
-		'category' : 'slave' })
+    if sl.use_simple:
+        f = mksimplefactory(test_master=sl.test_master)
+    else:
+        f = mktestfactory()
+    builders.append({
+        'name' : 'slave-%s' % sl.slavename,
+        'slavenames' : [ sl.slavename ],
+        'workdir' : 'slave-%s' % sl.slavename,
+        'factory' : f,
+        'category' : 'slave' })
 
 #### operating systems
 
 for opsys in set(sl.os for sl in slaves if sl.os is not None):
-	if 'win' in opsys:
-		f = mksimplefactory(test_master=sl.test_master)
-	else:
-		f = mkfactory()
-	builders.append({
-		'name' : 'os-%s' % opsys,
-		'slavenames' : names(get_slaves(os=opsys)),
-		'workdir' : 'os-%s' % opsys,
-		'factory' : f,
-		'category' : 'slave' })
-		
+    if 'win' in opsys:
+        f = mksimplefactory(test_master=sl.test_master)
+    else:
+        f = mktestfactory()
+    builders.append({
+        'name' : 'os-%s' % opsys,
+        'slavenames' : names(get_slaves(os=opsys)),
+        'workdir' : 'os-%s' % opsys,
+        'factory' : f,
+        'category' : 'slave' })
+        
 
 #### config builders
 
 twisted_versions = dict(
-	tw0810='Twisted==8.1.0',
-	tw0820='Twisted==8.2.0',
-	tw0900='Twisted==9.0.0',
-	tw1000='Twisted==10.0.0',
-	tw1010='Twisted==10.1.0',
-	tw1020='Twisted==10.2.0',
+    tw0810='Twisted==8.1.0',
+    tw0820='Twisted==8.2.0',
+    tw0900='Twisted==9.0.0',
+    tw1000='Twisted==10.0.0',
+    tw1010='Twisted==10.1.0',
+    tw1020='Twisted==10.2.0',
 )
 
 python_versions = dict(
-	py24='python2.4',
-	py25='python2.5',
-	py26='python2.6',
-	py27='python2.7',
+    py24='python2.4',
+    py25='python2.5',
+    py26='python2.6',
+    py27='python2.7',
 )
 
 for py, python_version in python_versions.items():
-	config_slaves = names(get_slaves(run_config=True, **{py:True}))
-	if not config_slaves:
-		continue
+    config_slaves = names(get_slaves(run_config=True, **{py:True}))
+    if not config_slaves:
+        continue
 
-	for tw, twisted_version in twisted_versions.items():
-		f = mkfactory(twisted_version=twisted_version, python_version=python_version)
-		name = "%s-%s" % (py, tw)
-		builders.append({
-			'name' : name,
-			'slavenames' : config_slaves,
-			'factory' : f,
-			'category' : 'config' })
+    for tw, twisted_version in twisted_versions.items():
+        f = mktestfactory(twisted_version=twisted_version, python_version=python_version)
+        name = "%s-%s" % (py, tw)
+        builders.append({
+            'name' : name,
+            'slavenames' : config_slaves,
+            'factory' : f,
+            'category' : 'config' })
