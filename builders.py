@@ -1,4 +1,5 @@
 import textwrap
+import itertools
 
 from buildbot.process import factory
 from buildbot.steps.source import Git
@@ -14,6 +15,8 @@ builders = []
 # slaves seem to have a hard time fetching from github, so retry every 5
 # seconds, 5 times
 GIT_RETRY = (5,5)
+
+####### Custom Steps
 
 class VirtualenvSetup(ShellCommand):
     def __init__(self, virtualenv_dir='sandbox', virtualenv_python='python',
@@ -70,6 +73,13 @@ class VirtualenvSetup(ShellCommand):
             "$VE/bin/pip" install --no-index --download-cache="$PWD/.." --find-links="$PKG_URL" %(pkg)s || exit 1 
             """).strip() % dict(pkg=pkg))
 
+        # make $VE/bin/trial work, even if we inherited trial from site-packages
+        command.append(textwrap.dedent("""\
+        if ! test -x "$VE/bin/trial"; then
+            echo "adding $VE/bin/trial";
+            ln -s `which trial` "$VE/bin/trial";
+        fi
+        """).strip())
         # and finally, straighten out some preferred versions
         command.append(textwrap.dedent("""\
         echo "Checking for simplejson or json";
@@ -83,6 +93,20 @@ class VirtualenvSetup(ShellCommand):
 
         self.command = ';\n'.join(command)
         return ShellCommand.start(self)
+
+class DatabaseTrial(Trial):
+    def __init__(self, db, **kwargs):
+        Trial.__init__(self, **kwargs)
+        self.db = db
+        self.addFactoryArguments(db=db)
+
+    def setupEnvironment(self, cmd):
+        Trial.setupEnvironment(self, cmd)
+        # get the appropriate database configuration from the slave
+        extra_env = self.buildslave.databases[self.db]
+        cmd.args['env'].update(extra_env)
+
+######## BuildFactory Factories
 
 # some slaves just do "simple" builds: get the source, run the tests.  These are mostly
 # windows machines where we don't have a lot of flexibility to mess around with virtualenv
@@ -108,7 +132,8 @@ def mksimplefactory(test_master=True):
     return f
 
 # much like simple buidlers, but it uses virtualenv
-def mktestfactory(twisted_version='twisted', python_version='python'):
+def mktestfactory(twisted_version='twisted', python_version='python',
+                extra_packages=[], db=None):
     subs = dict(twisted_version=twisted_version, python_version=python_version)
     ve = subs['ve'] = "../sandbox-%(python_version)s-%(twisted_version)s" % subs
 
@@ -118,7 +143,8 @@ def mktestfactory(twisted_version='twisted', python_version='python'):
     VirtualenvSetup(name='virtualenv setup',
         no_site_packages=True,
         virtualenv_python=python_version,
-        virtualenv_packages=[twisted_version, 'mock', '--editable=master', '--editable=slave'],
+        virtualenv_packages=[twisted_version, 'mock', '--editable=master', '--editable=slave']
+                          + extra_packages,
         virtualenv_dir=ve,
         haltOnFailure=True),
     ShellCommand(usePTY=False, command=textwrap.dedent("""
@@ -131,13 +157,25 @@ def mktestfactory(twisted_version='twisted', python_version='python'):
         description="versions",
         descriptionDone="versions",
         name="versions"),
+    ])
     # see note above about workdir vs. testpath
+    if not db:
+        f.addSteps([
     Trial(workdir="build/slave", testpath='.',
         tests='buildslave.test',
         trial="../%(ve)s/bin/trial" % subs,
         usePTY=False,
         name='test slave'),
     Trial(workdir="build/master", testpath='.',
+        tests='buildbot.test',
+        trial="../%(ve)s/bin/trial" % subs,
+        usePTY=False,
+        name='test master'),
+    ])
+    else:
+        f.addSteps([
+    DatabaseTrial(workdir="build/master", testpath='.',
+        db=db,
         tests='buildbot.test',
         trial="../%(ve)s/bin/trial" % subs,
         usePTY=False,
@@ -278,7 +316,22 @@ for opsys in set(sl.os for sl in slaves if sl.os is not None):
         'slavenames' : names(get_slaves(os=opsys)),
         'workdir' : 'os-%s' % opsys,
         'factory' : f,
-        'category' : 'slave' })
+        'category' : 'os' })
+        
+#### databases
+
+database_packages = {
+    'postgres' : [ 'pg8000' ],
+}
+
+for db in set(itertools.chain.from_iterable(sl.databases.keys() for sl in slaves)):
+    f = mktestfactory(extra_packages=database_packages[db], db=db)
+    builders.append({
+        'name' : 'db-%s' % db,
+        'slavenames' : names(get_slaves(db=db)),
+        'workdir' : 'db-%s' % db,
+        'factory' : f,
+        'category' : 'db' })
         
 
 #### config builders
