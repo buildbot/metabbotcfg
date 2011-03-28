@@ -322,6 +322,7 @@ for opsys in set(sl.os for sl in slaves if sl.os is not None):
 
 database_packages = {
     'postgres' : [ 'pg8000' ],
+    'mysql' : [ 'mysql-python' ],
 }
 
 for db in set(itertools.chain.from_iterable(sl.databases.keys() for sl in slaves)):

@@ -90,6 +90,8 @@ slaves = [
         databases={
             'postgres' : dict(BUILDBOT_TEST_DB_URL=
                 'postgresql+pg8000://metabuildslave@localhost/metabuildslave'),
+            'mysql' : dict(BUILDBOT_TEST_DB_URL=
+                'mysql+mysqldb://metabuildslave@localhost/metabuildslave'),
         },
         ),
 
