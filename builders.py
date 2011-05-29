@@ -133,9 +133,12 @@ def mksimplefactory(test_master=True):
 
 # much like simple buidlers, but it uses virtualenv
 def mktestfactory(twisted_version='twisted', python_version='python',
-                extra_packages=[], db=None):
+                sqlalchemy_version='sqlalchemy', extra_packages=[], db=None):
     subs = dict(twisted_version=twisted_version, python_version=python_version)
-    ve = subs['ve'] = "../sandbox-%(python_version)s-%(twisted_version)s" % subs
+    ve = "../sandbox-%(python_version)s-%(twisted_version)s" % subs
+    if sqlalchemy_version != 'sqlalchemy':
+        ve += '-' + sqlalchemy_version
+    subs['ve'] = ve
 
     f = factory.BuildFactory()
     f.addSteps([
@@ -143,7 +146,8 @@ def mktestfactory(twisted_version='twisted', python_version='python',
     VirtualenvSetup(name='virtualenv setup',
         no_site_packages=True,
         virtualenv_python=python_version,
-        virtualenv_packages=[twisted_version, 'mock', '--editable=master', '--editable=slave']
+        virtualenv_packages=[twisted_version, sqlalchemy_version, 'mock',
+                             '--editable=master', '--editable=slave']
                           + extra_packages,
         virtualenv_dir=ve,
         haltOnFailure=True),
@@ -365,3 +369,18 @@ for py, python_version in python_versions.items():
             'slavenames' : config_slaves,
             'factory' : f,
             'category' : 'config' })
+
+sqlalchemy_versions = dict(
+    sa060='sqlalchemy==0.6.0',
+    sa066='sqlalchemy==0.6.6',
+    sa070='sqlalchemy==0.7.0',
+)
+
+for sa, sqlalchemy_version in sqlalchemy_versions.items():
+    f = mktestfactory(sqlalchemy_version=sqlalchemy_version, python_version='python2.7')
+    name = "py27-%s" % (sa,)
+    builders.append({
+        'name' : name,
+        'slavenames' : config_slaves,
+        'factory' : f,
+        'category' : 'config' })
