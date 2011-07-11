@@ -146,9 +146,9 @@ def mktestfactory(twisted_version='twisted', python_version='python',
     VirtualenvSetup(name='virtualenv setup',
         no_site_packages=True,
         virtualenv_python=python_version,
-        virtualenv_packages=[twisted_version, sqlalchemy_version, 'mock',
-                             '--editable=master', '--editable=slave']
-                          + extra_packages,
+        virtualenv_packages=[twisted_version, sqlalchemy_version,
+            'sqlalchemy-migrate==0.7.1', 'mock', '--editable=master', '--editable=slave']
+            + extra_packages,
         virtualenv_dir=ve,
         haltOnFailure=True),
     ShellCommand(usePTY=False, command=textwrap.dedent("""
