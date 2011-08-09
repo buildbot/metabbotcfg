@@ -222,14 +222,6 @@ def mkdocsfactory():
         Git(repourl='git://github.com/buildbot/buildbot.git', mode="update", retry=GIT_RETRY),
         FileDownload(mastersrc="virtualenv.py", slavedest="virtualenv.py", flunkOnFailure=True),
 
-        # texinfo docs
-        ShellCommand(command="make VERSION=latest docs", name="create docs"),
-        ShellCommand(command=textwrap.dedent("""\
-        tar -C /home/buildbot/www/buildbot.net/buildbot/docs -zvxf master/docs/docs.tgz latest/ &&
-        chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/docs/latest &&
-        find /home/buildbot/www/buildbot.net/buildbot/docs/latest -name '*.html' | xargs python /home/buildbot/www/buildbot.net/buildbot/add-tracking.py
-        """), name="docs to web", flunkOnFailure=True, haltOnFailure=True),
-
     # run docs tools in their own virtualenv, otherwise we end up documenting
     # the version of Buildbot running the metabuildbot!
     VirtualenvSetup(name='virtualenv setup',
@@ -245,6 +237,14 @@ def mkdocsfactory():
         tar -C /home/buildbot/www/buildbot.net/buildbot/docs/latest -zxf apidocs/reference.tgz &&
         chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/docs/latest/reference
         """), name="api docs to web", flunkOnFailure=True, haltOnFailure=True),
+
+    # manual
+    ShellCommand(command="source sandbox/bin/activate && make VERSION=latest docs", name="create docs"),
+    ShellCommand(command=textwrap.dedent("""\
+        tar -C /home/buildbot/www/buildbot.net/buildbot/docs -zvxf master/docs/docs.tgz latest/ &&
+        chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/docs/latest &&
+        find /home/buildbot/www/buildbot.net/buildbot/docs/latest -name '*.html' | xargs python /home/buildbot/www/buildbot.net/buildbot/add-tracking.py
+        """), name="docs to web", flunkOnFailure=True, haltOnFailure=True),
 
     # tutorial
     ShellCommand(command="source sandbox/bin/activate && make VERSION=latest tutorial", name="create tutorial",
