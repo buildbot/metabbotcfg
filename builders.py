@@ -246,16 +246,6 @@ def mkdocsfactory():
         find /home/buildbot/www/buildbot.net/buildbot/docs/latest -name '*.html' | xargs python /home/buildbot/www/buildbot.net/buildbot/add-tracking.py
         """), name="docs to web", flunkOnFailure=True, haltOnFailure=True),
 
-    # tutorial
-    ShellCommand(command="source sandbox/bin/activate && make VERSION=latest tutorial", name="create tutorial",
-            flunkOnFailure=True, haltOnFailure=True),
-    ShellCommand(command=textwrap.dedent("""\
-        mkdir -p /home/buildbot/www/buildbot.net/buildbot/tutorial &&
-        tar -C master/docs/tutorial/_build/html -cf - . | tar -C /home/buildbot/www/buildbot.net/buildbot/tutorial -xf - &&
-        chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/tutorial &&
-        find /home/buildbot/www/buildbot.net/buildbot/tutorial -name '*.html' | xargs python /home/buildbot/www/buildbot.net/buildbot/add-tracking.py
-        """), name="tutorial to web", flunkOnFailure=True, haltOnFailure=True),
-
     # notify trac of the new commit
     ShellCommand(command=textwrap.dedent("""\
         cd ~/trac/repos/buildbot.git &&
