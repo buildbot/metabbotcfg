@@ -150,19 +150,7 @@ slaves = [
         os='leopard',
         ),
 
-# https://bugzilla.mozilla.org/show_bug.cgi?id=631966
-#    MySlave('cm-bbot-leopard-002',
-#        max_builds=3,
-#        run_single=False,
-#        run_config=True,
-#        py24=True,
-#        py25=True,
-#        py26=True,
-#        py27=True,
-#        os='leopard',
-#        ),
-
-    MySlave('cm-bbot-leopard-003',
+    MySlave('cm-bbot-leopard-002',
         max_builds=3,
         run_single=False,
         run_config=True,
