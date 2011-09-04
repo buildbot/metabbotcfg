@@ -72,6 +72,7 @@ slaves = [
         buildbot_net=True,
         run_config=False,
         run_single=False,
+        max_builds=1,
         ),
 
     # Steve 'Ashcrow' Milner
