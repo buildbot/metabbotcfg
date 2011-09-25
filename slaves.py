@@ -99,14 +99,15 @@ slaves = [
     # maruel
     MySlave('xp-msysgit',
         max_builds=1,
+        os='winxp',
         use_simple=True,
-        test_master=False, # master doesn't work on cygwin
         ),
 
     MySlave('win7-cygwin',
         max_builds=1,
         run_single=False,
         os='win7',
+        test_master=False, # master doesn't work on cygwin
         ),
 
     # Mozilla
