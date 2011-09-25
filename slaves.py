@@ -97,13 +97,13 @@ slaves = [
         ),
 
     # maruel
-    MySlave('xp-cygwin-1.7',
+    MySlave('xp-msysgit',
         max_builds=1,
         use_simple=True,
         test_master=False, # master doesn't work on cygwin
         ),
 
-    MySlave('win7-py26',
+    MySlave('win7-cygwin',
         max_builds=1,
         run_single=False,
         os='win7',
