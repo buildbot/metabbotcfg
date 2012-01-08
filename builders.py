@@ -365,8 +365,9 @@ for py, python_version in python_versions.items():
 
 sqlalchemy_versions = dict(
     sa060='sqlalchemy==0.6.0',
-    sa066='sqlalchemy==0.6.6',
+    sa068='sqlalchemy==0.6.8',
     sa070='sqlalchemy==0.7.0',
+    sa074='sqlalchemy==0.7.4',
 )
 
 for sa, sqlalchemy_version in sqlalchemy_versions.items():
@@ -379,7 +380,6 @@ for sa, sqlalchemy_version in sqlalchemy_versions.items():
         'category' : 'config' })
 
 sqlalchemy_migrate_versions = dict(
-    sam060='sqlalchemy-migrate==0.6.0',
     sam061='sqlalchemy-migrate==0.6.1',
     #sam070='sqlalchemy-migrate==0.7.0', -- not on pypi..
     sam071='sqlalchemy-migrate==0.7.1',
