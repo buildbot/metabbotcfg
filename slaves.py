@@ -110,6 +110,13 @@ slaves = [
         test_master=False, # master doesn't work on cygwin
         ),
 
+    # tomprince
+    MySlave('tomprince-socrates-winxp-1',
+        max_builds=1,
+        os='winxp',
+        use_simple=True,
+        ),
+
     # Mozilla
     MySlave('cm-bbot-linux-001',
         max_builds=3,
