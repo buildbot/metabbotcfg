@@ -170,27 +170,6 @@ slaves = [
         os='leopard',
         ),
 
-    # 63.245.210.52
-    MySlave('cm-bbot-xp-001',
-        max_builds=1,
-        run_single=False,
-        os='winxp',
-        ),
-
-    # 63.245.210.53
-    MySlave('cm-bbot-xp-002',
-        max_builds=1,
-        run_single=False,
-        os='winxp',
-        ),
-
-    # 63.245.210.54
-    MySlave('cm-bbot-xp-003',
-        max_builds=1,
-        run_single=False,
-        os='winxp',
-        ),
-
     # Dustin Sallings
     MySlave('ubuntu810-64',
         max_builds=1),
