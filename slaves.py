@@ -24,6 +24,8 @@ class MySlaveBase(object):
     py25 = False
     py26 = False
     py27 = False
+    pypy17 = False
+    pypy18 = False
 
     # dictionary mapping databases to the env vars required to make them go
     databases = {}
@@ -115,6 +117,12 @@ slaves = [
         max_builds=1,
         os='winxp',
         use_simple=True,
+        ),
+    MySlaves('tomprince-hermes-gentoo-1',
+        run_config=1,
+        max_builds=1,
+        pypy17=True,
+        pypy18=True
         ),
 
     # Mozilla
