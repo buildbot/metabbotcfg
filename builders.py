@@ -269,21 +269,18 @@ def mklintyfactory():
 builders.append({
     'name' : 'docs',
     'slavenames' : names(get_slaves(buildbot_net=True)),
-    'workdir' : 'docs',
     'factory' : mkdocsfactory(),
     'category' : 'docs' })
 
 builders.append({
     'name' : 'coverage',
     'slavenames' : names(get_slaves(buildbot_net=True)),
-    'workdir' : 'coverage',
     'factory' : mkcoveragefactory(),
     'category' : 'docs' })
 
 builders.append({
     'name' : 'linty',
     'slavenames' : names(get_slaves(buildbot_net=True)),
-    'workdir' : 'linty',
     'factory' : mklintyfactory(),
     'category' : 'docs' })
 
@@ -297,7 +294,6 @@ for sl in get_slaves(run_single=True).values():
     builders.append({
         'name' : 'slave-%s' % sl.slavename,
         'slavenames' : [ sl.slavename ],
-        'workdir' : 'slave-%s' % sl.slavename,
         'factory' : f,
         'category' : 'slave' })
 
@@ -311,7 +307,6 @@ for opsys in set(sl.os for sl in slaves if sl.os is not None):
     builders.append({
         'name' : 'os-%s' % opsys,
         'slavenames' : names(get_slaves(os=opsys)),
-        'workdir' : 'os-%s' % opsys,
         'factory' : f,
         'category' : 'os' })
         
@@ -327,7 +322,6 @@ for db in set(itertools.chain.from_iterable(sl.databases.keys() for sl in slaves
     builders.append({
         'name' : 'db-%s' % db,
         'slavenames' : names(get_slaves(db=db)),
-        'workdir' : 'db-%s' % db,
         'factory' : f,
         'category' : 'db' })
         
@@ -385,6 +379,7 @@ sqlalchemy_migrate_versions = dict(
     sam061='sqlalchemy-migrate==0.6.1',
     #sam070='sqlalchemy-migrate==0.7.0', -- not on pypi..
     sam071='sqlalchemy-migrate==0.7.1',
+    sam072='sqlalchemy-migrate==0.7.2',
 )
 
 for sa, sqlalchemy_migrate_version in sqlalchemy_migrate_versions.items():
