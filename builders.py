@@ -347,6 +347,8 @@ python_versions = dict(
     py25='python2.5',
     py26='python2.6',
     py27='python2.7',
+    pypy17='pypy1.7',
+    pypy18='pypy1.8',
 )
 
 for py, python_version in python_versions.items():
