@@ -118,7 +118,7 @@ slaves = [
         os='winxp',
         use_simple=True,
         ),
-    MySlaves('tomprince-hermes-gentoo-1',
+    MySlave('tomprince-hermes-gentoo-1',
         run_config=1,
         max_builds=1,
         pypy17=True,
