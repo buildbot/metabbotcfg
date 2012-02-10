@@ -359,7 +359,7 @@ for py, python_version in python_versions.items():
             'factory' : f,
             'category' : 'config' })
 
-config_slaves = names(get_slaves(run_config=True, py27=True)
+config_slaves = names(get_slaves(run_config=True, py27=True))
 
 sqlalchemy_versions = dict(
     sa060='sqlalchemy==0.6.0',
