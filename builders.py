@@ -342,8 +342,6 @@ python_versions = dict(
     py25='python2.5',
     py26='python2.6',
     py27='python2.7',
-    pypy17='pypy1.7',
-    pypy18='pypy1.8',
 )
 
 for py, python_version in python_versions.items():
@@ -352,6 +350,29 @@ for py, python_version in python_versions.items():
         continue
 
     for tw, twisted_version in twisted_versions.items():
+        f = mktestfactory(twisted_version=twisted_version, python_version=python_version)
+        name = "%s-%s" % (py, tw)
+        builders.append({
+            'name' : name,
+            'slavenames' : config_slaves,
+            'factory' : f,
+            'category' : 'config' })
+
+pypy_versions = dict(
+    pypy17='pypy1.7',
+    pypy18='pypy1.8',
+)
+
+twisted_pypy_versions = dict(
+    tw1110='Twisted==11.1.0',
+)
+
+for py, python_version in pypy_versions.items():
+    config_slaves = names(get_slaves(run_config=True, **{py:True}))
+    if not config_slaves:
+        continue
+
+    for tw, twisted_version in twisted_pypy_versions.items():
         f = mktestfactory(twisted_version=twisted_version, python_version=python_version)
         name = "%s-%s" % (py, tw)
         builders.append({
