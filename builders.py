@@ -334,6 +334,7 @@ twisted_versions = dict(
     tw0900='Twisted==9.0.0',
     tw1020='Twisted==10.2.0',
     tw1100='Twisted==11.0.0',
+    tw1110='Twisted==11.1.0',
 )
 
 python_versions = dict(
