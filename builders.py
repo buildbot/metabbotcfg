@@ -340,9 +340,9 @@ python_versions = dict(
     py24='python2.4',
     py25='python2.5',
     py26='python2.6',
+    py27='python2.7',
     pypy17='pypy1.7',
     pypy18='pypy1.8',
-    py27='python2.7', ## This is last, so that sqlalchemy tests uses this version of python
 )
 
 for py, python_version in python_versions.items():
@@ -358,6 +358,8 @@ for py, python_version in python_versions.items():
             'slavenames' : config_slaves,
             'factory' : f,
             'category' : 'config' })
+
+config_slaves = names(get_slaves(run_config=True, py27=True)
 
 sqlalchemy_versions = dict(
     sa060='sqlalchemy==0.6.0',
