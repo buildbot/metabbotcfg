@@ -119,10 +119,11 @@ slaves = [
         use_simple=True,
         ),
     MySlave('tomprince-hermes-gentoo-1',
-        run_config=1,
         max_builds=1,
+        run_single=False,
+        run_config=True,
         pypy17=True,
-        pypy18=True
+        pypy18=True,
         ),
 
     # Mozilla
