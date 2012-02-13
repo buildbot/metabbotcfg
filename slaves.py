@@ -148,7 +148,7 @@ slaves = [
         ),
 
     MySlave('cm-bbot-linux-003',
-        max_builds=3,
+        max_builds=1,
         run_single=False,
         run_config=True,
         py24=True,
