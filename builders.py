@@ -329,8 +329,6 @@ for db in set(itertools.chain.from_iterable(sl.databases.keys() for sl in slaves
 #### config builders
 
 twisted_versions = dict(
-    tw0810='Twisted==8.1.0',
-    tw0820='Twisted==8.2.0',
     tw0900='Twisted==9.0.0',
     tw1020='Twisted==10.2.0',
     tw1100='Twisted==11.0.0',
@@ -339,7 +337,6 @@ twisted_versions = dict(
 )
 
 python_versions = dict(
-    py24='python2.4',
     py25='python2.5',
     py26='python2.6',
     py27='python2.7',
