@@ -83,7 +83,7 @@ slaves = [
 
      # Dustin Mitchell
     MySlave('knuth.r.igoro.us',
-        max_builds=2,
+        max_builds=4,
         run_single=False,
         run_config=True,
         py24=True,
@@ -127,36 +127,6 @@ slaves = [
         ),
 
     # Mozilla
-    MySlave('cm-bbot-linux-001',
-        max_builds=3,
-        run_single=False,
-        run_config=True,
-        py24=True,
-        py25=True,
-        py26=True,
-        py27=True,
-        ),
-
-    MySlave('cm-bbot-linux-002',
-        max_builds=3,
-        run_single=False,
-        run_config=True,
-        py24=True,
-        py25=True,
-        py26=True,
-        py27=True,
-        ),
-
-    MySlave('cm-bbot-linux-003',
-        max_builds=1,
-        run_single=False,
-        run_config=True,
-        py24=True,
-        py25=True,
-        py26=True,
-        py27=True,
-        ),
-
     MySlave('cm-bbot-leopard-001',
         max_builds=3,
         run_single=False,
@@ -177,6 +147,16 @@ slaves = [
         py26=True,
         py27=True,
         os='leopard',
+        ),
+
+    MySlave('blelbach-4',
+        max_builds=3,
+        run_single=False,
+        run_config=True,
+        py25=True,
+        py26=True,
+        py27=True,
+        os='osx-lion',
         ),
 
     # Dustin Sallings
