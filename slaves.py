@@ -149,7 +149,7 @@ slaves = [
         os='leopard',
         ),
 
-    MySlave('blelbach-4',
+    MySlave('valkyrie',  # ssh buildbot@buildbot-project.cct.lsu.edu
         max_builds=3,
         run_single=False,
         run_config=True,
