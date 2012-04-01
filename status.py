@@ -19,7 +19,7 @@ status.append(html.WebStatus(
 		))
 
 from buildbot.status import words
-status.append(words.IRC(host="irc.freenode.net", nick="metabbot",
+status.append(words.IRC(host="irc.freenode.net", nick="bb-meta",
 				notify_events={
 					'successToFailure' : 1,
 					'failureToSuccess' : 1,
