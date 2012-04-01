@@ -126,29 +126,7 @@ slaves = [
         pypy18=True,
         ),
 
-    # Mozilla
-    MySlave('cm-bbot-leopard-001',
-        max_builds=3,
-        run_single=False,
-        run_config=True,
-        py24=True,
-        py25=True,
-        py26=True,
-        py27=True,
-        os='leopard',
-        ),
-
-    MySlave('cm-bbot-leopard-002',
-        max_builds=3,
-        run_single=False,
-        run_config=True,
-        py24=True,
-        py25=True,
-        py26=True,
-        py27=True,
-        os='leopard',
-        ),
-
+    # LSU
     MySlave('valkyrie',  # ssh buildbot@buildbot-project.cct.lsu.edu
         max_builds=3,
         run_single=False,
