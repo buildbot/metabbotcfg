@@ -98,24 +98,33 @@ slaves = [
         },
         ),
 
+    MySlave('w7.kvm.r.igoro.us',
+        max_builds=1,
+        run_single=False,
+        os='win7-msys',
+        use_simple=True,
+        ),
+
     # maruel
     MySlave('xp-msysgit',
         max_builds=1,
-        os='winxp',
+        run_single=False,
+        os='winxp-msys',
         use_simple=True,
         ),
 
     MySlave('win7-cygwin',
         max_builds=1,
         run_single=False,
-        os='win7',
+        os='win7-cygwin',
         test_master=False, # master doesn't work on cygwin
         ),
 
     # tomprince
     MySlave('tomprince-socrates-winxp-1',
         max_builds=1,
-        os='winxp',
+        run_single=False,
+        os='winxp-msys',
         use_simple=True,
         ),
     MySlave('tomprince-hermes-gentoo-1',
