@@ -157,6 +157,7 @@ slaves = [
 #        keypair_name='buildbot-setup',
 #        security_name='buildslaves',
 #        ),
+    MySlave("debian", run_single=False, run_config=False, max_builds=4)
 ]
 
 # these are slaves that haven't been up and from whose owners I have not heard in a while
