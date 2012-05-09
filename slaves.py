@@ -98,6 +98,23 @@ slaves = [
         },
         ),
 
+    # Mozilla
+    MySlave('buildbot-linux4', # buildbot-linux4.community.scl3.mozilla.com
+        max_builds=4,
+        run_single=False,
+        run_config=True,
+        py24=False,
+        py25=True, # hand-compiled in /usr/local
+        py26=True,
+        py27=True, # hand-compiled in /usr/local
+        databases={
+            'postgres' : dict(BUILDBOT_TEST_DB_URL=
+                'postgresql+pg8000://metabuildslave@localhost/metabuildslave'),
+            'mysql' : dict(BUILDBOT_TEST_DB_URL=
+                'mysql+mysqldb://metabuildslave@localhost/metabuildslave'),
+        },
+        ),
+
     # maruel
     MySlave('xp-msysgit',
         max_builds=1,
