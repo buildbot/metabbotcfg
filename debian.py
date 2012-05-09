@@ -105,22 +105,24 @@ deb_factory = BuildFactory([
     build_deb_package
     ])
 
-from buildbot.config import BuilderConfig
-
 builders = []
-builders.append(
-    BuilderConfig(name="tarball-master", 
-        slavenames=["metaslave"],
-        factory=tarball_factory))
-builders.append(
-    BuilderConfig(name="tarball-slave", 
-        slavenames=["metaslave"],
-        factory=tarball_factory))
-builders.append(
-    BuilderConfig(name="deb-master", 
-        slavenames=["metaslave"],
-        factory=deb_factory))
-builders.append(
-    BuilderConfig(name="deb-slave", 
-        slavenames=["metaslave"],
-        factory=deb_factory))
+builders.append(dict(
+        name="tarball-master", 
+        slavenames=["buildbot.net"],
+        factory=tarball_factory,
+        category='debian'))
+builders.append(dict(
+        name="tarball-slave", 
+        slavenames=["buildbot.net"],
+        factory=tarball_factory,
+        category='debian'))
+builders.append(dict(
+        name="deb-master", 
+        slavenames=["buildbot.net"],
+        factory=deb_factory,
+        category='debian'))
+builders.append(dict(
+        name="deb-slave", 
+        slavenames=["buildbot.net"],
+        factory=deb_factory,
+        category='debian'))
