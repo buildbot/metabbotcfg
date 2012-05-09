@@ -118,11 +118,11 @@ builders.append(dict(
         category='debian'))
 builders.append(dict(
         name="deb-master", 
-        slavenames=["buildbot.net"],
+        slavenames=["debian"],
         factory=deb_factory,
         category='debian'))
 builders.append(dict(
         name="deb-slave", 
-        slavenames=["buildbot.net"],
+        slavenames=["debian"],
         factory=deb_factory,
         category='debian'))
