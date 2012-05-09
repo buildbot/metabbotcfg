@@ -8,6 +8,8 @@ from buildbot.schedulers.trysched import Try_Userpass
 from metabbotcfg.slaves import slaves
 from metabbotcfg import builders
 
+from metabbotcfg.debian import schedulers as deb_schedulers
+
 schedulers.append(Scheduler(name="all", branch='master',
                                  treeStableTimer=10,
                                  builderNames=[ b['name'] for b in builders.builders ]))
@@ -17,3 +19,5 @@ schedulers.append(ForceScheduler(name="force",
     project=FixedParameter(name="project", default=""),
     properties=[],
     builderNames=[ b['name'] for b in builders.builders ]))
+
+schedulers += deb_schedulers
