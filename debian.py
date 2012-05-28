@@ -9,14 +9,14 @@ from buildbot.scheduler import Scheduler
 from buildbot.schedulers.triggerable import Triggerable
 
 masterTarballScheduler = Scheduler(name="tarball-master", branch="master",
-                                 treeStableTimer=None,
+                                 treeStableTimer=10,
                                  properties={"component":"master"},
                                  builderNames=["tarball-master"])
 masterDebScheduler = Triggerable(name="deb-master",
                                  properties={"debian-repo":debian_buildbot_git_repo},
                                  builderNames=["deb-master"])
 slaveTarballScheduler = Scheduler(name="tarball-slave", branch="master",
-                                 treeStableTimer=None,
+                                 treeStableTimer=10,
                                  properties={"component":"slave"},
                                  builderNames=["tarball-slave"])
 slaveDebScheduler = Triggerable(name="deb-slave",
