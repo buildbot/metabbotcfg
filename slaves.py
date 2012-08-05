@@ -131,6 +131,40 @@ slaves = [
         # note that use_simple is implicit
         ),
 
+    # LSU
+    MySlave('valkyrie',  # ssh buildbot@buildbot-project.cct.lsu.edu
+        max_builds=3,
+        run_single=False,
+        run_config=True,
+        py25=True,
+        py26=True,
+        py27=True,
+        os='osx-lion',
+        ),
+
+    # (EC2 - kept here as an indication of how to set it up)
+#    MyEC2LatentBuildSlave('ec2slave', 'm1.small',
+#        ami='ami-5a749c33',
+#        keypair_name='buildbot-setup',
+#        security_name='buildslaves',
+#        ),
+    MySlave("debian", run_single=False, run_config=False, max_builds=4)
+]
+
+# these are slaves that haven't been up and from whose owners I have not heard in a while
+retired_slaves = [
+    # Dustin Sallings
+    MySlave('ubuntu810-64',
+        max_builds=1),
+    MySlave('minime',
+        max_builds=1),
+    MySlave('freebsd_7',
+        max_builds=1),
+    # (gets command timeouts while doing virtualenv install)
+    MySlave('minimata',
+        ),
+
+
     # tomprince
     MySlave('tomprince-socrates-winxp-1',
         max_builds=1,
@@ -145,40 +179,6 @@ slaves = [
         pypy17=True,
         pypy18=True,
         ),
-
-    # LSU
-    MySlave('valkyrie',  # ssh buildbot@buildbot-project.cct.lsu.edu
-        max_builds=3,
-        run_single=False,
-        run_config=True,
-        py25=True,
-        py26=True,
-        py27=True,
-        os='osx-lion',
-        ),
-
-    # Dustin Sallings
-    MySlave('ubuntu810-64',
-        max_builds=1),
-    MySlave('minime',
-        max_builds=1),
-    MySlave('freebsd_7',
-        max_builds=1),
-    # (gets command timeouts while doing virtualenv install)
-    MySlave('minimata',
-        ),
-
-    # (EC2 - kept here as an indication of how to set it up)
-#    MyEC2LatentBuildSlave('ec2slave', 'm1.small',
-#        ami='ami-5a749c33',
-#        keypair_name='buildbot-setup',
-#        security_name='buildslaves',
-#        ),
-    MySlave("debian", run_single=False, run_config=False, max_builds=4)
-]
-
-# these are slaves that haven't been up and from whose owners I have not heard in a while
-retired_slaves = [
 ]
 
 def get_slaves(db=None, *args, **kwargs):

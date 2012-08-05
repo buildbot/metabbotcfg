@@ -7,6 +7,7 @@ from buildbot.status.web.auth import BasicAuth
 users = [ ('dev', 'bbot!')] # it's not *that* secret..
 authz = Authz(auth=BasicAuth(users),
 	forceBuild='auth',
+    forceAllBuilds='auth',
 )
 status.append(html.WebStatus(
 		http_port=8010,
@@ -24,4 +25,4 @@ status.append(words.IRC(host="irc.freenode.net", nick="bb-meta",
 					'successToFailure' : 1,
 					'failureToSuccess' : 1,
 				},
-                              channels=["#buildbot"]))
+                channels=["#buildbot"]))
