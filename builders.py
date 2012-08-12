@@ -11,6 +11,8 @@ from buildbot.steps.python import PyFlakes
 from metabbotcfg.slaves import slaves, get_slaves, names
 
 builders = []
+master_builders = []
+nine_builders = []
 
 # slaves seem to have a hard time fetching from github, so retry every 5
 # seconds, 5 times
@@ -264,6 +266,58 @@ def mklintyfactory():
     ])
     return f
 
+# this builder is pretty specific to the configuration on the RHEL slave it uses.
+def mkghostfactory():
+    ve = "../sandbox-ghost"
+    subs = {}
+    subs['ve'] = ve
+
+    f = factory.BuildFactory()
+    f.addSteps([
+    Git(repourl='git://github.com/buildbot/buildbot.git', mode="copy", retry=GIT_RETRY),
+    VirtualenvSetup(name='virtualenv setup',
+        no_site_packages=False, ## important to get PyQt4!
+        virtualenv_python='/usr/bin/python', # also important: use the system python
+        virtualenv_packages=[ 'Ghost.py', 'mock==0.8.0', '--editable=master', '--editable=slave'],
+        virtualenv_dir=ve,
+        haltOnFailure=True),
+    # for some reason no_site_packages=False doesn't seem to be enough, so symlink these in "manually"
+    ShellCommand(usePTY=False, command=textwrap.dedent("""
+        if ! %(ve)s/bin/python -c 'import PyQt4'; then
+            echo 'symlinking pyqt4';
+            ln -s /usr/lib64/python2.6/site-packages/sip.so %(ve)s/lib/python2.6/site-packages/;
+            ln -s /usr/lib64/python2.6/site-packages/PyQt4 %(ve)s/lib/python2.6/site-packages/;
+            %(ve)s/bin/python -c 'import PyQt4' || exit 1;
+        else
+            echo 'pyqt4 is ready';
+        fi;
+        """ % subs),
+        haltOnFailure=True,
+        description="check for pyqt4",
+        descriptionDone="checked for pyqt4",
+        name="pyqt4"),
+    ShellCommand(usePTY=False, command=textwrap.dedent("""
+        SANDBOX="%(ve)s";
+        PYTHON="$PWD/$SANDBOX/bin/python";
+        PIP="$PWD/$SANDBOX/bin/pip";
+        $PYTHON -c 'import sys; print "Python:", sys.version; import twisted; print "Twisted:", twisted.version' || exit 1;
+        $PIP freeze
+        """ % subs),
+        description="versions",
+        descriptionDone="versions",
+        name="versions"),
+    Trial(workdir="build/master", testpath='.',
+        tests='buildbot.test.unit.test_www_ui',
+        trial="../%(ve)s/bin/trial" % subs,
+        usePTY=False,
+        name='test_www_ui',
+        env={
+            'REQUIRE_GHOST' : '1',
+            'DISPLAY' : ':99', # xvfb runs on boot on this system
+        }),
+    ])
+    return f
+
 #### docs, coverage, etc.
 
 builders.append({
@@ -271,18 +325,29 @@ builders.append({
     'slavenames' : names(get_slaves(buildbot_net=True)),
     'factory' : mkdocsfactory(),
     'category' : 'docs' })
+master_builders.append(builders[-1])
 
 builders.append({
     'name' : 'coverage',
     'slavenames' : names(get_slaves(buildbot_net=True)),
     'factory' : mkcoveragefactory(),
     'category' : 'docs' })
+master_builders.append(builders[-1])
 
 builders.append({
     'name' : 'linty',
     'slavenames' : names(get_slaves(buildbot_net=True)),
     'factory' : mklintyfactory(),
     'category' : 'docs' })
+master_builders.append(builders[-1])
+nine_builders.append(builders[-1])
+
+builders.append({
+    'name' : 'www',
+    'slavenames' : names(get_slaves(pyqt4=True)),
+    'factory' : mkghostfactory(),
+    'category' : 'www' })
+nine_builders.append(builders[-1])
 
 #### single-slave builders
 
@@ -296,6 +361,7 @@ for sl in get_slaves(run_single=True).values():
         'slavenames' : [ sl.slavename ],
         'factory' : f,
         'category' : 'slave' })
+    master_builders.append(builders[-1])
 
 #### operating systems
 
@@ -310,6 +376,8 @@ for opsys in set(sl.os for sl in slaves if sl.os is not None):
         'slavenames' : names(get_slaves(os=opsys)),
         'factory' : f,
         'category' : 'os' })
+    master_builders.append(builders[-1])
+    nine_builders.append(builders[-1])
         
 #### databases
 
@@ -325,6 +393,8 @@ for db in set(itertools.chain.from_iterable(sl.databases.keys() for sl in slaves
         'slavenames' : names(get_slaves(db=db)),
         'factory' : f,
         'category' : 'db' })
+    master_builders.append(builders[-1])
+    nine_builders.append(builders[-1])
         
 
 #### config builders
@@ -380,6 +450,8 @@ for py, python_version in pypy_versions.items():
             'slavenames' : config_slaves,
             'factory' : f,
             'category' : 'config' })
+        master_builders.append(builders[-1])
+        nine_builders.append(builders[-1])
 
 config_slaves = names(get_slaves(run_config=True, py27=True))
 
@@ -415,3 +487,5 @@ for sa, sqlalchemy_migrate_version in sqlalchemy_migrate_versions.items():
         'slavenames' : config_slaves,
         'factory' : f,
         'category' : 'config' })
+    master_builders.append(builders[-1])
+    nine_builders.append(builders[-1])

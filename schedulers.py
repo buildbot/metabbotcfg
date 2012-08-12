@@ -12,7 +12,7 @@ from metabbotcfg.debian import schedulers as deb_schedulers
 
 schedulers.append(SingleBranchScheduler(name="all", branch='master',
                                  treeStableTimer=10,
-                                 builderNames=[ b['name'] for b in builders.builders ]))
+                                 builderNames=[ b['name'] for b in builders.master_builders ]))
 
 schedulers.append(ForceScheduler(name="force",
     repository=FixedParameter(name="repository", default='git://github.com/buildbot/buildbot.git'),
@@ -23,6 +23,6 @@ schedulers.append(ForceScheduler(name="force",
 
 schedulers.append(SingleBranchScheduler(name="nine", branch='nine',
                     treeStableTimer=5,
-                    builderNames=[ b['name'] for b in builders.builders if not b.get('not-on-nine') ]))
+                    builderNames=[ b['name'] for b in builders.nine_builders ]))
 
 schedulers += deb_schedulers

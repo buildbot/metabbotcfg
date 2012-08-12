@@ -16,6 +16,9 @@ class MySlaveBase(object):
     # true if this slave should have a single-slave builder of its own
     run_single = True
 
+    # true if this host has PyQt4 installed in its default python
+    pyqt4 = False
+
     # true if this slave can contribute to the virtualenv-managed pool of
     # specific-configuration builders.  Specific supported python versions
     # are given, too
@@ -77,10 +80,6 @@ slaves = [
         max_builds=1,
         ),
 
-    # Steve 'Ashcrow' Milner
-    MySlave('centos_5_python2_4',
-        ),
-
      # Dustin Mitchell
     MySlave('knuth.r.igoro.us',
         max_builds=4,
@@ -107,6 +106,7 @@ slaves = [
         py25=True, # hand-compiled in /usr/local
         py26=True,
         py27=True, # hand-compiled in /usr/local
+        pyqt4=True, # installed in system python
         databases={
             'postgres' : dict(BUILDBOT_TEST_DB_URL=
                 'postgresql+pg8000://metabuildslave@localhost/metabuildslave'),
@@ -179,6 +179,11 @@ retired_slaves = [
         pypy17=True,
         pypy18=True,
         ),
+
+    # Steve 'Ashcrow' Milner
+    MySlave('centos_5_python2_4',
+        ),
+
 ]
 
 def get_slaves(db=None, *args, **kwargs):
