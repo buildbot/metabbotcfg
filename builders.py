@@ -426,6 +426,8 @@ for py, python_version in python_versions.items():
             'slavenames' : config_slaves,
             'factory' : f,
             'category' : 'config' })
+        master_builders.append(builders[-1])
+        nine_builders.append(builders[-1])
 
 pypy_versions = dict(
     pypy17='pypy1.7',
@@ -470,6 +472,8 @@ for sa, sqlalchemy_version in sqlalchemy_versions.items():
         'slavenames' : config_slaves,
         'factory' : f,
         'category' : 'config' })
+    master_builders.append(builders[-1])
+    nine_builders.append(builders[-1])
 
 sqlalchemy_migrate_versions = dict(
     sam061='sqlalchemy-migrate==0.6.1',

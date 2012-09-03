@@ -14,15 +14,15 @@ schedulers.append(SingleBranchScheduler(name="all", branch='master',
                                  treeStableTimer=10,
                                  builderNames=[ b['name'] for b in builders.master_builders ]))
 
+schedulers.append(SingleBranchScheduler(name="nine", branch='nine',
+                    treeStableTimer=5,
+                    builderNames=[ b['name'] for b in builders.nine_builders ]))
+
 schedulers.append(ForceScheduler(name="force",
     repository=FixedParameter(name="repository", default='git://github.com/buildbot/buildbot.git'),
     branch=ChoiceStringParameter(name="branch", default="master", choices=["master", "nine"]),
     project=FixedParameter(name="project", default=""),
     properties=[],
     builderNames=[ b['name'] for b in builders.builders ]))
-
-schedulers.append(SingleBranchScheduler(name="nine", branch='nine',
-                    treeStableTimer=5,
-                    builderNames=[ b['name'] for b in builders.nine_builders ]))
 
 schedulers += deb_schedulers
