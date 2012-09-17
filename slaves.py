@@ -115,6 +115,14 @@ slaves = [
         },
         ),
 
+    # tomprince
+    MySlave('tomprince-socrates-winxp-1',
+        max_builds=1,
+        run_single=False,
+        os='winxp-msys',
+        # note that use_simple is implicit
+        ),
+
     # maruel
     MySlave('xp-msysgit',
         max_builds=1,
@@ -166,12 +174,6 @@ retired_slaves = [
 
 
     # tomprince
-    MySlave('tomprince-socrates-winxp-1',
-        max_builds=1,
-        run_single=False,
-        os='winxp-msys',
-        # note that use_simple is implicit
-        ),
     MySlave('tomprince-hermes-gentoo-1',
         max_builds=1,
         run_single=False,
