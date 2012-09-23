@@ -413,12 +413,20 @@ python_versions = dict(
     py27='python2.7',
 )
 
+# incompatible versions of twisted and python
+incompat_tw_py = [
+    ('tw1220', 'py25'),
+]
+
 for py, python_version in python_versions.items():
     config_slaves = names(get_slaves(run_config=True, **{py:True}))
     if not config_slaves:
         continue
 
     for tw, twisted_version in twisted_versions.items():
+        if (tw, py) in incompat_tw_py:
+            continue
+
         f = mktestfactory(twisted_version=twisted_version, python_version=python_version)
         name = "%s-%s" % (py, tw)
         builders.append({
@@ -462,6 +470,7 @@ sqlalchemy_versions = dict(
     sa068='sqlalchemy==0.6.8',
     sa070='sqlalchemy==0.7.0',
     sa074='sqlalchemy==0.7.4',
+    sa078='sqlalchemy==0.7.8',
 )
 
 for sa, sqlalchemy_version in sqlalchemy_versions.items():
