@@ -367,7 +367,7 @@ for sl in get_slaves(run_single=True).values():
 
 for opsys in set(sl.os for sl in slaves if sl.os is not None):
     if 'win' in opsys:
-        test_master = 'cgywin' in opsys
+        test_master = 'cygwin' in opsys
         f = mksimplefactory(test_master=test_master)
     else:
         f = mktestfactory()
