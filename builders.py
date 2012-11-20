@@ -282,11 +282,11 @@ def mkghostfactory():
         virtualenv_dir=ve,
         haltOnFailure=True),
     # for some reason no_site_packages=False doesn't seem to be enough, so symlink these in "manually"
-    ShellCommand(usePTY=False, command=textwrap.dedent("""
+   ShellCommand(usePTY=False, command=textwrap.dedent("""
         if ! %(ve)s/bin/python -c 'import PyQt4'; then
             echo 'symlinking pyqt4';
-            ln -s /usr/lib64/python2.6/site-packages/sip.so %(ve)s/lib/python2.6/site-packages/;
-            ln -s /usr/lib64/python2.6/site-packages/PyQt4 %(ve)s/lib/python2.6/site-packages/;
+            ln -sf /usr/lib/pymodules/python2.6/sip.so %(ve)s/lib/python2.6/site-packages/;
+            ln -sf /usr/lib/pymodules/python2.6/PyQt4 %(ve)s/lib/python2.6/site-packages/;
             %(ve)s/bin/python -c 'import PyQt4' || exit 1;
         else
             echo 'pyqt4 is ready';
@@ -296,6 +296,21 @@ def mkghostfactory():
         description="check for pyqt4",
         descriptionDone="checked for pyqt4",
         name="pyqt4"),
+    ShellCommand(usePTY=False, command=textwrap.dedent("""
+        SANDBOX="%(ve)s";
+        PYTHON="$PWD/$SANDBOX/bin/python";
+        PIP="$PWD/$SANDBOX/bin/pip";
+        # setup public_html
+set -v
+            echo "adding public_html";
+            export PYTHONPATH=$PWD/master:$PYTHONPATH
+            mkdir -p public_html
+            $PYTHON master/bin/buildbot updatejs -d
+
+        """ % subs),
+        description="updatejs",
+        descriptionDone="updatejs",
+        name="updatejs"),
     ShellCommand(usePTY=False, command=textwrap.dedent("""
         SANDBOX="%(ve)s";
         PYTHON="$PWD/$SANDBOX/bin/python";
@@ -313,7 +328,8 @@ def mkghostfactory():
         name='test_www_ui',
         env={
             'REQUIRE_GHOST' : '1',
-            'DISPLAY' : ':99', # xvfb runs on boot on this system
+            'PUBLIC_HTML_PATH' : '../public_html',
+            'DISPLAY' : ':1', # tightvnc running on this system
         }),
     ])
     return f
