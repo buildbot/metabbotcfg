@@ -329,7 +329,7 @@ set -v
         env={
             'REQUIRE_GHOST' : '1',
             'PUBLIC_HTML_PATH' : '../public_html',
-            'DISPLAY' : ':1', # tightvnc running on this system
+            'DISPLAY' : ':99',
         }),
     ])
     return f
