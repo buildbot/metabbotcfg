@@ -285,8 +285,8 @@ def mkghostfactory():
    ShellCommand(usePTY=False, command=textwrap.dedent("""
         if ! %(ve)s/bin/python -c 'import PyQt4'; then
             echo 'symlinking pyqt4';
-            ln -sf /usr/lib/pymodules/python2.6/sip.so %(ve)s/lib/python2.6/site-packages/;
-            ln -sf /usr/lib/pymodules/python2.6/PyQt4 %(ve)s/lib/python2.6/site-packages/;
+           ln -sf /usr/lib/pymodules/python2.6/sip.so %(ve)s/lib/python2.6/site-packages/;
+           ln -sf /usr/lib/pymodules/python2.6/PyQt4 %(ve)s/lib/python2.6/site-packages/;
             %(ve)s/bin/python -c 'import PyQt4' || exit 1;
         else
             echo 'pyqt4 is ready';
