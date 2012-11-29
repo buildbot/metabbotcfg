@@ -115,7 +115,7 @@ class DatabaseTrial(Trial):
 def mksimplefactory(test_master=True):
     f = factory.BuildFactory()
     f.addSteps([
-    Git(repourl='git://github.com/buildbot/buildbot.git', mode="copy", retry=GIT_RETRY),
+    Git(repourl='git://github.com/buildbot/buildbot.git', mode="copy", submodules=True, retry=GIT_RETRY),
     # use workdir instead of testpath because setuptools sticks its own eggs (including
     # the running version of buildbot) into sys.path *before* PYTHONPATH, but includes
     # "." in sys.path even before the eggs
@@ -147,7 +147,7 @@ def mktestfactory(twisted_version='twisted', python_version='python',
 
     f = factory.BuildFactory()
     f.addSteps([
-    Git(repourl='git://github.com/buildbot/buildbot.git', mode="copy", retry=GIT_RETRY),
+    Git(repourl='git://github.com/buildbot/buildbot.git', mode="copy", submodules=True, retry=GIT_RETRY),
     VirtualenvSetup(name='virtualenv setup',
         no_site_packages=True,
         virtualenv_python=python_version,
@@ -156,6 +156,15 @@ def mktestfactory(twisted_version='twisted', python_version='python',
             + extra_packages,
         virtualenv_dir=ve,
         haltOnFailure=True),
+    # pip install -i www, but only if the directory exists.  Since git won't remove this directory,
+    # this will install www even on master, but that's OK.
+    ShellCommand(usePTY=False, command=textwrap.dedent("""
+        SANDBOX="%(ve)s";
+        if [ -d www/ ]; then $PWD/$SANDBOX/bin/pip install -e www/; else true; fi
+        """ % subs),
+        description="install buildbot-www",
+        descriptionDone="install buildbot-www",
+        name="install buildbot-www"),
     ShellCommand(usePTY=False, command=textwrap.dedent("""
         SANDBOX="%(ve)s";
         PYTHON="$PWD/$SANDBOX/bin/python";
@@ -195,13 +204,19 @@ def mktestfactory(twisted_version='twisted', python_version='python',
 def mkcoveragefactory():
     f = factory.BuildFactory()
     f.addSteps([
-    Git(repourl='git://github.com/buildbot/buildbot.git', mode="update", retry=GIT_RETRY),
+    Git(repourl='git://github.com/buildbot/buildbot.git', mode="update", submodules=True, retry=GIT_RETRY),
     ShellCommand(command=r"find . -name '*.pyc' -exec rm \{} \;"),
     VirtualenvSetup(name='virtualenv setup',
         no_site_packages=True,
         virtualenv_packages=['coverage', 'mock', '--editable=master', '--editable=slave'],
         virtualenv_dir='sandbox',
         haltOnFailure=True),
+    # pip install -i www, but only if the directory exists.  Since git won't remove this directory,
+    # this will install www even on master, but that's OK.
+    ShellCommand(usePTY=False, command="if [ -d www/ ]; then sandbox/bin/pip install -e www/; else true; fi",
+        description="install buildbot-www",
+        descriptionDone="install buildbot-www",
+        name="install buildbot-www"),
     ShellCommand(usePTY=False, command=textwrap.dedent("""
         PYTHON=sandbox/bin/python;
         sandbox/bin/coverage run --rcfile=common/coveragerc \
@@ -221,7 +236,7 @@ def mkcoveragefactory():
 def mkdocsfactory():
     f = factory.BuildFactory()
     f.addSteps([
-        Git(repourl='git://github.com/buildbot/buildbot.git', mode="update", retry=GIT_RETRY),
+        Git(repourl='git://github.com/buildbot/buildbot.git', mode="update", submodules=True, retry=GIT_RETRY),
         FileDownload(mastersrc="virtualenv.py", slavedest="virtualenv.py", flunkOnFailure=True),
 
     # run docs tools in their own virtualenv, otherwise we end up documenting
@@ -260,7 +275,7 @@ def mkdocsfactory():
 def mklintyfactory():
     f = factory.BuildFactory()
     f.addSteps([
-        Git(repourl='git://github.com/buildbot/buildbot.git', mode="update", retry=GIT_RETRY),
+        Git(repourl='git://github.com/buildbot/buildbot.git', mode="update", submodules=True, retry=GIT_RETRY),
         PyFlakes(command="/home/buildbot/sandbox/bin/pyflakes master/buildbot", name="pyflakes - master", flunkOnFailure=True),
         PyFlakes(command="/home/buildbot/sandbox/bin/pyflakes slave/buildslave", name="pyflakes - slave", flunkOnFailure=True),
     ])
@@ -274,11 +289,11 @@ def mkghostfactory():
 
     f = factory.BuildFactory()
     f.addSteps([
-    Git(repourl='git://github.com/buildbot/buildbot.git', mode="copy", retry=GIT_RETRY),
+    Git(repourl='git://github.com/buildbot/buildbot.git', mode="copy", submodules=True, retry=GIT_RETRY),
     VirtualenvSetup(name='virtualenv setup',
         no_site_packages=False, ## important to get PyQt4!
         virtualenv_python='/usr/bin/python', # also important: use the system python
-        virtualenv_packages=[ 'Ghost.py', 'mock==0.8.0', '--editable=master', '--editable=slave'],
+        virtualenv_packages=[ 'Ghost.py', 'mock==0.8.0', '--editable=master', '--editable=slave', '--editable=www'],
         virtualenv_dir=ve,
         haltOnFailure=True),
     # for some reason no_site_packages=False doesn't seem to be enough, so symlink these in "manually"
@@ -356,7 +371,8 @@ builders.append({
     'factory' : mklintyfactory(),
     'category' : 'docs' })
 master_builders.append(builders[-1])
-nine_builders.append(builders[-1])
+# disabled temporarily until buildbot-www is ready
+##nine_builders.append(builders[-1])
 
 builders.append({
     'name' : 'www',
@@ -393,7 +409,8 @@ for opsys in set(sl.os for sl in slaves if sl.os is not None):
         'factory' : f,
         'category' : 'os' })
     master_builders.append(builders[-1])
-    nine_builders.append(builders[-1])
+    # disabled temporarily until buildbot-www is ready
+    #nine_builders.append(builders[-1])
         
 #### databases
 
@@ -410,7 +427,8 @@ for db in set(itertools.chain.from_iterable(sl.databases.keys() for sl in slaves
         'factory' : f,
         'category' : 'db' })
     master_builders.append(builders[-1])
-    nine_builders.append(builders[-1])
+    # disabled temporarily until buildbot-www is ready
+    #nine_builders.append(builders[-1])
         
 
 #### config builders
@@ -451,7 +469,8 @@ for py, python_version in python_versions.items():
             'factory' : f,
             'category' : 'config' })
         master_builders.append(builders[-1])
-        nine_builders.append(builders[-1])
+        # disabled temporarily until buildbot-www is ready
+        #nine_builders.append(builders[-1])
 
 pypy_versions = dict(
     pypy17='pypy1.7',
@@ -477,7 +496,8 @@ for py, python_version in pypy_versions.items():
             'factory' : f,
             'category' : 'config' })
         master_builders.append(builders[-1])
-        nine_builders.append(builders[-1])
+        # disabled temporarily until buildbot-www is ready
+        #nine_builders.append(builders[-1])
 
 config_slaves = names(get_slaves(run_config=True, py27=True))
 
@@ -498,7 +518,8 @@ for sa, sqlalchemy_version in sqlalchemy_versions.items():
         'factory' : f,
         'category' : 'config' })
     master_builders.append(builders[-1])
-    nine_builders.append(builders[-1])
+    # disabled temporarily until buildbot-www is ready
+    #nine_builders.append(builders[-1])
 
 sqlalchemy_migrate_versions = dict(
     sam061='sqlalchemy-migrate==0.6.1',
@@ -517,4 +538,5 @@ for sa, sqlalchemy_migrate_version in sqlalchemy_migrate_versions.items():
         'factory' : f,
         'category' : 'config' })
     master_builders.append(builders[-1])
-    nine_builders.append(builders[-1])
+    # disabled temporarily until buildbot-www is ready
+    #nine_builders.append(builders[-1])
