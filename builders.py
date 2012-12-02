@@ -2,7 +2,7 @@ import textwrap
 import itertools
 
 from buildbot.process import factory
-from buildbot.steps.source import Git
+from buildbot.steps.source.git import Git
 from buildbot.steps.shell import Compile, Test, ShellCommand
 from buildbot.steps.transfer import FileDownload
 from buildbot.steps.python_twisted import Trial
@@ -14,9 +14,8 @@ builders = []
 master_builders = []
 nine_builders = []
 
-# slaves seem to have a hard time fetching from github, so retry every 5
-# seconds, 5 times
-GIT_RETRY = (5,5)
+# slaves seem to have a hard time fetching from github, so retry
+gitStep = Git(repourl='git://github.com/buildbot/buildbot.git', mode='full', method='fresh', retryFetch=True)
 
 ####### Custom Steps
 
@@ -115,7 +114,7 @@ class DatabaseTrial(Trial):
 def mksimplefactory(test_master=True):
     f = factory.BuildFactory()
     f.addSteps([
-    Git(repourl='git://github.com/buildbot/buildbot.git', mode="copy", retry=GIT_RETRY),
+    gitStep,
     # use workdir instead of testpath because setuptools sticks its own eggs (including
     # the running version of buildbot) into sys.path *before* PYTHONPATH, but includes
     # "." in sys.path even before the eggs
@@ -147,7 +146,7 @@ def mktestfactory(twisted_version='twisted', python_version='python',
 
     f = factory.BuildFactory()
     f.addSteps([
-    Git(repourl='git://github.com/buildbot/buildbot.git', mode="copy", retry=GIT_RETRY),
+    gitStep,
     VirtualenvSetup(name='virtualenv setup',
         no_site_packages=True,
         virtualenv_python=python_version,
@@ -195,8 +194,7 @@ def mktestfactory(twisted_version='twisted', python_version='python',
 def mkcoveragefactory():
     f = factory.BuildFactory()
     f.addSteps([
-    Git(repourl='git://github.com/buildbot/buildbot.git', mode="update", retry=GIT_RETRY),
-    ShellCommand(command=r"find . -name '*.pyc' -exec rm \{} \;"),
+    gitStep,
     VirtualenvSetup(name='virtualenv setup',
         no_site_packages=True,
         virtualenv_packages=['coverage', 'mock', '--editable=master', '--editable=slave'],
@@ -221,7 +219,7 @@ def mkcoveragefactory():
 def mkdocsfactory():
     f = factory.BuildFactory()
     f.addSteps([
-        Git(repourl='git://github.com/buildbot/buildbot.git', mode="update", retry=GIT_RETRY),
+        gitStep,
         FileDownload(mastersrc="virtualenv.py", slavedest="virtualenv.py", flunkOnFailure=True),
 
     # run docs tools in their own virtualenv, otherwise we end up documenting
@@ -260,7 +258,7 @@ def mkdocsfactory():
 def mklintyfactory():
     f = factory.BuildFactory()
     f.addSteps([
-        Git(repourl='git://github.com/buildbot/buildbot.git', mode="update", retry=GIT_RETRY),
+        gitStep,
         PyFlakes(command="/home/buildbot/sandbox/bin/pyflakes master/buildbot", name="pyflakes - master", flunkOnFailure=True),
         PyFlakes(command="/home/buildbot/sandbox/bin/pyflakes slave/buildslave", name="pyflakes - slave", flunkOnFailure=True),
     ])
