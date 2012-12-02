@@ -272,7 +272,7 @@ def mkghostfactory():
 
     f = factory.BuildFactory()
     f.addSteps([
-    Git(repourl='git://github.com/buildbot/buildbot.git', mode="copy", retry=GIT_RETRY),
+    gitStep,
     VirtualenvSetup(name='virtualenv setup',
         no_site_packages=False, ## important to get PyQt4!
         virtualenv_python='/usr/bin/python', # also important: use the system python
