@@ -246,12 +246,6 @@ def mkdocsfactory():
         find /home/buildbot/www/buildbot.net/buildbot/docs/latest -name '*.html' | xargs python /home/buildbot/www/buildbot.net/buildbot/add-tracking.py
         """), name="docs to web", flunkOnFailure=True, haltOnFailure=True),
 
-    # notify trac of the new commit
-    ShellCommand(command=textwrap.dedent("""\
-        cd ~/trac/repos/buildbot.git &&
-        git fetch &&
-        ~/sandbox/bin/trac-admin ~/trac repository sync Buildbot
-        """), name="update trac", flunkOnFailure=True, haltOnFailure=True),
     ])
     return f
 
