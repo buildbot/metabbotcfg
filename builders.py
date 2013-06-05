@@ -41,8 +41,8 @@ class VirtualenvSetup(ShellCommand):
         command.append("PYTHON='%s'" % self.virtualenv_python)
         command.append("VE='%s'" % self.virtualenv_dir)
         command.append("VEPYTHON='%s/bin/python'" % self.virtualenv_dir)
-        # this corresponds to ~/www/buildbot.net/pkgs on the metabuildbot server
-        command.append("PKG_URL='%s'" % 'http://buildbot.net/pkgs')
+        # this corresponds to ~/www/buildbot.buildbot.net/static/pkgs on the metabuildbot server
+        command.append("PKG_URL='%s'" % 'http://buildbot.buildbot.net/static/pkgs')
         command.append("PYGET='import urllib, sys; urllib.urlretrieve("
                        "sys.argv[1], filename=sys.argv[2])'")
         command.append("NSP_ARG='%s'" %
@@ -206,9 +206,9 @@ def mkcoveragefactory():
             sandbox/bin/trial buildbot.test buildslave.test \
             || exit 1;
         sandbox/bin/coverage html -i --rcfile=.coveragerc \
-            -d /home/buildbot/www/buildbot.net/buildbot/coverage \
+            -d /home/buildbot/www/buildbot.buildbot.net/static/coverage \
             || exit 1;
-        chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/coverage || exit 1
+        chmod -R a+rx /home/buildbot/www/buildbot.buildbot.net/static/coverage || exit 1
     """),
         description='coverage',
         descriptionDone='coverage',
