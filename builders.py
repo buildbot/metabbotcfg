@@ -404,8 +404,8 @@ twisted_versions = dict(
     tw0900='Twisted==9.0.0',
     tw1020='Twisted==10.2.0',
     tw1110='Twisted==11.1.0',
-    tw1200='Twisted==12.0.0',
     tw1220='Twisted==12.2.0',
+    tw1300='Twisted==13.0.0',
 )
 
 python_versions = dict(
@@ -416,7 +416,9 @@ python_versions = dict(
 
 # incompatible versions of twisted and python
 incompat_tw_py = [
+    ('tw0900', 'py27'),
     ('tw1220', 'py25'),
+    ('tw1300', 'py25'),
 ]
 
 for py, python_version in python_versions.items():
