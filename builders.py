@@ -350,13 +350,6 @@ builders.append({
 master_builders.append(builders[-1])
 nine_builders.append(builders[-1])
 
-builders.append({
-    'name' : 'www',
-    'slavenames' : names(get_slaves(pyqt4=True)),
-    'factory' : mkghostfactory(),
-    'category' : 'www' })
-nine_builders.append(builders[-1])
-
 #### single-slave builders
 
 for sl in get_slaves(run_single=True).values():
