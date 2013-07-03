@@ -488,7 +488,7 @@ for sa, sqlalchemy_version in sqlalchemy_versions.items():
     nine_builders.append(builders[-1])
 
 sqlalchemy_migrate_versions = dict(
-    sam061='sqlalchemy-migrate==0.6.1',
+    #sam061='sqlalchemy-migrate==0.6.1', -- not supported
     #sam070='sqlalchemy-migrate==0.7.0', -- not on pypi..
     sam071='sqlalchemy-migrate==0.7.1',
     sam072='sqlalchemy-migrate==0.7.2',
