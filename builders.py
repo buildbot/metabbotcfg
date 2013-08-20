@@ -253,8 +253,19 @@ def mklintyfactory():
     f = factory.BuildFactory()
     f.addSteps([
         gitStep,
-        PyFlakes(command="/home/buildbot/sandbox/bin/pyflakes master/buildbot", name="pyflakes - master", flunkOnFailure=True),
-        PyFlakes(command="/home/buildbot/sandbox/bin/pyflakes slave/buildslave", name="pyflakes - slave", flunkOnFailure=True),
+
+        # run linty tools in their own virtualenv, so we can control the version
+        # the version of Buildbot running the metabuildbot!
+        VirtualenvSetup(name='virtualenv setup',
+            no_site_packages=True,
+            virtualenv_packages=['pyflakes', 'pylint==1.0.0', '--editable=master', '--editable=slave'],
+            virtualenv_dir='sandbox',
+            haltOnFailure=True),
+
+        PyFlakes(command="sandbox/bin/pyflakes master/buildbot", name="pyflakes - master", flunkOnFailure=True),
+        PyFlakes(command="sandbox/bin/pyflakes slave/buildslave", name="pyflakes - slave", flunkOnFailure=True),
+        ShellCommand(command="sandbox/bin/pylint --rcfile common/pylintrc buildbot", name="pylint - master", flunkOnFailure=False),
+        ShellCommand(command="sandbox/bin/pylint --rcfile common/pylintrc buildslave", name="pylint - slave", flunkOnFailure=False),
     ])
     return f
 
