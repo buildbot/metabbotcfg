@@ -226,17 +226,9 @@ def mkdocsfactory():
     # the version of Buildbot running the metabuildbot!
     VirtualenvSetup(name='virtualenv setup',
         no_site_packages=True,
-        virtualenv_packages=['sphinx', 'epydoc', '--editable=master', '--editable=slave'],
+        virtualenv_packages=['sphinx', '--editable=master', '--editable=slave'],
         virtualenv_dir='sandbox',
         haltOnFailure=True),
-
-    # apidocs
-    ShellCommand(command="source sandbox/bin/activate && make VERSION=latest apidocs", name="create apidocs",
-               flunkOnFailure=True, haltOnFailure=True),
-    ShellCommand(command=textwrap.dedent("""\
-        tar -C /home/buildbot/www/buildbot.net/buildbot/docs/latest -zxf apidocs/reference.tgz &&
-        chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/docs/latest/reference
-        """), name="api docs to web", flunkOnFailure=True, haltOnFailure=True),
 
     # manual
     ShellCommand(command="source sandbox/bin/activate && make VERSION=latest docs", name="create docs"),
