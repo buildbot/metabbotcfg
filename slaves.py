@@ -30,6 +30,9 @@ class MySlaveBase(object):
     pypy17 = False
     pypy18 = False
 
+    # true if this has nodejs installed, suitable for www
+    nodejs = False
+
     # dictionary mapping databases to the env vars required to make them go
     databases = {}
 
@@ -89,6 +92,7 @@ slaves = [
         py25=True,
         py26=True,
         py27=True,
+        nodejs=True,
         databases={
             'postgres' : dict(BUILDBOT_TEST_DB_URL=
                 'postgresql+pg8000://metabuildslave@localhost/metabuildslave'),

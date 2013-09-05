@@ -136,13 +136,19 @@ def mksimplefactory(test_master=True):
 def mktestfactory(twisted_version='twisted', python_version='python',
                 sqlalchemy_version='sqlalchemy',
                 sqlalchemy_migrate_version='sqlalchemy-migrate==0.7.1',
-                extra_packages=[], db=None):
+                extra_packages=None, db=None,
+                www=False):
+    if not extra_packages:
+        extra_packages = []
     subs = dict(twisted_version=twisted_version, python_version=python_version)
     ve = "../sandbox-%(python_version)s-%(twisted_version)s" % subs
     if sqlalchemy_version != 'sqlalchemy':
         ve += '-' + sqlalchemy_version
     ve += sqlalchemy_migrate_version.replace('sqlalchemy-migrate==', 'samigr-')
     subs['ve'] = ve
+
+    if www:
+        extra_packages.append('--editable=www')
 
     f = factory.BuildFactory()
     f.addSteps([
@@ -167,7 +173,26 @@ def mktestfactory(twisted_version='twisted', python_version='python',
         name="versions"),
     ])
     # see note above about workdir vs. testpath
-    if not db:
+    if db:
+        # for DB, just test the master (the slave doesn't use the db)
+        f.addSteps([
+    DatabaseTrial(workdir="build/master", testpath='.',
+        db=db,
+        tests='buildbot.test',
+        trial="../%(ve)s/bin/trial" % subs,
+        usePTY=False,
+        name='test master'),
+    ])
+    elif www:
+        # for www, run 'grunt ci'; this needs the virtualenv path in PATH
+        f.addSteps([
+    ShellCommand(workdir="build/www",
+        command=['./node_modules/.bin/grunt', 'ci'],
+        usePTY=False,
+        name='grunt ci',
+        env={'PATH':'../%(ve)s/bin/:${PATH}' % subs}),
+    ])
+    else:
         f.addSteps([
     Trial(workdir="build/slave", testpath='.',
         tests='buildslave.test',
@@ -175,15 +200,6 @@ def mktestfactory(twisted_version='twisted', python_version='python',
         usePTY=False,
         name='test slave'),
     Trial(workdir="build/master", testpath='.',
-        tests='buildbot.test',
-        trial="../%(ve)s/bin/trial" % subs,
-        usePTY=False,
-        name='test master'),
-    ])
-    else:
-        f.addSteps([
-    DatabaseTrial(workdir="build/master", testpath='.',
-        db=db,
         tests='buildbot.test',
         trial="../%(ve)s/bin/trial" % subs,
         usePTY=False,
@@ -261,74 +277,6 @@ def mklintyfactory():
     ])
     return f
 
-# this builder is pretty specific to the configuration on the RHEL slave it uses.
-def mkghostfactory():
-    ve = "../sandbox-ghost"
-    subs = {}
-    subs['ve'] = ve
-
-    f = factory.BuildFactory()
-    f.addSteps([
-    gitStep,
-    VirtualenvSetup(name='virtualenv setup',
-        no_site_packages=False, ## important to get PyQt4!
-        virtualenv_python='/usr/bin/python', # also important: use the system python
-        virtualenv_packages=[ 'Ghost.py', 'mock==0.8.0', '--editable=master', '--editable=slave'],
-        virtualenv_dir=ve,
-        haltOnFailure=True),
-    # for some reason no_site_packages=False doesn't seem to be enough, so symlink these in "manually"
-   ShellCommand(usePTY=False, command=textwrap.dedent("""
-        if ! %(ve)s/bin/python -c 'import PyQt4'; then
-            echo 'symlinking pyqt4';
-           ln -sf /usr/lib/pymodules/python2.6/sip.so %(ve)s/lib/python2.6/site-packages/;
-           ln -sf /usr/lib/pymodules/python2.6/PyQt4 %(ve)s/lib/python2.6/site-packages/;
-            %(ve)s/bin/python -c 'import PyQt4' || exit 1;
-        else
-            echo 'pyqt4 is ready';
-        fi;
-        """ % subs),
-        haltOnFailure=True,
-        description="check for pyqt4",
-        descriptionDone="checked for pyqt4",
-        name="pyqt4"),
-    ShellCommand(usePTY=False, command=textwrap.dedent("""
-        SANDBOX="%(ve)s";
-        PYTHON="$PWD/$SANDBOX/bin/python";
-        PIP="$PWD/$SANDBOX/bin/pip";
-        # setup public_html
-set -v
-            echo "adding public_html";
-            export PYTHONPATH=$PWD/master:$PYTHONPATH
-            mkdir -p public_html
-            $PYTHON master/bin/buildbot updatejs -d
-
-        """ % subs),
-        description="updatejs",
-        descriptionDone="updatejs",
-        name="updatejs"),
-    ShellCommand(usePTY=False, command=textwrap.dedent("""
-        SANDBOX="%(ve)s";
-        PYTHON="$PWD/$SANDBOX/bin/python";
-        PIP="$PWD/$SANDBOX/bin/pip";
-        $PYTHON -c 'import sys; print "Python:", sys.version; import twisted; print "Twisted:", twisted.version' || exit 1;
-        $PIP freeze
-        """ % subs),
-        description="versions",
-        descriptionDone="versions",
-        name="versions"),
-    Trial(workdir="build/master", testpath='.',
-        tests='buildbot.test.unit.test_www_ui',
-        trial="../%(ve)s/bin/trial" % subs,
-        usePTY=False,
-        name='test_www_ui',
-        env={
-            'REQUIRE_GHOST' : '1',
-            'PUBLIC_HTML_PATH' : '../public_html',
-            'DISPLAY' : ':99',
-        }),
-    ])
-    return f
-
 #### docs, coverage, etc.
 
 builders.append({
@@ -400,6 +348,15 @@ for db in set(itertools.chain.from_iterable(sl.databases.keys() for sl in slaves
     master_builders.append(builders[-1])
     nine_builders.append(builders[-1])
         
+#### www (nine)
+
+f = mktestfactory(www=True)
+builders.append({
+    'name' : 'www',
+    'slavenames' : names(get_slaves(nodejs=True)),
+    'factory' : f,
+    'category' : 'www' })
+nine_builders.append(builders[-1])
 
 #### config builders
 
