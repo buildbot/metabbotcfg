@@ -137,7 +137,7 @@ def mktestfactory(twisted_version='twisted', python_version='python',
                 sqlalchemy_version='sqlalchemy',
                 sqlalchemy_migrate_version='sqlalchemy-migrate==0.7.1',
                 extra_packages=None, db=None,
-                www=False):
+                www=False, slave_only=False):
     if not extra_packages:
         extra_packages = []
     subs = dict(twisted_version=twisted_version, python_version=python_version)
@@ -199,6 +199,9 @@ def mktestfactory(twisted_version='twisted', python_version='python',
         trial="../%(ve)s/bin/trial" % subs,
         usePTY=False,
         name='test slave'),
+    ])
+    if not slave_only:
+        f.addSteps([
     Trial(workdir="build/master", testpath='.',
         tests='buildbot.test',
         trial="../%(ve)s/bin/trial" % subs,
@@ -368,6 +371,9 @@ twisted_versions = dict(
     tw1300='Twisted==13.0.0',
 )
 
+# versions of twisted only supported by slave
+slave_only_twisted = ['tw0900', 'tw1020']
+
 python_versions = dict(
     py25='python2.5',
     py26='python2.6',
@@ -390,7 +396,9 @@ for py, python_version in python_versions.items():
         if (tw, py) in incompat_tw_py:
             continue
 
-        f = mktestfactory(twisted_version=twisted_version, python_version=python_version)
+        slave_only = tw in slave_only_twisted
+        f = mktestfactory(twisted_version=twisted_version, python_version=python_version,
+                slave_only=slave_only)
         name = "%s-%s" % (py, tw)
         builders.append({
             'name' : name,
