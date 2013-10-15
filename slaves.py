@@ -165,14 +165,14 @@ slaves = [
         ),
 
     # LSU
-    MySlave('valkyrie',  # ssh buildbot@buildbot-project.cct.lsu.edu
-        max_builds=3,
+    MySlave('bghimi4-2',  # ssh -p 2525 djmitche@josh.cct.lsu.edu
+        max_builds=2,
         run_single=False,
         run_config=True,
         py25=True,
         py26=True,
         py27=True,
-        os='osx-lion',
+        os='osx-mtnlion',
         ),
 
     # (EC2 - kept here as an indication of how to set it up)
