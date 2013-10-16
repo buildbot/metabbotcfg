@@ -388,11 +388,11 @@ incompat_tw_py = [
 ]
 
 for py, python_version in python_versions.items():
-    config_slaves = names(get_slaves(run_config=True, **{py:True}))
-    if not config_slaves:
-        continue
-
     for tw, twisted_version in twisted_versions.items():
+        config_slaves = names(get_slaves(run_config=True, **{py:True, tw:True}))
+        if not config_slaves:
+            continue
+
         if (tw, py) in incompat_tw_py:
             continue
 
