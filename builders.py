@@ -370,6 +370,7 @@ twisted_versions = dict(
     tw1110='Twisted==11.1.0',
     tw1220='Twisted==12.2.0',
     tw1300='Twisted==13.0.0',
+    tw1320='Twisted==13.2.0',
 )
 
 # versions of twisted only supported by slave
@@ -386,6 +387,7 @@ incompat_tw_py = [
     ('tw0900', 'py27'),
     ('tw1220', 'py25'),
     ('tw1300', 'py25'),
+    ('tw1320', 'py25'),
 ]
 
 for py, python_version in python_versions.items():
