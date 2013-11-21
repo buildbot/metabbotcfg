@@ -270,7 +270,7 @@ def mklintyfactory():
         # the version of Buildbot running the metabuildbot!
         VirtualenvSetup(name='virtualenv setup',
             no_site_packages=True,
-            virtualenv_packages=['pyflakes', 'pylint==1.0.0', '--editable=master', '--editable=slave'],
+            virtualenv_packages=['pyflakes', 'pylint==1.0.0', 'pep8==1.4.6', '--editable=master', '--editable=slave'],
             virtualenv_dir='sandbox',
             haltOnFailure=True),
 
@@ -278,6 +278,8 @@ def mklintyfactory():
         PyFlakes(command="sandbox/bin/pyflakes slave/buildslave", name="pyflakes - slave", flunkOnFailure=True),
         ShellCommand(command="sandbox/bin/pylint --rcfile common/pylintrc buildbot", name="pylint - master", flunkOnFailure=False),
         ShellCommand(command="sandbox/bin/pylint --rcfile common/pylintrc buildslave", name="pylint - slave", flunkOnFailure=False),
+        ShellCommand(command="sandbox/bin/pep8 --rcfile common/pep8rc buildbot", name="pep8 - master", flunkOnFailure=False),
+        ShellCommand(command="sandbox/bin/pep8 --rcfile common/pep8rc buildslave", name="pep8 - slave", flunkOnFailure=False),
     ])
     return f
 
