@@ -276,10 +276,10 @@ def mklintyfactory():
 
         PyFlakes(command="sandbox/bin/pyflakes master/buildbot", name="pyflakes - master", flunkOnFailure=True),
         PyFlakes(command="sandbox/bin/pyflakes slave/buildslave", name="pyflakes - slave", flunkOnFailure=True),
-        ShellCommand(command="sandbox/bin/pylint --rcfile common/pylintrc buildbot", name="pylint - master", flunkOnFailure=False),
-        ShellCommand(command="sandbox/bin/pylint --rcfile common/pylintrc buildslave", name="pylint - slave", flunkOnFailure=False),
-        ShellCommand(command="sandbox/bin/pep8 --rcfile common/pep8rc buildbot", name="pep8 - master", flunkOnFailure=False),
-        ShellCommand(command="sandbox/bin/pep8 --rcfile common/pep8rc buildslave", name="pep8 - slave", flunkOnFailure=False),
+        ShellCommand(command="sandbox/bin/pylint --rcfile common/pylintrc buildbot", name="pylint - master", flunkOnFailure=True),
+        ShellCommand(command="sandbox/bin/pylint --rcfile common/pylintrc buildslave", name="pylint - slave", flunkOnFailure=True),
+        ShellCommand(command="sandbox/bin/pep8 --config common/pep8rc buildbot", name="pep8 - master", flunkOnFailure=True),
+        ShellCommand(command="sandbox/bin/pep8 --config common/pep8rc buildslave", name="pep8 - slave", flunkOnFailure=True),
     ])
     return f
 
