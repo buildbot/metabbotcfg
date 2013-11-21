@@ -447,6 +447,10 @@ sqlalchemy_versions = dict(
     sa070='sqlalchemy==0.7.0',
     sa074='sqlalchemy==0.7.4',
     sa078='sqlalchemy==0.7.8',
+    sa0710='sqlalchemy==0.7.10',
+    # incompatible with sqlalchemy-migrate
+    #sa080='sqlalchemy==0.8.0',
+    #sa083='sqlalchemy==0.8.3',
 )
 
 for sa, sqlalchemy_version in sqlalchemy_versions.items():
