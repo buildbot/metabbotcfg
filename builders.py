@@ -278,8 +278,8 @@ def mklintyfactory():
         PyFlakes(command="sandbox/bin/pyflakes slave/buildslave", name="pyflakes - slave", flunkOnFailure=True),
         ShellCommand(command="sandbox/bin/pylint --rcfile common/pylintrc buildbot", name="pylint - master", flunkOnFailure=True),
         ShellCommand(command="sandbox/bin/pylint --rcfile common/pylintrc buildslave", name="pylint - slave", flunkOnFailure=True),
-        ShellCommand(command="sandbox/bin/pep8 --config common/pep8rc buildbot", name="pep8 - master", flunkOnFailure=True),
-        ShellCommand(command="sandbox/bin/pep8 --config common/pep8rc buildslave", name="pep8 - slave", flunkOnFailure=True),
+        ShellCommand(command="sandbox/bin/pep8 --config common/pep8rc master/buildbot", name="pep8 - master", flunkOnFailure=True),
+        ShellCommand(command="sandbox/bin/pep8 --config common/pep8rc slave/buildslave", name="pep8 - slave", flunkOnFailure=True),
     ])
     return f
 
@@ -411,7 +411,8 @@ for py, python_version in python_versions.items():
             'factory' : f,
             'category' : 'config' })
         master_builders.append(builders[-1])
-        nine_builders.append(builders[-1])
+        if py != "py25":
+            nine_builders.append(builders[-1])
 
 pypy_versions = dict(
     pypy17='pypy1.7',
