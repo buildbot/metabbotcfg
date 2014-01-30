@@ -2,6 +2,7 @@ import textwrap
 import itertools
 
 from buildbot.process import factory
+from buildbot.process.properties import Interpolate
 from buildbot.steps.source.git import Git
 from buildbot.steps.shell import Compile, Test, ShellCommand
 from buildbot.steps.transfer import FileDownload
@@ -251,11 +252,19 @@ def mkdocsfactory():
         haltOnFailure=True),
 
     # manual
-    ShellCommand(command="source sandbox/bin/activate && make VERSION=latest docs", name="create docs"),
+    ShellCommand(command=Interpolate(textwrap.dedent("""\
+        case '%(src::branch)s' in
+            master) export VERSION=latest ;;
+            nine) export VERSION=nine ;;
+            *) exit 1 ;;
+        esac &&
+        source sandbox/bin/activate &&
+        make docs
+        """)), name="create docs"),
     ShellCommand(command=textwrap.dedent("""\
-        tar -C /home/buildbot/www/buildbot.net/buildbot/docs -zvxf master/docs/docs.tgz latest/ &&
-        chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/docs/latest &&
-        find /home/buildbot/www/buildbot.net/buildbot/docs/latest -name '*.html' | xargs python /home/buildbot/www/buildbot.net/buildbot/add-tracking.py
+        tar -C /home/buildbot/www/buildbot.net/buildbot/docs -zvxf master/docs/docs.tgz &&
+        chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/docs/{nine,latest} &&
+        find /home/buildbot/www/buildbot.net/buildbot/docs/{latest,nine} -name '*.html' | xargs python /home/buildbot/www/buildbot.net/buildbot/add-tracking.py
         """), name="docs to web", flunkOnFailure=True, haltOnFailure=True),
 
     ])
@@ -291,6 +300,7 @@ builders.append({
     'factory' : mkdocsfactory(),
     'category' : 'docs' })
 master_builders.append(builders[-1])
+nine_builders.append(builders[-1])
 
 builders.append({
     'name' : 'coverage',
