@@ -151,16 +151,20 @@ def mktestfactory(twisted_version='twisted', python_version='python',
     if www:
         extra_packages.append('--editable=www')
 
+    virtualenv_packages = [twisted_version, sqlalchemy_version,
+        sqlalchemy_migrate_version, 'multiprocessing==2.6.2.1', 'mock==0.8.0',
+        '--editable=slave'] + extra_packages
+    if sqlalchemy_migrate_version:
+        virtualenv_packages.append(sqlalchemy_migrate_version)
+    if not slave_only:
+        virtualenv_packages.append('--editable=master')
     f = factory.BuildFactory()
     f.addSteps([
     gitStep,
     VirtualenvSetup(name='virtualenv setup',
         no_site_packages=True,
         virtualenv_python=python_version,
-        virtualenv_packages=[twisted_version, sqlalchemy_version,
-            sqlalchemy_migrate_version, 'multiprocessing==2.6.2.1', 'mock==0.8.0',
-            '--editable=master', '--editable=slave']
-            + extra_packages,
+        virtualenv_packages=virtualenv_packages,
         virtualenv_dir=ve,
         haltOnFailure=True),
     ShellCommand(usePTY=False, command=textwrap.dedent("""
@@ -423,6 +427,18 @@ for py, python_version in python_versions.items():
         master_builders.append(builders[-1])
         if py != "py25":
             nine_builders.append(builders[-1])
+
+# py24 + tw0810 for slave only
+config_slaves = names(get_slaves(run_config=True, py24=True, tw0810=True))
+f = mktestfactory(twisted_version='Twisted==8.1.0', python_version='python2.4',
+                  sqlalchemy_version='sqlalchemy==0.6.0', slave_only=True)
+name='py24-tw0810-slave'
+builders.append({
+    'name' : name,
+    'slavenames' : config_slaves,
+    'factory' : f,
+    'category' : 'config' })
+master_builders.append(builders[-1])
 
 pypy_versions = dict(
     pypy17='pypy1.7',

@@ -30,6 +30,7 @@ class MySlaveBase(object):
     pypy17 = False
     pypy18 = False
 
+    tw0810 = False
     tw0900 = True
     tw1020 = True
     tw1110 = True
@@ -95,6 +96,7 @@ slaves = [
         max_builds=4,
         run_single=False,
         run_config=True,
+        tw0810 = True,
         py24=True,
         py25=True,
         py26=True,
