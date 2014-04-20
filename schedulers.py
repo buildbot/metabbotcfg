@@ -14,7 +14,7 @@ schedulers.append(SingleBranchScheduler(name="all", branch='master',
                                  treeStableTimer=10,
                                  builderNames=[ b['name'] for b in builders.master_builders ]))
 
-schedulers.append(SingleBranchScheduler(name="release", branch='buildbot-0.8.8',
+schedulers.append(SingleBranchScheduler(name="release", branch='buildbot-0.8.9',
                                  treeStableTimer=10,
                                  builderNames=[ b['name'] for b in builders.master_builders ]))
 
