@@ -27,6 +27,6 @@ schedulers.append(ForceScheduler(name="force",
     branch=ChoiceStringParameter(name="branch", default="master", choices=["master", "nine"]),
     project=FixedParameter(name="project", default=""),
     properties=[],
-    builderNames=[ b['name'] for b in builders.builders ]))
+    builderNames=[ b['name'] for b in builders.master_builders if b['name'] not in ('docs',) ]))
 
 schedulers += deb_schedulers
