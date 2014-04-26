@@ -475,13 +475,24 @@ sqlalchemy_versions = dict(
     sa074='sqlalchemy==0.7.4',
     sa078='sqlalchemy==0.7.8',
     sa0710='sqlalchemy==0.7.10',
-    # incompatible with sqlalchemy-migrate
-    #sa080='sqlalchemy==0.8.0',
-    #sa083='sqlalchemy==0.8.3',
+    sa086='sqlalchemy==0.8.6',
+    sa094='sqlalchemy==0.9.4',
 )
 
+sqlalchemy_migrate_versions = dict(
+    #sam061='sqlalchemy-migrate==0.6.1', -- not supported
+    #sam070='sqlalchemy-migrate==0.7.0', -- not on pypi..
+    sam071='sqlalchemy-migrate==0.7.1',
+    sam072='sqlalchemy-migrate==0.7.2',
+    sam09='sqlalchemy-migrate==0.9',
+)
+# these versions are not compatible with sa>=0.8
+sam_require_old_sa = set(['sam071', 'sam072'])
+
 for sa, sqlalchemy_version in sqlalchemy_versions.items():
-    f = mktestfactory(sqlalchemy_version=sqlalchemy_version, python_version='python2.7')
+    f = mktestfactory(sqlalchemy_version=sqlalchemy_version,
+                      sqlalchemy_migrate_version=sqlalchemy_migrate_versions['sam09'],
+                      python_version='python2.7')
     name = "py27-%s" % (sa,)
     builders.append({
         'name' : name,
@@ -491,17 +502,14 @@ for sa, sqlalchemy_version in sqlalchemy_versions.items():
     master_builders.append(builders[-1])
     nine_builders.append(builders[-1])
 
-sqlalchemy_migrate_versions = dict(
-    #sam061='sqlalchemy-migrate==0.6.1', -- not supported
-    #sam070='sqlalchemy-migrate==0.7.0', -- not on pypi..
-    sam071='sqlalchemy-migrate==0.7.1',
-    sam072='sqlalchemy-migrate==0.7.2',
-)
-
-for sa, sqlalchemy_migrate_version in sqlalchemy_migrate_versions.items():
-    f = mktestfactory(sqlalchemy_migrate_version=sqlalchemy_migrate_version,
+for sam, sqlalchemy_migrate_version in sqlalchemy_migrate_versions.items():
+    sqlalchemy_version = sqlalchemy_versions['sa094']
+    if sam in sam_require_old_sa:
+        sqlalchemy_version = sqlalchemy_versions['sa0710']
+    f = mktestfactory(sqlalchemy_version=sqlalchemy_version,
+                      sqlalchemy_migrate_version=sqlalchemy_migrate_version,
                       python_version='python2.7')
-    name = "py27-%s" % (sa,)
+    name = "py27-%s" % (sam,)
     builders.append({
         'name' : name,
         'slavenames' : config_slaves,
