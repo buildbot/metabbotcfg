@@ -16,7 +16,7 @@ schedulers.append(SingleBranchScheduler(name="all", branch='master',
 
 schedulers.append(SingleBranchScheduler(name="release", branch='buildbot-0.8.9',
                                  treeStableTimer=10,
-                                 builderNames=[ b['name'] for b in builders.master_builders ]))
+                                 builderNames=[ b['name'] for b in builders.master_builders if b['name'] not in ('docs',) ]))
 
 schedulers.append(SingleBranchScheduler(name="nine", branch='nine',
                     treeStableTimer=5,
@@ -27,6 +27,6 @@ schedulers.append(ForceScheduler(name="force",
     branch=ChoiceStringParameter(name="branch", default="master", choices=["master", "nine"]),
     project=FixedParameter(name="project", default=""),
     properties=[],
-    builderNames=[ b['name'] for b in builders.master_builders if b['name'] not in ('docs',) ]))
+    builderNames=[ b['name'] for b in builders.master_builders ]))
 
 schedulers += deb_schedulers
