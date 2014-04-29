@@ -5,17 +5,17 @@ buildbot_git_repo = 'git://github.com/buildbot/buildbot.git'
 debian_buildbot_git_repo = 'git://github.com/buildbot/debian-buildbot.git'
 debian_buildbot_slave_git_repo = 'git://github.com/buildbot/debian-buildbot-slave.git'
 
-from buildbot.scheduler import Scheduler
+from buildbot.scheduler import SingleBranchScheduler
 from buildbot.schedulers.triggerable import Triggerable
 
-masterTarballScheduler = Scheduler(name="tarball-master", branch="master",
+masterTarballScheduler = SingleBranchScheduler(name="tarball-master", branch="master",
                                  treeStableTimer=10,
                                  properties={"component":"master"},
                                  builderNames=["tarball-master"])
 masterDebScheduler = Triggerable(name="deb-master",
                                  properties={"debian-repo":debian_buildbot_git_repo},
                                  builderNames=["deb-master"])
-slaveTarballScheduler = Scheduler(name="tarball-slave", branch="master",
+slaveTarballScheduler = SingleBranchScheduler(name="tarball-slave", branch="master",
                                  treeStableTimer=10,
                                  properties={"component":"slave"},
                                  builderNames=["tarball-slave"])
