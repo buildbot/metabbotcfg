@@ -31,7 +31,7 @@ schedulers = [
         ]
 
 from buildbot.process.factory import BuildFactory
-from buildbot.steps.source import Git
+from buildbot.steps.source.git import Git
 from buildbot.steps.shell import ShellCommand
 from buildbot.steps.shell import SetProperty
 from buildbot.process.properties import WithProperties, Property
