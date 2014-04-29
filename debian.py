@@ -33,7 +33,7 @@ schedulers = [
 from buildbot.process.factory import BuildFactory
 from buildbot.steps.source.git import Git
 from buildbot.steps.shell import ShellCommand
-from buildbot.steps.shell import SetProperty
+from buildbot.steps.shell import SetPropertyFromCommand
 from buildbot.process.properties import WithProperties, Property
 from buildbot.steps.trigger import Trigger
 
@@ -54,7 +54,7 @@ def tarball_property(rc, stdout, stderr):
     versions = [version_re.match(x).group(2) for x in tarballs]
     return { "tarball":tarballs[0], "tarball_version":versions[0] }
 
-mk_tarball_property = SetProperty(command=["ls", "--color=never" ,
+mk_tarball_property = SetPropertyFromCommand(command=["ls", "--color=never" ,
         WithProperties(relative_dist_dir)],
         extract_fn=tarball_property)
 
