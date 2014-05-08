@@ -140,15 +140,16 @@ slaves = [
 #        py27=True,
 #        ),
 
-    MySlave('koobs-freebsd10',
-        max_builds=4,
-        run_single=False,
-        run_config=True,
-        py24=False,
-        py25=False,
-        py26=False,
-        py27=True,
-        ),
+    # XXX slave seems to be out of space
+#    MySlave('koobs-freebsd10',
+#        max_builds=4,
+#        run_single=False,
+#        run_config=True,
+#        py24=False,
+#        py25=False,
+#        py26=False,
+#        py27=True,
+#        ),
 
     # tomprince
     MySlave('tomprince-socrates-winxp-1',
