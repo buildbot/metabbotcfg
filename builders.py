@@ -59,7 +59,7 @@ class VirtualenvSetup(ShellCommand):
             for prereq in virtualenv.py pip-0.8.2.tar.gz; do
                 [ -f "$VE/$prereq" ] && continue
                 echo "Fetching $PKG_URL/$prereq"
-                python -c "$PYGET" "$PKG_URL/$prereq" "$VE/$prereq" || exit 1;
+                $PYTHON -c "$PYGET" "$PKG_URL/$prereq" "$VE/$prereq" || exit 1;
             done;
             echo "Invoking virtualenv.py (this accesses pypi)"
             "$PYTHON" "$VE/virtualenv.py" --distribute --python="$PYTHON" $NSP_ARG "$VE" || exit 1 
