@@ -153,6 +153,7 @@ def mktestfactory(twisted_version='twisted', python_version='python',
 
     virtualenv_packages = [twisted_version, sqlalchemy_version,
         sqlalchemy_migrate_version, 'multiprocessing==2.6.2.1', 'mock==0.8.0',
+        'moto==0.3.1', 'boto==2.29.1',
         '--editable=slave'] + extra_packages
     if sqlalchemy_migrate_version:
         virtualenv_packages.append(sqlalchemy_migrate_version)
