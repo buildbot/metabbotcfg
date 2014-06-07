@@ -153,8 +153,10 @@ def mktestfactory(twisted_version='twisted', python_version='python',
 
     virtualenv_packages = [twisted_version, sqlalchemy_version,
         sqlalchemy_migrate_version, 'multiprocessing==2.6.2.1', 'mock==0.8.0',
-        'moto==0.3.1', 'boto==2.29.1',
         '--editable=slave'] + extra_packages
+    if python_version != 'python2.5':
+        # because some of the dependencies don't work on 2.5
+        virtualenv_packages.extend(['moto==0.3.1', 'boto==2.29.1'])
     if sqlalchemy_migrate_version:
         virtualenv_packages.append(sqlalchemy_migrate_version)
     if not slave_only:
@@ -386,8 +388,8 @@ twisted_versions = dict(
     tw1020='Twisted==10.2.0',
     tw1110='Twisted==11.1.0',
     tw1220='Twisted==12.2.0',
-    tw1300='Twisted==13.0.0',
     tw1320='Twisted==13.2.0',
+    tw1300='Twisted==14.0.0',
 )
 
 # versions of twisted only supported by slave
@@ -405,6 +407,7 @@ incompat_tw_py = [
     ('tw1220', 'py25'),
     ('tw1300', 'py25'),
     ('tw1320', 'py25'),
+    ('tw1400', 'py25'),
 ]
 
 for py, python_version in python_versions.items():
