@@ -12,8 +12,6 @@ from buildbot.steps.python import PyFlakes
 from metabbotcfg.slaves import slaves, get_slaves, names
 
 builders = []
-master_builders = []
-nine_builders = []
 
 # slaves seem to have a hard time fetching from github, so retry
 gitStep = Git(repourl='git://github.com/buildbot/buildbot.git', mode='full', method='fresh', retryFetch=True)
@@ -260,18 +258,14 @@ def mkdocsfactory():
 
     # manual
     ShellCommand(command=Interpolate(textwrap.dedent("""\
-        case '%(src::branch)s' in
-            master) export VERSION=latest ;;
-            nine) export VERSION=nine ;;
-            *) exit 1 ;;
-        esac &&
         source sandbox/bin/activate &&
         make docs
         """)), name="create docs"),
     ShellCommand(command=textwrap.dedent("""\
+        export VERSION=latest &&
         tar -C /home/buildbot/www/buildbot.net/buildbot/docs -zvxf master/docs/docs.tgz &&
-        chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/docs/{nine,latest} &&
-        find /home/buildbot/www/buildbot.net/buildbot/docs/{latest,nine} -name '*.html' | xargs python /home/buildbot/www/buildbot.net/buildbot/add-tracking.py
+        chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/docs/latest &&
+        find /home/buildbot/www/buildbot.net/buildbot/docs/latest -name '*.html' | xargs python /home/buildbot/www/buildbot.net/buildbot/add-tracking.py
         """), name="docs to web", flunkOnFailure=True, haltOnFailure=True),
 
     ])
@@ -306,23 +300,18 @@ builders.append({
     'slavenames' : names(get_slaves(buildbot_net=True)),
     'factory' : mkdocsfactory(),
     'category' : 'docs' })
-master_builders.append(builders[-1])
-nine_builders.append(builders[-1])
 
 builders.append({
     'name' : 'coverage',
     'slavenames' : names(get_slaves(buildbot_net=True)),
     'factory' : mkcoveragefactory(),
     'category' : 'docs' })
-master_builders.append(builders[-1])
 
 builders.append({
     'name' : 'linty',
     'slavenames' : names(get_slaves(buildbot_net=True)),
     'factory' : mklintyfactory(),
     'category' : 'docs' })
-master_builders.append(builders[-1])
-nine_builders.append(builders[-1])
 
 #### single-slave builders
 
@@ -336,7 +325,6 @@ for sl in get_slaves(run_single=True).values():
         'slavenames' : [ sl.slavename ],
         'factory' : f,
         'category' : 'slave' })
-    master_builders.append(builders[-1])
 
 #### operating systems
 
@@ -351,8 +339,6 @@ for opsys in set(sl.os for sl in slaves if sl.os is not None):
         'slavenames' : names(get_slaves(os=opsys)),
         'factory' : f,
         'category' : 'os' })
-    master_builders.append(builders[-1])
-    nine_builders.append(builders[-1])
         
 #### databases
 
@@ -368,10 +354,8 @@ for db in set(itertools.chain.from_iterable(sl.databases.keys() for sl in slaves
         'slavenames' : names(get_slaves(db=db)),
         'factory' : f,
         'category' : 'db' })
-    master_builders.append(builders[-1])
-    nine_builders.append(builders[-1])
         
-#### www (nine)
+#### www
 
 f = mktestfactory(www=True)
 builders.append({
@@ -379,7 +363,6 @@ builders.append({
     'slavenames' : names(get_slaves(nodejs=True)),
     'factory' : f,
     'category' : 'www' })
-nine_builders.append(builders[-1])
 
 #### config builders
 
@@ -392,14 +375,15 @@ twisted_versions = dict(
     tw1300='Twisted==14.0.0',
 )
 
-# versions of twisted only supported by slave
-slave_only_twisted = ['tw0900', 'tw1020']
-
 python_versions = dict(
     py25='python2.5',
     py26='python2.6',
     py27='python2.7',
 )
+
+# versions of twisted and python only supported by slave
+slave_only_twisted = ['tw0900', 'tw1020']
+slave_only_python = ['py25']
 
 # incompatible versions of twisted and python
 incompat_tw_py = [
@@ -419,7 +403,7 @@ for py, python_version in python_versions.items():
         if (tw, py) in incompat_tw_py:
             continue
 
-        slave_only = tw in slave_only_twisted
+        slave_only = tw in slave_only_twisted or py in slave_only_python
         f = mktestfactory(twisted_version=twisted_version, python_version=python_version,
                 slave_only=slave_only)
         name = "%s-%s" % (py, tw)
@@ -428,9 +412,6 @@ for py, python_version in python_versions.items():
             'slavenames' : config_slaves,
             'factory' : f,
             'category' : 'config' })
-        master_builders.append(builders[-1])
-        if py != "py25":
-            nine_builders.append(builders[-1])
 
 # py24 + tw0810 for slave only
 config_slaves = names(get_slaves(run_config=True, py24=True, tw0810=True))
@@ -442,7 +423,6 @@ builders.append({
     'slavenames' : config_slaves,
     'factory' : f,
     'category' : 'config' })
-master_builders.append(builders[-1])
 
 pypy_versions = dict(
     pypy17='pypy1.7',
@@ -467,8 +447,6 @@ for py, python_version in pypy_versions.items():
             'slavenames' : config_slaves,
             'factory' : f,
             'category' : 'config' })
-        master_builders.append(builders[-1])
-        nine_builders.append(builders[-1])
 
 config_slaves = names(get_slaves(run_config=True, py27=True))
 
@@ -503,8 +481,6 @@ for sa, sqlalchemy_version in sqlalchemy_versions.items():
         'slavenames' : config_slaves,
         'factory' : f,
         'category' : 'config' })
-    master_builders.append(builders[-1])
-    nine_builders.append(builders[-1])
 
 for sam, sqlalchemy_migrate_version in sqlalchemy_migrate_versions.items():
     sqlalchemy_version = sqlalchemy_versions['sa094']
@@ -519,5 +495,3 @@ for sam, sqlalchemy_migrate_version in sqlalchemy_migrate_versions.items():
         'slavenames' : config_slaves,
         'factory' : f,
         'category' : 'config' })
-    master_builders.append(builders[-1])
-    nine_builders.append(builders[-1])
