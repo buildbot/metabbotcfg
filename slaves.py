@@ -84,15 +84,8 @@ class MySlave(MySlaveBase, BuildSlave):
 
 slaves = [
     # Local
-    MySlave('buildbot.net',
-        buildbot_net=True,
-        run_config=False,
-        run_single=False,
-        max_builds=1,
-        ),
-
-     # Dustin Mitchell
-    MySlave('knuth.r.igoro.us',
+    # Dustin Mitchell
+    MySlave('knuth',
         max_builds=4,
         run_single=False,
         run_config=True,
@@ -127,102 +120,6 @@ slaves = [
                 'mysql+mysqldb://metabuildslave@localhost/metabuildslave'),
         },
         ),
-
-    # koobs - Kubilay Kocak <koobs dot freebsd at gmail.com> 
-    MySlave('koobs-freebsd9',
-        max_builds=4,
-        run_single=False,
-        run_config=True,
-        py24=False,
-        py25=False,
-        py26=False,
-        py27=True,
-        ),
-
-    MySlave('koobs-freebsd10',
-        max_builds=4,
-        run_single=False,
-        run_config=True,
-        py24=False,
-        py25=False,
-        py26=False,
-        py27=True,
-        ),
-
-    # tomprince
-    MySlave('tomprince-socrates-winxp-1',
-        max_builds=1,
-        run_single=False,
-        os='winxp-msys',
-        # note that use_simple is implicit
-        ),
-
-    # maruel
-    MySlave('xp-msysgit',
-        max_builds=1,
-        run_single=False,
-        os='winxp-msys',
-        # note that use_simple is implicit
-        ),
-
-    MySlave('win7-cygwin',
-        max_builds=1,
-        run_single=False,
-        os='win7-cygwin',
-        test_master=False, # master doesn't work on cygwin
-        # note that use_simple is implicit
-        ),
-
-    # LSU
-    MySlave('bghimi4-2',  # ssh -p 2525 djmitche@josh.cct.lsu.edu
-        max_builds=2,
-        run_single=False,
-        run_config=True,
-        py25=True,
-        py26=True,
-        py27=True,
-        # os x mountain lion doesn't support old twisteds, it seems
-        tw0900=False,
-        tw1020=False,
-        os='osx-mtnlion',
-        ),
-
-    # (EC2 - kept here as an indication of how to set it up)
-#    MyEC2LatentBuildSlave('ec2slave', 'm1.small',
-#        ami='ami-5a749c33',
-#        keypair_name='buildbot-setup',
-#        security_name='buildslaves',
-#        ),
-    MySlave("debian", run_single=False, run_config=False, max_builds=4)
-]
-
-# these are slaves that haven't been up and from whose owners I have not heard in a while
-retired_slaves = [
-    # Dustin Sallings
-    MySlave('ubuntu810-64',
-        max_builds=1),
-    MySlave('minime',
-        max_builds=1),
-    MySlave('freebsd_7',
-        max_builds=1),
-    # (gets command timeouts while doing virtualenv install)
-    MySlave('minimata',
-        ),
-
-
-    # tomprince
-    MySlave('tomprince-hermes-gentoo-1',
-        max_builds=1,
-        run_single=False,
-        run_config=True,
-        pypy17=True,
-        pypy18=True,
-        ),
-
-    # Steve 'Ashcrow' Milner
-    MySlave('centos_5_python2_4',
-        ),
-
 ]
 
 def get_slaves(db=None, *args, **kwargs):

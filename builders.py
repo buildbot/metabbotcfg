@@ -149,7 +149,7 @@ def mktestfactory(twisted_version='twisted', python_version='python',
     if www:
         extra_packages.append('--editable=www')
 
-    virtualenv_packages = [twisted_version, sqlalchemy_version,
+    virtualenv_packages = ['zope.interface==3.6.1', twisted_version, sqlalchemy_version,
         sqlalchemy_migrate_version, 'multiprocessing==2.6.2.1', 'mock==0.8.0',
         '--editable=slave'] + extra_packages
     if python_version != 'python2.5':
@@ -293,26 +293,6 @@ def mklintyfactory():
     ])
     return f
 
-#### docs, coverage, etc.
-
-builders.append({
-    'name' : 'docs',
-    'slavenames' : names(get_slaves(buildbot_net=True)),
-    'factory' : mkdocsfactory(),
-    'category' : 'docs' })
-
-builders.append({
-    'name' : 'coverage',
-    'slavenames' : names(get_slaves(buildbot_net=True)),
-    'factory' : mkcoveragefactory(),
-    'category' : 'docs' })
-
-builders.append({
-    'name' : 'linty',
-    'slavenames' : names(get_slaves(buildbot_net=True)),
-    'factory' : mklintyfactory(),
-    'category' : 'docs' })
-
 #### single-slave builders
 
 for sl in get_slaves(run_single=True).values():
@@ -324,7 +304,7 @@ for sl in get_slaves(run_single=True).values():
         'name' : 'slave-%s' % sl.slavename,
         'slavenames' : [ sl.slavename ],
         'factory' : f,
-        'category' : 'slave' })
+        'tags' : ['slave'] })
 
 #### operating systems
 
@@ -338,7 +318,7 @@ for opsys in set(sl.os for sl in slaves if sl.os is not None):
         'name' : 'os-%s' % opsys,
         'slavenames' : names(get_slaves(os=opsys)),
         'factory' : f,
-        'category' : 'os' })
+        'tags' : ['os'] })
         
 #### databases
 
@@ -353,7 +333,7 @@ for db in set(itertools.chain.from_iterable(sl.databases.keys() for sl in slaves
         'name' : 'db-%s' % db,
         'slavenames' : names(get_slaves(db=db)),
         'factory' : f,
-        'category' : 'db' })
+        'tags' : ['db'] })
         
 #### www
 
@@ -362,7 +342,7 @@ builders.append({
     'name' : 'www',
     'slavenames' : names(get_slaves(nodejs=True)),
     'factory' : f,
-    'category' : 'www' })
+    'tags' : ['www'] })
 
 #### config builders
 
@@ -411,7 +391,7 @@ for py, python_version in python_versions.items():
             'name' : name,
             'slavenames' : config_slaves,
             'factory' : f,
-            'category' : 'config' })
+            'tags' : ['config'] })
 
 # py24 + tw0810 for slave only
 config_slaves = names(get_slaves(run_config=True, py24=True, tw0810=True))
@@ -422,7 +402,7 @@ builders.append({
     'name' : name,
     'slavenames' : config_slaves,
     'factory' : f,
-    'category' : 'config' })
+    'tags' : ['config'] })
 
 pypy_versions = dict(
     pypy17='pypy1.7',
@@ -446,7 +426,7 @@ for py, python_version in pypy_versions.items():
             'name' : name,
             'slavenames' : config_slaves,
             'factory' : f,
-            'category' : 'config' })
+            'tags' : ['config'] })
 
 config_slaves = names(get_slaves(run_config=True, py27=True))
 
@@ -480,7 +460,7 @@ for sa, sqlalchemy_version in sqlalchemy_versions.items():
         'name' : name,
         'slavenames' : config_slaves,
         'factory' : f,
-        'category' : 'config' })
+        'tags' : ['config'] })
 
 for sam, sqlalchemy_migrate_version in sqlalchemy_migrate_versions.items():
     sqlalchemy_version = sqlalchemy_versions['sa094']
@@ -494,4 +474,4 @@ for sam, sqlalchemy_migrate_version in sqlalchemy_migrate_versions.items():
         'name' : name,
         'slavenames' : config_slaves,
         'factory' : f,
-        'category' : 'config' })
+        'tags' : ['config'] })
