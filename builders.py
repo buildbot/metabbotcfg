@@ -1,6 +1,7 @@
 import textwrap
 import itertools
 
+from buildbot import locks
 from buildbot.process import factory
 from buildbot.process.properties import Interpolate
 from buildbot.steps.source.git import Git
@@ -18,9 +19,14 @@ gitStep = Git(repourl='git://github.com/buildbot/buildbot.git', mode='full', met
 
 ####### Custom Steps
 
+# only allow one VirtualenvSetup to run on a slave at a time.  This prevents
+# collisions in the shared package cache.
+veLock = locks.SlaveLock('veLock')
+
 class VirtualenvSetup(ShellCommand):
     def __init__(self, virtualenv_dir='sandbox', virtualenv_python='python',
                  virtualenv_packages=[], no_site_packages=False, **kwargs):
+        kwargs['locks'] = kwargs.get(locks, []) + [veLock.access('exclusive')]
         ShellCommand.__init__(self, **kwargs)
 
         self.virtualenv_dir = virtualenv_dir
@@ -47,7 +53,6 @@ class VirtualenvSetup(ShellCommand):
         command.append("NSP_ARG='%s'" %
                 ('--no-site-packages' if self.no_site_packages else ''))
 
-        # set up the virtualenv if it does not already exist
         command.append(textwrap.dedent("""\
         # first, set up the virtualenv if it hasn't already been done
         if ! test -f "$VE/bin/pip"; then
@@ -66,11 +71,16 @@ class VirtualenvSetup(ShellCommand):
         fi
         """).strip())
 
+        command.append(textwrap.dedent("""\
+        # remove old cached packages
+        rm ../http*buildbot.buildbot.net*
+        """).strip())
+
         # now install each requested package
         for pkg in self.virtualenv_packages:
             command.append(textwrap.dedent("""\
             echo "Installing %(pkg)s";
-            "$VE/bin/pip" install --no-index --download-cache="$PWD/.." --find-links="$PKG_URL" %(pkg)s || exit 1 
+            "$VE/bin/pip" install --no-index --download-cache="$PWD/../.." --find-links="$PKG_URL" %(pkg)s || exit 1 
             """).strip() % dict(pkg=pkg))
 
         # make $VE/bin/trial work, even if we inherited trial from site-packages
