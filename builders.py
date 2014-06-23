@@ -221,7 +221,7 @@ def mktestfactory(twisted_version='twisted', python_version='python',
         usePTY=False,
         name='test slave'),
     ])
-    if not slave_only:
+    if not slave_only and not db:
         f.addSteps([
     Trial(workdir="build/master", testpath='.',
         tests='buildbot.test',
