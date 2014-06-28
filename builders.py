@@ -167,6 +167,8 @@ def mktestfactory(twisted_version='twisted', python_version='python',
         virtualenv_packages.extend(['moto==0.3.1', 'boto==2.29.1'])
         # and, because the latest versions of these don't work on 2.5, and the version of
         # pip that works on 2.5 doesn't understand that '==' means 'I want this version'
+        virtualenv_packages.insert(0, 'http://buildbot.buildbot.net/static/pkgs/zope.interface-4.1.1.tar.gz')
+    if python_version in ('python2.4', 'python2.5'):
         virtualenv_packages.insert(0, 'http://buildbot.buildbot.net/static/pkgs/zope.interface-3.6.1.tar.gz')
         virtualenv_packages.insert(0, 'http://buildbot.buildbot.net/static/pkgs/setuptools-1.4.2.tar.gz')
     if sqlalchemy_migrate_version:
