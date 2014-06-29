@@ -1,6 +1,7 @@
 import textwrap
 import itertools
 
+from buildbot import locks
 from buildbot.process import factory
 from buildbot.process.properties import Interpolate
 from buildbot.steps.source.git import Git
@@ -18,9 +19,14 @@ gitStep = Git(repourl='git://github.com/buildbot/buildbot.git', mode='full', met
 
 ####### Custom Steps
 
+# only allow one VirtualenvSetup to run on a slave at a time.  This prevents
+# collisions in the shared package cache.
+veLock = locks.SlaveLock('veLock')
+
 class VirtualenvSetup(ShellCommand):
     def __init__(self, virtualenv_dir='sandbox', virtualenv_python='python',
                  virtualenv_packages=[], no_site_packages=False, **kwargs):
+        kwargs['locks'] = kwargs.get(locks, []) + [veLock.access('exclusive')]
         ShellCommand.__init__(self, **kwargs)
 
         self.virtualenv_dir = virtualenv_dir
@@ -47,7 +53,6 @@ class VirtualenvSetup(ShellCommand):
         command.append("NSP_ARG='%s'" %
                 ('--no-site-packages' if self.no_site_packages else ''))
 
-        # set up the virtualenv if it does not already exist
         command.append(textwrap.dedent("""\
         # first, set up the virtualenv if it hasn't already been done
         if ! test -f "$VE/bin/pip"; then
@@ -66,11 +71,16 @@ class VirtualenvSetup(ShellCommand):
         fi
         """).strip())
 
+        command.append(textwrap.dedent("""\
+        # remove old cached packages
+        rm ../http*buildbot.buildbot.net*
+        """).strip())
+
         # now install each requested package
         for pkg in self.virtualenv_packages:
             command.append(textwrap.dedent("""\
             echo "Installing %(pkg)s";
-            "$VE/bin/pip" install --no-index --download-cache="$PWD/.." --find-links="$PKG_URL" %(pkg)s || exit 1 
+            "$VE/bin/pip" install --no-index --download-cache="$PWD/../.." --find-links="$PKG_URL" %(pkg)s || exit 1 
             """).strip() % dict(pkg=pkg))
 
         # make $VE/bin/trial work, even if we inherited trial from site-packages
@@ -152,13 +162,16 @@ def mktestfactory(twisted_version='twisted', python_version='python',
     virtualenv_packages = ['zope.interface==3.6.1', twisted_version, sqlalchemy_version,
         sqlalchemy_migrate_version, 'multiprocessing==2.6.2.1', 'mock==0.8.0',
         '--editable=slave'] + extra_packages
-    if python_version != 'python2.5':
+    if python_version > 'python2.5':
         # because some of the dependencies don't work on 2.5
         virtualenv_packages.extend(['moto==0.3.1', 'boto==2.29.1'])
-        # and, because the latest versions of these don't work on 2.5, and the version of
+    if python_version in ('python2.4', 'python2.5'):
+        # and, because the latest versions of these don't work on <2.5, and the version of
         # pip that works on 2.5 doesn't understand that '==' means 'I want this version'
         virtualenv_packages.insert(0, 'http://buildbot.buildbot.net/static/pkgs/zope.interface-3.6.1.tar.gz')
         virtualenv_packages.insert(0, 'http://buildbot.buildbot.net/static/pkgs/setuptools-1.4.2.tar.gz')
+    else:
+        virtualenv_packages.insert(0, 'http://buildbot.buildbot.net/static/pkgs/zope.interface-4.1.1.tar.gz')
     if sqlalchemy_migrate_version:
         virtualenv_packages.append(sqlalchemy_migrate_version)
     if not slave_only:
@@ -211,7 +224,7 @@ def mktestfactory(twisted_version='twisted', python_version='python',
         usePTY=False,
         name='test slave'),
     ])
-    if not slave_only:
+    if not slave_only and not db:
         f.addSteps([
     Trial(workdir="build/master", testpath='.',
         tests='buildbot.test',
