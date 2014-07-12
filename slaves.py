@@ -95,12 +95,6 @@ slaves = [
         py26=True,
         py27=True,
         nodejs=True,
-        databases={
-            'postgres' : dict(BUILDBOT_TEST_DB_URL=
-                'postgresql+pg8000://metabuildslave@localhost/metabuildslave'),
-            'mysql' : dict(BUILDBOT_TEST_DB_URL=
-                'mysql+mysqldb://metabuildslave@localhost/metabuildslave'),
-        },
         ),
 
     # Mozilla
@@ -115,9 +109,9 @@ slaves = [
         pyqt4=True, # installed in system python
         databases={
             'postgres' : dict(BUILDBOT_TEST_DB_URL=
-                'postgresql+pg8000://metabuildslave@localhost/metabuildslave'),
+                'postgresql+pg8000://metabuildslave@localhost/ninebuildslave'),
             'mysql' : dict(BUILDBOT_TEST_DB_URL=
-                'mysql+mysqldb://metabuildslave@localhost/metabuildslave'),
+                'mysql+mysqldb://metabuildslave@localhost/ninebuildslave'),
         },
         ),
 ]
