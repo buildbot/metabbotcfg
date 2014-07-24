@@ -275,11 +275,11 @@ def mkdocsfactory():
 
     # manual
     ShellCommand(command=Interpolate(textwrap.dedent("""\
+        export VERSION=latest &&
         source sandbox/bin/activate &&
         make docs
         """)), name="create docs"),
     ShellCommand(command=textwrap.dedent("""\
-        export VERSION=latest &&
         tar -C /home/buildbot/www/buildbot.net/buildbot/docs -zvxf master/docs/docs.tgz &&
         chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/docs/latest &&
         find /home/buildbot/www/buildbot.net/buildbot/docs/latest -name '*.html' | xargs python /home/buildbot/www/buildbot.net/buildbot/add-tracking.py
