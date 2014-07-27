@@ -54,9 +54,12 @@ class VirtualenvSetup(ShellCommand):
                 ('--no-site-packages' if self.no_site_packages else ''))
 
         command.append(textwrap.dedent("""\
-        # first, set up the virtualenv if it hasn't already been done
-        if ! test -f "$VE/bin/pip"; then
-            echo "Setting up virtualenv $VE"
+        # first, set up the virtualenv if it hasn't already been done, or if it's
+        # broken (as sometimes happens when a slave's Python is updated)
+        if ! test -f "$VE/bin/pip" || ! "$VE/bin/python" -c 'import math'; then
+            echo "Setting up virtualenv $VE";
+            rm -rf "$VE";
+            test -d "$VE" && { echo "$VE couldn't be removed"; exit 1; };
             mkdir -p "$VE" || exit 1;
             # get the prerequisites for building a virtualenv with no pypi access 
             for prereq in virtualenv.py pip-0.8.2.tar.gz; do
