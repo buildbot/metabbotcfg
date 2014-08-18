@@ -160,6 +160,7 @@ def mktestfactory(twisted_version='twisted', python_version='python',
     subs['ve'] = ve
 
     if www:
+        extra_packages.append('--editable=pkg')
         extra_packages.append('--editable=www')
 
     virtualenv_packages = [twisted_version, sqlalchemy_version,
