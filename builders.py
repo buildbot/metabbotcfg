@@ -161,7 +161,9 @@ def mktestfactory(twisted_version='twisted', python_version='python',
 
     if www:
         extra_packages.append('--editable=pkg')
-        extra_packages.append('--editable=www')
+        extra_packages.append('--editable=www/base')
+        extra_packages.append('--editable=www/console_view')
+        extra_packages.append('--editable=www/waterfall_view')
 
     virtualenv_packages = [twisted_version, sqlalchemy_version,
         sqlalchemy_migrate_version, 'multiprocessing==2.6.2.1', 'mock==0.8.0',
