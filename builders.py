@@ -62,13 +62,13 @@ class VirtualenvSetup(ShellCommand):
             test -d "$VE" && { echo "$VE couldn't be removed"; exit 1; };
             mkdir -p "$VE" || exit 1;
             # get the prerequisites for building a virtualenv with no pypi access 
-            for prereq in virtualenv.py pip-0.8.2.tar.gz; do
+            for prereq in virtualenv.py pip-1.5.6.tar.gz; do
                 [ -f "$VE/$prereq" ] && continue
                 echo "Fetching $PKG_URL/$prereq"
                 $PYTHON -c "$PYGET" "$PKG_URL/$prereq" "$VE/$prereq" || exit 1;
             done;
             echo "Invoking virtualenv.py (this accesses pypi)"
-            "$PYTHON" "$VE/virtualenv.py" --distribute --python="$PYTHON" $NSP_ARG "$VE" || exit 1 
+            "$PYTHON" "$VE/virtualenv.py" --python="$PYTHON" $NSP_ARG "$VE" || exit 1 
         else
             echo "Virtualenv already exists"
         fi
@@ -304,16 +304,64 @@ def mklintyfactory():
         VirtualenvSetup(name='virtualenv setup',
             no_site_packages=True,
             virtualenv_packages=['pyflakes', 'pylint==1.1.0', 'pep8==1.4.6', '--editable=master', '--editable=slave'],
-            virtualenv_dir='sandbox',
+            virtualenv_dir='../sandbox',
             haltOnFailure=True),
 
-        PyFlakes(command="sandbox/bin/pyflakes master/buildbot", name="pyflakes - master", flunkOnFailure=True),
-        PyFlakes(command="sandbox/bin/pyflakes slave/buildslave", name="pyflakes - slave", flunkOnFailure=True),
-        ShellCommand(command="sandbox/bin/pylint --rcfile common/pylintrc buildbot", name="pylint - master", flunkOnFailure=True),
-        ShellCommand(command="sandbox/bin/pylint --rcfile common/pylintrc buildslave", name="pylint - slave", flunkOnFailure=True),
-        ShellCommand(command="sandbox/bin/pep8 --config common/pep8rc master/buildbot", name="pep8 - master", flunkOnFailure=True),
-        ShellCommand(command="sandbox/bin/pep8 --config common/pep8rc slave/buildslave", name="pep8 - slave", flunkOnFailure=True),
+        PyFlakes(command="../sandbox/bin/pyflakes master/buildbot", name="pyflakes - master", flunkOnFailure=True),
+        PyFlakes(command="../sandbox/bin/pyflakes slave/buildslave", name="pyflakes - slave", flunkOnFailure=True),
+        ShellCommand(command="../sandbox/bin/pylint --rcfile common/pylintrc buildbot", name="pylint - master", flunkOnFailure=True),
+        ShellCommand(command="../sandbox/bin/pylint --rcfile common/pylintrc buildslave", name="pylint - slave", flunkOnFailure=True),
+        ShellCommand(command="../sandbox/bin/pep8 --config common/pep8rc master/buildbot", name="pep8 - master", flunkOnFailure=True),
+        ShellCommand(command="../sandbox/bin/pep8 --config common/pep8rc slave/buildslave", name="pep8 - slave", flunkOnFailure=True),
     ])
+    return f
+
+def mkbuildsfactory():
+    f = factory.BuildFactory()
+    f.addSteps([
+        gitStep,
+        VirtualenvSetup(name='virtualenv setup',
+            no_site_packages=True,
+            virtualenv_packages=[
+                # required to build www packages (#2877)
+                '--editable=master', '--editable=pkg', 'mock',
+                # required to make wheels
+                'wheel',
+                # ..and this is required to actually build them correctly (#2883)
+                'setuptools'
+            ],
+            virtualenv_dir='../sandbox',
+            haltOnFailure=True),
+    ])
+
+    for name, workdir, command in [
+            ('buildbot', 'build/master', 'sdist'),
+            ('buildbot-slave', 'build/slave', 'sdist'),
+            ('buildbot_pkg', 'build/pkg', 'sdist'),
+            ('buildbot-www', 'build/www/base', 'bdist_wheel'),
+            ('buildbot-console-view', 'build/www/console_view', 'bdist_wheel'),
+            ('buildbot-waterfall-view', 'build/www/waterfall_view', 'bdist_wheel'),
+            ('buildbot-codeparameter', 'build/www/codeparameter', 'bdist_wheel'),
+        ]:
+        levels = workdir.count('/') + 1
+        sandbox = "../" * levels + "sandbox"
+        extension = {'sdist': '.tar.gz', 'bdist_wheel': '-py2-none-any.whl'}[command]
+        pkgname = name
+        if command == 'bdist_wheel':
+            pkgname = pkgname.replace('-', '_')  # wheels always use _
+        f.addSteps([
+            # the 'buildbot-www' package requires that the sandbox be *active* so that it
+            # can find 'buildbot'
+            ShellCommand(command="rm -rf dist/*; source %s/bin/activate; python setup.py %s"
+                                 % (sandbox, command), workdir=workdir,
+                         name=name, flunkOnFailure=True, haltOnFailure=False,
+                         env={'BUILDBOT_VERSION': '1latest'}),  # wheels require a digit
+            ShellCommand(command="""
+                mv dist/%(pkgname)s-1latest%(extension)s ~/www/builds.buildbot.net/ &&
+                chmod a+r ~/www/builds.buildbot.net/%(pkgname)s-1latest%(extension)s
+            """ % dict(pkgname=pkgname, extension=extension),
+                         workdir=workdir, name=name + " mv", flunkOnFailure=True, haltOnFailure=False),
+        ])
     return f
 
 #### docs, coverage, etc.
@@ -335,6 +383,12 @@ builders.append({
     'slavenames' : names(get_slaves(buildbot_net=True)),
     'factory' : mklintyfactory(),
     'category' : 'docs' })
+
+builders.append({
+    'name' : 'builds',
+    'slavenames' : names(get_slaves(buildbot_net=True)),
+    'factory' : mkbuildsfactory(),
+    'category' : 'builds' })
 
 #### single-slave builders
 
