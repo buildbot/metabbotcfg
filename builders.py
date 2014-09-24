@@ -434,12 +434,13 @@ for db in set(itertools.chain.from_iterable(sl.databases.keys() for sl in slaves
         
 #### www
 
-f = mktestfactory(www=True)
-builders.append({
-    'name' : 'www',
-    'slavenames' : names(get_slaves(nodejs=True)),
-    'factory' : f,
-    'category' : 'www' })
+# http://trac.buildbot.net/ticket/2877#comment:7
+#f = mktestfactory(www=True)
+#builders.append({
+#    'name' : 'www',
+#    'slavenames' : names(get_slaves(nodejs=True)),
+#    'factory' : f,
+#    'category' : 'www' })
 
 #### config builders
 
