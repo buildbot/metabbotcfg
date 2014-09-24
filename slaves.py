@@ -157,22 +157,6 @@ slaves = [
         # note that use_simple is implicit
         ),
 
-    # maruel
-    MySlave('xp-msysgit',
-        max_builds=1,
-        run_single=False,
-        os='winxp-msys',
-        # note that use_simple is implicit
-        ),
-
-    MySlave('win7-cygwin',
-        max_builds=1,
-        run_single=False,
-        os='win7-cygwin',
-        test_master=False, # master doesn't work on cygwin
-        # note that use_simple is implicit
-        ),
-
     # LSU
     MySlave('bghimi4-2',  # ssh -p 2525 djmitche@josh.cct.lsu.edu
         max_builds=2,
@@ -185,6 +169,14 @@ slaves = [
         tw0900=False,
         tw1020=False,
         os='osx-mtnlion',
+        ),
+
+    # Reto Sonderegger <reto.sonderegger@gmx.ch>
+    MySlave('metrohm-win81',
+        max_builds=1,
+        run_single=False,
+        os='win81',
+        # note that use_simple is implicit
         ),
 
     # (EC2 - kept here as an indication of how to set it up)
@@ -207,6 +199,22 @@ retired_slaves = [
         max_builds=1),
     # (gets command timeouts while doing virtualenv install)
     MySlave('minimata',
+        ),
+
+    # maruel
+    MySlave('xp-msysgit',
+        max_builds=1,
+        run_single=False,
+        os='winxp-msys',
+        # note that use_simple is implicit
+        ),
+
+    MySlave('win7-cygwin',
+        max_builds=1,
+        run_single=False,
+        os='win7-cygwin',
+        test_master=False, # master doesn't work on cygwin
+        # note that use_simple is implicit
         ),
 
 
