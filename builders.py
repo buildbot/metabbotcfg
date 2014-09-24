@@ -337,7 +337,7 @@ def mkbuildsfactory():
     for name, workdir, command in [
             ('buildbot', 'build/master', 'sdist'),
             ('buildbot-slave', 'build/slave', 'sdist'),
-            ('buildbot_pkg', 'build/pkg', 'sdist'),
+            ('buildbot-pkg', 'build/pkg', 'sdist'),
             ('buildbot-www', 'build/www/base', 'bdist_wheel'),
             ('buildbot-console-view', 'build/www/console_view', 'bdist_wheel'),
             ('buildbot-waterfall-view', 'build/www/waterfall_view', 'bdist_wheel'),
