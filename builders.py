@@ -6,6 +6,7 @@ from buildbot.process import factory
 from buildbot.process.properties import Interpolate
 from buildbot.steps.source.git import Git
 from buildbot.steps.shell import Compile, Test, ShellCommand
+from buildbot.steps.slave import RemoveDirectory, MakeDirectory
 from buildbot.steps.transfer import FileDownload
 from buildbot.steps.python_twisted import Trial
 from buildbot.steps.python import PyFlakes
@@ -61,8 +62,8 @@ class VirtualenvSetup(ShellCommand):
             rm -rf "$VE";
             test -d "$VE" && { echo "$VE couldn't be removed"; exit 1; };
             mkdir -p "$VE" || exit 1;
-            # get the prerequisites for building a virtualenv with no pypi access 
-            for prereq in virtualenv.py pip-1.5.6.tar.gz; do
+            # get the prerequisites for building a virtualenv with no pypi access (including both tarballs and wheels)
+            for prereq in virtualenv.py pip-1.5.6.tar.gz setuptools-5.8-py2.py3-none-any.whl pip-1.5.6-py2.py3-none-any.whl; do
                 [ -f "$VE/$prereq" ] && continue
                 echo "Fetching $PKG_URL/$prereq"
                 $PYTHON -c "$PYGET" "$PKG_URL/$prereq" "$VE/$prereq" || exit 1;
@@ -332,6 +333,8 @@ def mkbuildsfactory():
             ],
             virtualenv_dir='../sandbox',
             haltOnFailure=True),
+        RemoveDirectory(dir='build/uploads'),
+        MakeDirectory(dir='build/uploads'),
     ])
 
     for name, workdir, command in [
@@ -357,11 +360,56 @@ def mkbuildsfactory():
                          name=name, flunkOnFailure=True, haltOnFailure=False,
                          env={'BUILDBOT_VERSION': '1latest'}),  # wheels require a digit
             ShellCommand(command="""
-                mv dist/%(pkgname)s-1latest%(extension)s ~/www/builds.buildbot.net/ &&
+                mv %(workdir)s/dist/%(pkgname)s-1latest%(extension)s build/uploads &&
                 chmod a+r ~/www/builds.buildbot.net/%(pkgname)s-1latest%(extension)s
-            """ % dict(pkgname=pkgname, extension=extension),
-                         workdir=workdir, name=name + " mv", flunkOnFailure=True, haltOnFailure=False),
+            """ % dict(pkgname=pkgname, extension=extension, workdir=workdir),
+                         name=name + " mv", flunkOnFailure=True, haltOnFailure=False,
+                         workdir='.'),
         ])
+
+    # now upload all of those.  SFTP is annoying to script.
+    script = textwrap.dedent("""\
+        # get the version from git, since 'buildbot.version' only has the x.y.z prefix
+        VERSION=$(git describe --tags --always)
+
+        version=$(mktemp)
+        echo $VERSION >${version}
+
+        readme=$(mktemp)
+        cat <<EOF >${readme}
+        This directory contains the latest versions of Buildbot, packaged as they would
+        be for a release.
+
+        These are most useful for developers wishing to use a working web UI without installing Node:
+
+        pip intall http:s//ftp.buildbot.net/latest/buildbot-www-1latest-py2-none-any.whl
+
+        The packages here are for ${VERSION}.
+
+        EOF
+
+        batchfile=$(mktemp)
+        cat <<EOF >${batchfile}
+        cd pub/latest
+        put uploads/*
+        put ${readme} README.txt
+        chmod 644 README.txt
+        put ${version} VERSION.txt
+        chmod 644 VERSION.txt
+        EOF
+
+
+        sftp \
+            -b ${batchfile} \
+            -oPort=2200 \
+            -oIdentityFile=~/.ssh/ftp.key \
+            buildbot@ftp.buildbot.net
+        rv=$?
+
+        rm ${batchfile} ${readme} ${version}
+
+        exit $rv""")
+    f.addStep(ShellCommand(command=script, flunkOnFailure=True))
     return f
 
 #### docs, coverage, etc.
