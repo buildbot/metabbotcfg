@@ -361,7 +361,6 @@ def mkbuildsfactory():
                          env={'BUILDBOT_VERSION': '1latest'}),  # wheels require a digit
             ShellCommand(command="""
                 mv %(workdir)s/dist/%(pkgname)s-1latest%(extension)s build/uploads &&
-                chmod a+r ~/www/builds.buildbot.net/%(pkgname)s-1latest%(extension)s
             """ % dict(pkgname=pkgname, extension=extension, workdir=workdir),
                          name=name + " mv", flunkOnFailure=True, haltOnFailure=False,
                          workdir='.'),
