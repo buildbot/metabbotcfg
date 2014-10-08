@@ -360,7 +360,7 @@ def mkbuildsfactory():
                          name=name, flunkOnFailure=True, haltOnFailure=False,
                          env={'BUILDBOT_VERSION': '1latest'}),  # wheels require a digit
             ShellCommand(command="""
-                mv %(workdir)s/dist/%(pkgname)s-1latest%(extension)s build/uploads &&
+                mv %(workdir)s/dist/%(pkgname)s-1latest%(extension)s build/uploads
             """ % dict(pkgname=pkgname, extension=extension, workdir=workdir),
                          name=name + " mv", flunkOnFailure=True, haltOnFailure=False,
                          workdir='.'),
