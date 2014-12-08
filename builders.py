@@ -59,7 +59,7 @@ class VirtualenvSetup(ShellCommand):
             echo "Setting up virtualenv $VE"
             mkdir -p "$VE" || exit 1;
             # get the prerequisites for building a virtualenv with no pypi access 
-            for prereq in virtualenv.py pip-0.8.2.tar.gz; do
+            for prereq in virtualenv.py pip-1.5.6-py2.py3-none-any.whl setuptools-7.0-py2.py3-none-any.whl; do
                 [ -f "$VE/$prereq" ] && continue
                 echo "Fetching $PKG_URL/$prereq"
                 $PYTHON -c "$PYGET" "$PKG_URL/$prereq" "$VE/$prereq" || exit 1;
