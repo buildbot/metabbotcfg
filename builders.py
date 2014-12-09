@@ -10,12 +10,13 @@ from buildbot.steps.transfer import FileDownload
 from buildbot.steps.python_twisted import Trial
 from buildbot.steps.python import PyFlakes
 
+from metabbotcfg.common import GIT_URL
 from metabbotcfg.slaves import slaves, get_slaves, names
 
 builders = []
 
 # slaves seem to have a hard time fetching from github, so retry
-gitStep = Git(repourl='git://github.com/buildbot/buildbot.git', mode='full', method='fresh', retryFetch=True)
+gitStep = Git(repourl=GIT_URL, mode='full', method='fresh', retryFetch=True)
 
 ####### Custom Steps
 
