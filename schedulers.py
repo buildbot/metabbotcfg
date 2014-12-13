@@ -4,6 +4,7 @@ from buildbot.schedulers.basic import SingleBranchScheduler
 from buildbot.schedulers.forcesched import ForceScheduler, FixedParameter, ChoiceStringParameter
 
 from metabbotcfg import builders
+from metabbotcfg.common import GIT_URL
 from metabbotcfg.debian import schedulers as deb_schedulers
 
 schedulers.append(SingleBranchScheduler(name="all", branch='master',
@@ -15,7 +16,7 @@ schedulers.append(SingleBranchScheduler(name="all", branch='master',
 #                                 builderNames=[ b['name'] for b in builders.builders if b['name'] not in ('docs',) ]))
 
 schedulers.append(ForceScheduler(name="force",
-    repository=FixedParameter(name="repository", default='git://github.com/buildbot/buildbot.git'),
+    repository=FixedParameter(name="repository", default=GIT_URL),
     branch=ChoiceStringParameter(name="branch", default="master", choices=["master", "eight"]),
     project=FixedParameter(name="project", default=""),
     properties=[],
