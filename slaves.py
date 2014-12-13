@@ -4,7 +4,7 @@ from buildbot.buildslave import BuildSlave
 class MySlaveBase(object):
     # true if this box is buildbot.net, and can build docs, etc.
     buildbot_net = False
-    
+
     # true if this box should use a 'simple' factory, meaning no virtualenv
     # (basically good for windows)
     use_simple = False
@@ -128,7 +128,7 @@ slaves = [
         },
         ),
 
-    # koobs - Kubilay Kocak <koobs dot freebsd at gmail.com> 
+    # koobs - Kubilay Kocak <koobs dot freebsd at gmail.com>
     MySlave('koobs-freebsd9',
         max_builds=4,
         run_single=False,
