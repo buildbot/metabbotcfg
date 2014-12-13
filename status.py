@@ -10,7 +10,8 @@ authz = Authz(auth=BasicAuth(users),
     forceAllBuilds='auth',
 )
 status.append(html.WebStatus(
-                http_port=8010,
+                # localhost is not available in the jail
+                http_port="tcp:8010:interface=192.168.80.239",
                 authz=authz,
                 order_console_by_time=True,
                 revlink="http://github.com/buildbot/buildbot/commit/%s",
