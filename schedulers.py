@@ -1,13 +1,9 @@
 schedulers = []
 
 from buildbot.schedulers.basic import SingleBranchScheduler
-from buildbot.schedulers.forcesched import ForceScheduler, FixedParameter, StringParameter, ChoiceStringParameter
+from buildbot.schedulers.forcesched import ForceScheduler, FixedParameter, ChoiceStringParameter
 
-from buildbot.schedulers.timed import Periodic
-from buildbot.schedulers.trysched import Try_Userpass
-from metabbotcfg.slaves import slaves
 from metabbotcfg import builders
-
 from metabbotcfg.debian import schedulers as deb_schedulers
 
 schedulers.append(SingleBranchScheduler(name="all", branch='master',

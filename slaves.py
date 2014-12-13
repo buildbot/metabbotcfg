@@ -1,4 +1,4 @@
-import sys, os
+import os
 from buildbot.buildslave import BuildSlave
 
 class MySlaveBase(object):
