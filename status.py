@@ -6,23 +6,24 @@ from buildbot.status.web.auth import BasicAuth
 
 users = [ ('dev', 'bbot!')] # it's not *that* secret..
 authz = Authz(auth=BasicAuth(users),
-	forceBuild='auth',
+        forceBuild='auth',
     forceAllBuilds='auth',
 )
 status.append(html.WebStatus(
-		http_port=8010,
-		authz=authz,
-		order_console_by_time=True,
-		revlink="http://github.com/buildbot/buildbot/commit/%s",
-		changecommentlink=(r'\b#(\d+)\b', r'http://buildbot.net/trac/ticket/\1',
-				   r'Ticket \g<0>'),
-		change_hook_dialects={ 'github' : True },
-		))
+                # localhost is not available in the jail
+                http_port="tcp:8010:interface=192.168.80.239",
+                authz=authz,
+                order_console_by_time=True,
+                revlink="http://github.com/buildbot/buildbot/commit/%s",
+                changecommentlink=(r'\b#(\d+)\b', r'http://buildbot.net/trac/ticket/\1',
+                                   r'Ticket \g<0>'),
+                change_hook_dialects={ 'github' : True },
+                ))
 
 from buildbot.status import words
 status.append(words.IRC(host="irc.freenode.net", nick="bb-meta",
-				notify_events={
-					'successToFailure' : 1,
-					'failureToSuccess' : 1,
-				},
+                                notify_events={
+                                        'successToFailure' : 1,
+                                        'failureToSuccess' : 1,
+                                },
                 channels=["#buildbot"]))

@@ -1,12 +1,13 @@
 """
 Debian-related components for metabuildbot.
 """
-buildbot_git_repo = 'git://github.com/buildbot/buildbot.git'
 debian_buildbot_git_repo = 'git://github.com/buildbot/debian-buildbot.git'
 debian_buildbot_slave_git_repo = 'git://github.com/buildbot/debian-buildbot-slave.git'
 
 from buildbot.schedulers.basic import SingleBranchScheduler
 from buildbot.schedulers.triggerable import Triggerable
+
+from metabbotcfg.common import GIT_URL
 
 masterTarballScheduler = SingleBranchScheduler(name="tarball-master", branch="master",
                                  treeStableTimer=10,
@@ -43,7 +44,7 @@ relative_dist_dir = "%(component)s/dist"
 remove_old_tarballs = ShellCommand(command=["find", ".", "-delete"],
         workdir=WithProperties("build/" + relative_dist_dir))
 
-buildbot_checkout = Git(repourl=buildbot_git_repo)
+buildbot_checkout = Git(repourl=GIT_URL)
 create_tarball = ShellCommand(command=["python", "setup.py", "sdist"],
         workdir=WithProperties("build/%(component)s"))
 
@@ -81,7 +82,7 @@ rm_rf = ShellCommand(command=["find", ".", "-delete"], workdir=Property('workdir
 debian_checkout = ShellCommand(command=["git", "clone",
     Property("debian-repo"), "-b" "unreleased", "."])
 fetch_upstream_branch = ShellCommand(
-        command=["git", "branch", "upstream", "origin/upstream"], 
+        command=["git", "branch", "upstream", "origin/upstream"],
         warnOnFailure=True)
 download_tarball = FileDownload(
         mastersrc=WithProperties("public_html/%(component)s/%(tarball)s"),
@@ -91,7 +92,7 @@ import_orig = ShellCommand(
     WithProperties("--upstream-version=%(tarball_version)s"),
     WithProperties("%(workdir)s/%(tarball)s")])
 update_changelog = ShellCommand(
-        command=["git-dch", "--auto", "--snapshot"], 
+        command=["git-dch", "--auto", "--snapshot"],
         env={"EDITOR":"/bin/true"})
 build_deb_package = ShellCommand(command=["git-buildpackage", "--git-ignore-new", "-us", "-uc"])
 
@@ -107,22 +108,22 @@ deb_factory = BuildFactory([
 
 builders = []
 builders.append(dict(
-        name="tarball-master", 
+        name="tarball-master",
         slavenames=["buildbot.net"],
         factory=tarball_factory,
         category='debian'))
 builders.append(dict(
-        name="tarball-slave", 
+        name="tarball-slave",
         slavenames=["buildbot.net"],
         factory=tarball_factory,
         category='debian'))
 builders.append(dict(
-        name="deb-master", 
+        name="deb-master",
         slavenames=["debian"],
         factory=deb_factory,
         category='debian'))
 builders.append(dict(
-        name="deb-slave", 
+        name="deb-slave",
         slavenames=["debian"],
         factory=deb_factory,
         category='debian'))
