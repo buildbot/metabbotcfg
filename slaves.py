@@ -35,8 +35,8 @@ class MySlaveBase(object):
     tw1020 = True
     tw1110 = True
     tw1220 = True
-    tw1300 = True
     tw1320 = True
+    tw1400 = True
 
     # true if this has nodejs installed, suitable for www
     nodejs = False
