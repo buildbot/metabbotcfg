@@ -276,7 +276,7 @@ def mkdocsfactory():
     # the version of Buildbot running the metabuildbot!
     VirtualenvSetup(name='virtualenv setup',
         no_site_packages=True,
-        virtualenv_packages=['sphinx==1.2.2', '--editable=master', '--editable=slave'],
+        virtualenv_packages=['sphinx==1.2.2', 'Pygments==2.0.1', '--editable=master', '--editable=slave'],
         virtualenv_dir='sandbox',
         haltOnFailure=True),
 
