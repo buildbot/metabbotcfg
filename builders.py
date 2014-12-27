@@ -467,7 +467,10 @@ for opsys in set(sl.os for sl in slaves if sl.os is not None):
 #### databases
 
 database_packages = {
-    'postgres' : [ 'pg8000' ],
+    'postgres' : [
+        # see http://trac.buildbot.net/ticket/2933#comment:4
+        'pg8000==1.9.14',
+    ],
     'mysql' : [ 'mysql-python' ],
 }
 
