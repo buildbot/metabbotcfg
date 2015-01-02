@@ -414,11 +414,11 @@ def mkbuildsfactory():
 
 #### docs, coverage, etc.
 
-builders.append({
-    'name' : 'docs',
-    'slavenames' : names(get_slaves(buildbot_net=True)),
-    'factory' : mkdocsfactory(),
-    'category' : 'docs' })
+#builders.append({
+#    'name' : 'docs',
+#    'slavenames' : names(get_slaves(buildbot_net=True)),
+#    'factory' : mkdocsfactory(),
+#    'category' : 'docs' })
 
 builders.append({
     'name' : 'coverage',
