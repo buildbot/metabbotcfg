@@ -287,11 +287,6 @@ def mkdocsfactory():
         source sandbox/bin/activate &&
         make docs
         """)), name="create docs"),
-    ShellCommand(command=textwrap.dedent("""\
-        tar -C /home/buildbot/www/buildbot.net/buildbot/docs -zvxf master/docs/docs.tgz &&
-        chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/docs/latest &&
-        find /home/buildbot/www/buildbot.net/buildbot/docs/latest -name '*.html' | xargs python /home/buildbot/www/buildbot.net/buildbot/add-tracking.py
-        """), name="docs to web", flunkOnFailure=True, haltOnFailure=True),
 
     ])
     return f
