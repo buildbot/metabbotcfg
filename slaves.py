@@ -80,40 +80,40 @@ class MySlave(MySlaveBase, BuildSlave):
 #        identifier, secret_identifier = self.get_ec2_creds(name)
 #        kwargs = self.extract_attrs(name, **kwargs)
 #        EC2LatentBuildSlave.__init__(self, name, password, ec2type,
-#            identifier=identifier, secret_identifier=secret_identifier, **kwargs)
+#            identifier=identifier, secret_identifier=secret_identifier,
+#            **kwargs)
+
+_PG_TEST_DB_URL = 'postgresql+pg8000://metabuildslave@localhost/ninebuildslave'
+_MYSQL_TEST_DB_URL = 'mysql+mysqldb://metabuildslave@localhost/ninebuildslave'
 
 slaves = [
     # Local
     # Dustin Mitchell
     MySlave('knuth',
-        max_builds=4,
-        run_single=False,
-        run_config=True,
-        tw0810 = True,
-        py24=True,
-        py25=True,
-        py26=True,
-        py27=True,
-        nodejs=True,
-        ),
+            max_builds=4,
+            run_single=False,
+            run_config=True,
+            tw0810=True,
+            py24=True,
+            py25=True,
+            py26=True,
+            py27=True,
+            nodejs=True),
 
     # Mozilla
     MySlave('buildbot-linux4', # buildbot-linux4.community.scl3.mozilla.com
-        max_builds=4,
-        run_single=False,
-        run_config=True,
-        py24=False,
-        py25=True, # hand-compiled in /usr/local
-        py26=True,
-        py27=True, # hand-compiled in /usr/local
-        pyqt4=True, # installed in system python
-        databases={
-            'postgres' : dict(BUILDBOT_TEST_DB_URL=
-                'postgresql+pg8000://metabuildslave@localhost/ninebuildslave'),
-            'mysql' : dict(BUILDBOT_TEST_DB_URL=
-                'mysql+mysqldb://metabuildslave@localhost/ninebuildslave'),
-        },
-        ),
+            max_builds=4,
+            run_single=False,
+            run_config=True,
+            py24=False,
+            py25=True, # hand-compiled in /usr/local
+            py26=True,
+            py27=True, # hand-compiled in /usr/local
+            pyqt4=True, # installed in system python
+            databases={
+                'postgres' : dict(BUILDBOT_TEST_DB_URL=_PG_TEST_DB_URL),
+                'mysql' : dict(BUILDBOT_TEST_DB_URL=_MYSQL_TEST_DB_URL)
+            }),
 ]
 
 def get_slaves(db=None, *args, **kwargs):
