@@ -59,14 +59,14 @@ class VirtualenvSetup(ShellCommand):
         if ! test -f "$VE/bin/pip"; then
             echo "Setting up virtualenv $VE"
             mkdir -p "$VE" || exit 1;
-            # get the prerequisites for building a virtualenv with no pypi access 
+            # get the prerequisites for building a virtualenv with no pypi access
             for prereq in virtualenv.py pip-1.5.6-py2.py3-none-any.whl setuptools-7.0-py2.py3-none-any.whl; do
                 [ -f "$VE/$prereq" ] && continue
                 echo "Fetching $PKG_URL/$prereq"
                 $PYTHON -c "$PYGET" "$PKG_URL/$prereq" "$VE/$prereq" || exit 1;
             done;
             echo "Invoking virtualenv.py (this accesses pypi)"
-            "$PYTHON" "$VE/virtualenv.py" --distribute --python="$PYTHON" $NSP_ARG "$VE" || exit 1 
+            "$PYTHON" "$VE/virtualenv.py" --distribute --python="$PYTHON" $NSP_ARG "$VE" || exit 1
         else
             echo "Virtualenv already exists"
         fi
@@ -81,7 +81,7 @@ class VirtualenvSetup(ShellCommand):
         for pkg in self.virtualenv_packages:
             command.append(textwrap.dedent("""\
             echo "Installing %(pkg)s";
-            "$VE/bin/pip" install --no-index --download-cache="$PWD/../.." --find-links="$PKG_URL" %(pkg)s || exit 1 
+            "$VE/bin/pip" install --no-index --download-cache="$PWD/../.." --find-links="$PKG_URL" %(pkg)s || exit 1
             """).strip() % dict(pkg=pkg))
 
         # make $VE/bin/trial work, even if we inherited trial from site-packages
@@ -94,12 +94,12 @@ class VirtualenvSetup(ShellCommand):
         # and finally, straighten out some preferred versions
         command.append(textwrap.dedent("""\
         echo "Checking for simplejson or json";
-        "$VEPYTHON" -c 'import json' 2>/dev/null || "$VEPYTHON" -c 'import simplejson' || 
-                    "$VE/bin/pip" install --no-index --download-cache="$PWD/.." --find-links="$PKG_URL" simplejson || exit 1; 
+        "$VEPYTHON" -c 'import json' 2>/dev/null || "$VEPYTHON" -c 'import simplejson' ||
+                    "$VE/bin/pip" install --no-index --download-cache="$PWD/.." --find-links="$PKG_URL" simplejson || exit 1;
         echo "Checking for sqlite3, including pysqlite3 on Python 2.5";
-        "$VEPYTHON" -c 'import sqlite3, sys; assert sys.version_info >= (2,6)' 2>/dev/null || 
+        "$VEPYTHON" -c 'import sqlite3, sys; assert sys.version_info >= (2,6)' 2>/dev/null ||
                     "$VEPYTHON" -c 'import pysqlite2.dbapi2' ||
-                    "$VE/bin/pip" install --no-index --download-cache="$PWD/.." --find-links="$PKG_URL" pysqlite || exit 1 
+                    "$VE/bin/pip" install --no-index --download-cache="$PWD/.." --find-links="$PKG_URL" pysqlite || exit 1
         """).strip())
 
         self.command = ';\n'.join(command)
@@ -337,7 +337,7 @@ for opsys in set(sl.os for sl in slaves if sl.os is not None):
         'slavenames' : names(get_slaves(os=opsys)),
         'factory' : f,
         'tags' : ['os'] })
-        
+
 #### databases
 
 database_packages = {
@@ -352,7 +352,7 @@ for db in set(itertools.chain.from_iterable(sl.databases.keys() for sl in slaves
         'slavenames' : names(get_slaves(db=db)),
         'factory' : f,
         'tags' : ['db'] })
-        
+
 #### www
 
 f = mktestfactory(www=True)
@@ -370,7 +370,7 @@ twisted_versions = dict(
     tw1110='Twisted==11.1.0',
     tw1220='Twisted==12.2.0',
     tw1320='Twisted==13.2.0',
-    tw1300='Twisted==14.0.0',
+    tw1400='Twisted==14.0.0',
 )
 
 python_versions = dict(
@@ -387,7 +387,6 @@ slave_only_python = ['py25']
 incompat_tw_py = [
     ('tw0900', 'py27'),
     ('tw1220', 'py25'),
-    ('tw1300', 'py25'),
     ('tw1320', 'py25'),
     ('tw1400', 'py25'),
 ]

@@ -4,7 +4,7 @@ from buildbot.buildslave import BuildSlave
 class MySlaveBase(object):
     # true if this box is buildbot.net, and can build docs, etc.
     buildbot_net = False
-    
+
     # true if this box should use a 'simple' factory, meaning no virtualenv
     # (basically good for windows)
     use_simple = False
@@ -35,8 +35,8 @@ class MySlaveBase(object):
     tw1020 = True
     tw1110 = True
     tw1220 = True
-    tw1300 = True
     tw1320 = True
+    tw1400 = True
 
     # true if this has nodejs installed, suitable for www
     nodejs = False
@@ -80,40 +80,47 @@ class MySlave(MySlaveBase, BuildSlave):
 #        identifier, secret_identifier = self.get_ec2_creds(name)
 #        kwargs = self.extract_attrs(name, **kwargs)
 #        EC2LatentBuildSlave.__init__(self, name, password, ec2type,
-#            identifier=identifier, secret_identifier=secret_identifier, **kwargs)
+#            identifier=identifier, secret_identifier=secret_identifier,
+#            **kwargs)
+
+_PG_TEST_DB_URL = 'postgresql+pg8000://metabuildslave@localhost/ninebuildslave'
+_MYSQL_TEST_DB_URL = 'mysql+mysqldb://metabuildslave@localhost/ninebuildslave'
 
 slaves = [
     # Local
     # Dustin Mitchell
     MySlave('knuth',
-        max_builds=4,
-        run_single=False,
-        run_config=True,
-        tw0810 = True,
-        py24=True,
-        py25=True,
-        py26=True,
-        py27=True,
-        nodejs=True,
-        ),
+            max_builds=4,
+            run_single=False,
+            run_config=True,
+            tw0810=True,
+            py24=True,
+            py25=True,
+            py26=True,
+            py27=True,
+            nodejs=True),
 
     # Mozilla
     MySlave('buildbot-linux4', # buildbot-linux4.community.scl3.mozilla.com
-        max_builds=4,
-        run_single=False,
-        run_config=True,
-        py24=False,
-        py25=True, # hand-compiled in /usr/local
-        py26=True,
-        py27=True, # hand-compiled in /usr/local
-        pyqt4=True, # installed in system python
-        databases={
-            'postgres' : dict(BUILDBOT_TEST_DB_URL=
-                'postgresql+pg8000://metabuildslave@localhost/ninebuildslave'),
-            'mysql' : dict(BUILDBOT_TEST_DB_URL=
-                'mysql+mysqldb://metabuildslave@localhost/ninebuildslave'),
-        },
-        ),
+            max_builds=4,
+            run_single=False,
+            run_config=True,
+            py24=False,
+            py25=True, # hand-compiled in /usr/local
+            py26=True,
+            py27=True, # hand-compiled in /usr/local
+            pyqt4=True, # installed in system python
+            databases={
+                'postgres' : dict(BUILDBOT_TEST_DB_URL=_PG_TEST_DB_URL),
+                'mysql' : dict(BUILDBOT_TEST_DB_URL=_MYSQL_TEST_DB_URL)
+            }),
+
+    # First build slave on Buildbot infrastructure
+    MySlave('bslave1',
+            max_builds=4,
+            run_single=False,
+            run_config=True,
+            py27=True)
 ]
 
 def get_slaves(db=None, *args, **kwargs):
