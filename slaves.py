@@ -4,7 +4,7 @@ from buildbot.buildslave import BuildSlave
 class MySlaveBase(object):
     # true if this box is buildbot.net, and can build docs, etc.
     buildbot_net = False
-    
+
     # true if this box should use a 'simple' factory, meaning no virtualenv
     # (basically good for windows)
     use_simple = False
