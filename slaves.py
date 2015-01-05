@@ -114,6 +114,13 @@ slaves = [
                 'postgres' : dict(BUILDBOT_TEST_DB_URL=_PG_TEST_DB_URL),
                 'mysql' : dict(BUILDBOT_TEST_DB_URL=_MYSQL_TEST_DB_URL)
             }),
+
+    # First build slave on Buildbot infrastructure
+    MySlave('bslave1',
+            max_builds=4,
+            run_single=False,
+            run_config=True,
+            py27=True)
 ]
 
 def get_slaves(db=None, *args, **kwargs):
