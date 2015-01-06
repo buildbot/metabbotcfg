@@ -1,8 +1,9 @@
-from buildbot.changes import gitpoller
+from buildbot.plugins import change_source
 
 from metabbotcfg.common import GIT_URL
 
-changesources = []
-
-changesources.append(gitpoller.GitPoller(repourl=GIT_URL,
-                                         branches=['master'], pollInterval=60))
+changesources = [
+    change_source.GitPoller(repourl=GIT_URL,
+                            branches=['master'],
+                            pollInterval=60)
+]
