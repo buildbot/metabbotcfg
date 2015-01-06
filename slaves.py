@@ -1,7 +1,7 @@
 import sys
 import os
 
-from buildbot.buildslave import BuildSlave
+from buildbot.plugins import build_slave
 
 class MySlaveBase(object):
     # true if this box is buildbot.net, and can build docs, etc.
@@ -70,11 +70,11 @@ class MySlaveBase(object):
         path = os.path.join(os.path.dirname(__file__), "%s.ec2" % name)
         return open(path).read().strip().split(" ")
 
-class MySlave(MySlaveBase, BuildSlave):
+class MySlave(MySlaveBase, build_slave.BuildSlave):
     def __init__(self, name, **kwargs):
         password = self.get_pass(name)
         kwargs = self.extract_attrs(name, **kwargs)
-        BuildSlave.__init__(self, name, password, **kwargs)
+        build_slave.BuildSlave.__init__(self, name, password, **kwargs)
 
 #class MyEC2LatentBuildSlave(MySlaveBase, EC2LatentBuildSlave):
 #    def __init__(self, name, ec2type, **kwargs):
