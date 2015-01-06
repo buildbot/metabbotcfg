@@ -1,12 +1,12 @@
-from buildbot.status import words
+from buildbot.plugins import status as status_targets
 
 status = []
 
 if 0:
-    status.append(words.IRC(host="irc.freenode.net",
-                            nick="bb-9-meta",
-                            notify_events={
-                                'successToFailure' : 1,
-                                'failureToSuccess' : 1,
-                            },
-                            channels=["#buildbot"]))
+    status.append(status_targets.IRC(host="irc.freenode.net",
+                                     nick="bb-9-meta",
+                                     notify_events={
+                                         'successToFailure' : 1,
+                                         'failureToSuccess' : 1,
+                                     },
+                                     channels=["#buildbot"]))
