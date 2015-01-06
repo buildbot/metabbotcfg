@@ -1,14 +1,8 @@
 import textwrap
 import itertools
 
-from buildbot import locks
-from buildbot.process import factory
-from buildbot.process.properties import Interpolate
-from buildbot.steps.source.git import Git
-from buildbot.steps.shell import Compile, Test, ShellCommand
-from buildbot.steps.transfer import FileDownload
-from buildbot.steps.python_twisted import Trial
-from buildbot.steps.python import PyFlakes
+from buildbot.plugins import steps
+from buildbot.plugins import util
 
 from metabbotcfg.common import GIT_URL
 from metabbotcfg.slaves import slaves, get_slaves, names
@@ -16,19 +10,20 @@ from metabbotcfg.slaves import slaves, get_slaves, names
 builders = []
 
 # slaves seem to have a hard time fetching from github, so retry
-gitStep = Git(repourl=GIT_URL, mode='full', method='fresh', retryFetch=True)
+gitStep = steps.Git(repourl=GIT_URL, mode='full', method='fresh',
+                    retryFetch=True)
 
 ####### Custom Steps
 
 # only allow one VirtualenvSetup to run on a slave at a time.  This prevents
 # collisions in the shared package cache.
-veLock = locks.SlaveLock('veLock')
+veLock = util.SlaveLock('veLock')
 
-class VirtualenvSetup(ShellCommand):
+class VirtualenvSetup(steps.ShellCommand):
     def __init__(self, virtualenv_dir='sandbox', virtualenv_python='python',
                  virtualenv_packages=[], no_site_packages=False, **kwargs):
         kwargs['locks'] = kwargs.get('locks', []) + [veLock.access('exclusive')]
-        ShellCommand.__init__(self, **kwargs)
+        steps.ShellCommand.__init__(self, **kwargs)
 
         self.virtualenv_dir = virtualenv_dir
         self.virtualenv_python = virtualenv_python
@@ -103,16 +98,16 @@ class VirtualenvSetup(ShellCommand):
         """).strip())
 
         self.command = ';\n'.join(command)
-        return ShellCommand.start(self)
+        return steps.ShellCommand.start(self)
 
-class DatabaseTrial(Trial):
+class DatabaseTrial(steps.Trial):
     def __init__(self, db, **kwargs):
-        Trial.__init__(self, **kwargs)
+        steps.Trial.__init__(self, **kwargs)
         self.db = db
         self.addFactoryArguments(db=db)
 
     def setupEnvironment(self, cmd):
-        Trial.setupEnvironment(self, cmd)
+        steps.Trial.setupEnvironment(self, cmd)
         # get the appropriate database configuration from the slave
         extra_env = self.buildslave.databases[self.db]
         cmd.args['env'].update(extra_env)
@@ -122,19 +117,20 @@ class DatabaseTrial(Trial):
 # some slaves just do "simple" builds: get the source, run the tests.  These are mostly
 # windows machines where we don't have a lot of flexibility to mess around with virtualenv
 def mksimplefactory(test_master=True):
-    f = factory.BuildFactory()
+    f = util.BuildFactory()
     f.addSteps([
         gitStep,
         # use workdir instead of testpath because setuptools sticks its own eggs (including
         # the running version of buildbot) into sys.path *before* PYTHONPATH, but includes
         # "." in sys.path even before the eggs
-        Trial(workdir="build/slave", testpath=".", tests='buildslave.test',
-              usePTY=False, name='test slave')
+        steps.Trial(workdir="build/slave", testpath=".",
+                    tests='buildslave.test',
+                    usePTY=False, name='test slave')
     ])
     if test_master:
-        f.addStep(Trial(workdir="build/master", testpath=".",
-                        tests='buildbot.test', usePTY=False,
-                        name='test master'))
+        f.addStep(steps.Trial(workdir="build/master", testpath=".",
+                              tests='buildbot.test', usePTY=False,
+                              name='test master'))
     return f
 
 # much like simple buidlers, but it uses virtualenv
@@ -174,7 +170,7 @@ def mktestfactory(twisted_version='twisted', python_version='python',
         virtualenv_packages.append(sqlalchemy_migrate_version)
     if not slave_only:
         virtualenv_packages.append('--editable=master')
-    f = factory.BuildFactory()
+    f = util.BuildFactory()
     f.addSteps([
         gitStep,
         VirtualenvSetup(name='virtualenv setup',
@@ -183,7 +179,7 @@ def mktestfactory(twisted_version='twisted', python_version='python',
                         virtualenv_packages=virtualenv_packages,
                         virtualenv_dir=ve,
                         haltOnFailure=True),
-        ShellCommand(command=textwrap.dedent("""
+        steps.ShellCommand(command=textwrap.dedent("""
             SANDBOX="%(ve)s";
             PYTHON="$PWD/$SANDBOX/bin/python";
             PIP="$PWD/$SANDBOX/bin/pip";
@@ -209,34 +205,34 @@ def mktestfactory(twisted_version='twisted', python_version='python',
     elif www:
         # for www, run 'grunt ci'; this needs the virtualenv path in PATH
         f.addSteps([
-            ShellCommand(workdir="build/www",
-                         command=['./node_modules/.bin/grunt', 'ci'],
-                         usePTY=False,
-                         name='grunt ci',
-                         env={'PATH':'../%(ve)s/bin/:${PATH}' % subs})
+            steps.ShellCommand(workdir="build/www",
+                               command=['./node_modules/.bin/grunt', 'ci'],
+                               usePTY=False,
+                               name='grunt ci',
+                               env={'PATH':'../%(ve)s/bin/:${PATH}' % subs})
         ])
     else:
         f.addSteps([
-            Trial(workdir="build/slave", testpath='.',
-                  tests='buildslave.test',
-                  trial="../%(ve)s/bin/trial" % subs,
-                  usePTY=False,
-                  name='test slave'),
+            steps.Trial(workdir="build/slave", testpath='.',
+                        tests='buildslave.test',
+                        trial="../%(ve)s/bin/trial" % subs,
+                        usePTY=False,
+                        name='test slave'),
         ])
 
     if not slave_only and not db:
         f.addSteps([
-            Trial(workdir="build/master", testpath='.',
-                  tests='buildbot.test',
-                  trial="../%(ve)s/bin/trial" % subs,
-                  usePTY=False,
-                  name='test master'),
+            steps.Trial(workdir="build/master", testpath='.',
+                        tests='buildbot.test',
+                        trial="../%(ve)s/bin/trial" % subs,
+                        usePTY=False,
+                        name='test master'),
         ])
 
     return f
 
 def mkcoveragefactory():
-    f = factory.BuildFactory()
+    f = util.BuildFactory()
     f.addSteps([
         gitStep,
         VirtualenvSetup(name='virtualenv setup',
@@ -246,7 +242,7 @@ def mkcoveragefactory():
                                              '--editable=slave'],
                         virtualenv_dir='sandbox',
                         haltOnFailure=True),
-        ShellCommand(command=textwrap.dedent("""
+        steps.ShellCommand(command=textwrap.dedent("""
             PYTHON=sandbox/bin/python;
             sandbox/bin/coverage run --rcfile=common/coveragerc \
                 sandbox/bin/trial buildbot.test buildslave.test \
@@ -264,11 +260,12 @@ def mkcoveragefactory():
     return f
 
 def mkdocsfactory():
-    f = factory.BuildFactory()
+    f = util.BuildFactory()
     f.addSteps([
         gitStep,
-        FileDownload(mastersrc="virtualenv.py", slavedest="virtualenv.py",
-                     flunkOnFailure=True),
+        steps.FileDownload(mastersrc="virtualenv.py",
+                           slavedest="virtualenv.py",
+                           flunkOnFailure=True),
         # run docs tools in their own virtualenv, otherwise we end up
         # documenting the version of Buildbot running the metabuildbot!
         VirtualenvSetup(name='virtualenv setup',
@@ -278,11 +275,11 @@ def mkdocsfactory():
                                              '--editable=slave'],
                         virtualenv_dir='sandbox', haltOnFailure=True),
         # manual
-        ShellCommand(command=Interpolate(textwrap.dedent("""\
+        steps.ShellCommand(command=util.Interpolate(textwrap.dedent("""\
             source sandbox/bin/activate &&
             make docs
             """)), name="create docs"),
-        ShellCommand(command=textwrap.dedent("""\
+        steps.ShellCommand(command=textwrap.dedent("""\
             export VERSION=latest &&
             tar -C /home/buildbot/www/buildbot.net/buildbot/docs -zvxf master/docs/docs.tgz &&
             chmod -R a+rx /home/buildbot/www/buildbot.net/buildbot/docs/latest &&
@@ -292,7 +289,7 @@ def mkdocsfactory():
     return f
 
 def mklintyfactory():
-    f = factory.BuildFactory()
+    f = util.BuildFactory()
     f.addSteps([
         gitStep,
         # run linty tools in their own virtualenv, so we can control the version
@@ -305,18 +302,18 @@ def mklintyfactory():
                                              '--editable=slave'],
                         virtualenv_dir='sandbox',
                         haltOnFailure=True),
-        PyFlakes(command="sandbox/bin/pyflakes master/buildbot",
-                 name="pyflakes - master", flunkOnFailure=True),
-        PyFlakes(command="sandbox/bin/pyflakes slave/buildslave",
-                 name="pyflakes - slave", flunkOnFailure=True),
-        ShellCommand(command="sandbox/bin/pylint --rcfile common/pylintrc buildbot",
-                     name="pylint - master", flunkOnFailure=True),
-        ShellCommand(command="sandbox/bin/pylint --rcfile common/pylintrc buildslave",
-                     name="pylint - slave", flunkOnFailure=True),
-        ShellCommand(command="sandbox/bin/pep8 --config common/pep8rc master/buildbot",
-                     name="pep8 - master", flunkOnFailure=True),
-        ShellCommand(command="sandbox/bin/pep8 --config common/pep8rc slave/buildslave",
-                     name="pep8 - slave", flunkOnFailure=True),
+        steps.PyFlakes(command="sandbox/bin/pyflakes master/buildbot",
+                       name="pyflakes - master", flunkOnFailure=True),
+        steps.PyFlakes(command="sandbox/bin/pyflakes slave/buildslave",
+                       name="pyflakes - slave", flunkOnFailure=True),
+        steps.ShellCommand(command="sandbox/bin/pylint --rcfile common/pylintrc buildbot",
+                           name="pylint - master", flunkOnFailure=True),
+        steps.ShellCommand(command="sandbox/bin/pylint --rcfile common/pylintrc buildslave",
+                           name="pylint - slave", flunkOnFailure=True),
+        steps.ShellCommand(command="sandbox/bin/pep8 --config common/pep8rc master/buildbot",
+                           name="pep8 - master", flunkOnFailure=True),
+        steps.ShellCommand(command="sandbox/bin/pep8 --config common/pep8rc slave/buildslave",
+                           name="pep8 - slave", flunkOnFailure=True),
     ])
     return f
 
