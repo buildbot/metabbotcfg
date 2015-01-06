@@ -1,6 +1,7 @@
+from buildbot.status import words
+
 status = []
 
-from buildbot.status import words
 if 0:
     status.append(words.IRC(host="irc.freenode.net",
                             nick="bb-9-meta",
