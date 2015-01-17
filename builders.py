@@ -49,7 +49,7 @@ class VirtualenvSetup(ShellCommand):
         command.append("VE='%s'" % self.virtualenv_dir)
         command.append("VEPYTHON='%s/bin/python'" % self.virtualenv_dir)
         # this corresponds to ~/www/buildbot.buildbot.net/static/pkgs on the metabuildbot server
-        command.append("PKG_URL='%s'" % 'https://ftp.buildbot.net/pub/metabuildbot/python-packages/')
+        command.append("PKG_URL='%s'" % 'http://ftp.buildbot.net/pub/metabuildbot/python-packages/')
         command.append("PYGET='import urllib, sys; urllib.urlretrieve("
                        "sys.argv[1], filename=sys.argv[2])'")
         command.append("NSP_ARG='%s'" %
