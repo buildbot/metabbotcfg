@@ -415,11 +415,14 @@ builders.append({
     'factory' : mkdocsfactory(),
     'category' : 'docs' })
 
-builders.append({
-    'name' : 'coverage',
-    'slavenames' : names(get_slaves(buildbot_net=True)),
-    'factory' : mkcoveragefactory(),
-    'category' : 'docs' })
+# Disable for now.
+# NOTE(sa2ajj): I'd like to re-enable it later as it's a good example how this
+# can be done and it's the best to keep it in a working shape.
+#builders.append({
+#    'name' : 'coverage',
+#    'slavenames' : names(get_slaves(buildbot_net=True)),
+#    'factory' : mkcoveragefactory(),
+#    'category' : 'docs' })
 
 builders.append({
     'name' : 'linty',
