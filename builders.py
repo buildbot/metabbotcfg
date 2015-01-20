@@ -284,7 +284,7 @@ def mkdocsfactory():
     # manual
     ShellCommand(command=Interpolate(textwrap.dedent("""\
         export VERSION=latest &&
-        source sandbox/bin/activate &&
+        . sandbox/bin/activate &&
         make docs
         """)), name="create docs"),
 
@@ -351,7 +351,7 @@ def mkbuildsfactory():
         f.addSteps([
             # the 'buildbot-www' package requires that the sandbox be *active* so that it
             # can find 'buildbot'
-            ShellCommand(command="rm -rf dist/*; source %s/bin/activate; python setup.py %s"
+            ShellCommand(command="rm -rf dist/*; . %s/bin/activate; python setup.py %s"
                                  % (sandbox, command), workdir=workdir,
                          name=name, flunkOnFailure=True, haltOnFailure=False,
                          env={'BUILDBOT_VERSION': '1latest'}),  # wheels require a digit
