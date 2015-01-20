@@ -4,8 +4,15 @@ Debian-related components for metabuildbot.
 debian_buildbot_git_repo = 'git://github.com/buildbot/debian-buildbot.git'
 debian_buildbot_slave_git_repo = 'git://github.com/buildbot/debian-buildbot-slave.git'
 
+from buildbot.process.factory import BuildFactory
+from buildbot.process.properties import WithProperties, Property
 from buildbot.schedulers.basic import SingleBranchScheduler
 from buildbot.schedulers.triggerable import Triggerable
+from buildbot.steps.shell import SetPropertyFromCommand
+from buildbot.steps.shell import ShellCommand
+from buildbot.steps.source.git import Git
+from buildbot.steps.transfer import FileDownload, FileUpload
+from buildbot.steps.trigger import Trigger
 
 from metabbotcfg.common import GIT_URL
 
@@ -44,15 +51,6 @@ schedulers = [
     slaveTarballScheduler,
     slaveDebScheduler
 ]
-
-from buildbot.process.factory import BuildFactory
-from buildbot.steps.source.git import Git
-from buildbot.steps.shell import ShellCommand
-from buildbot.steps.shell import SetPropertyFromCommand
-from buildbot.process.properties import WithProperties, Property
-from buildbot.steps.trigger import Trigger
-
-from buildbot.steps.transfer import FileDownload, FileUpload
 
 relative_dist_dir = "%(component)s/dist"
 remove_old_tarballs = ShellCommand(
