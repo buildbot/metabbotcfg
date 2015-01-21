@@ -284,7 +284,7 @@ def mkdocsfactory():
     # manual
     ShellCommand(command=Interpolate(textwrap.dedent("""\
         export VERSION=latest &&
-        source sandbox/bin/activate &&
+        . sandbox/bin/activate &&
         make docs
         """)), name="create docs"),
 
@@ -351,7 +351,7 @@ def mkbuildsfactory():
         f.addSteps([
             # the 'buildbot-www' package requires that the sandbox be *active* so that it
             # can find 'buildbot'
-            ShellCommand(command="rm -rf dist/*; source %s/bin/activate; python setup.py %s"
+            ShellCommand(command="rm -rf dist/*; . %s/bin/activate; python setup.py %s"
                                  % (sandbox, command), workdir=workdir,
                          name=name, flunkOnFailure=True, haltOnFailure=False,
                          env={'BUILDBOT_VERSION': '1latest'}),  # wheels require a digit
@@ -415,11 +415,14 @@ builders.append({
     'factory' : mkdocsfactory(),
     'category' : 'docs' })
 
-builders.append({
-    'name' : 'coverage',
-    'slavenames' : names(get_slaves(buildbot_net=True)),
-    'factory' : mkcoveragefactory(),
-    'category' : 'docs' })
+# Disable for now.
+# NOTE(sa2ajj): I'd like to re-enable it later as it's a good example how this
+# can be done and it's the best to keep it in a working shape.
+#builders.append({
+#    'name' : 'coverage',
+#    'slavenames' : names(get_slaves(buildbot_net=True)),
+#    'factory' : mkcoveragefactory(),
+#    'category' : 'docs' })
 
 builders.append({
     'name' : 'linty',
