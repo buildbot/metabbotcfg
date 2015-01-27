@@ -1,7 +1,7 @@
 import sys
 import os
 
-from buildbot.plugins import build_slave
+from buildbot.plugins import buildslave
 
 class MySlaveBase(object):
     # true if this box is buildbot.net, and can build docs, etc.
