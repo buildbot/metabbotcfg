@@ -398,7 +398,7 @@ def mkbuildsfactory():
             -b ${batchfile} \
             -oPort=2200 \
             -oIdentityFile=~/.ssh/ftp.key \
-            buildbot@ftp.buildbot.net
+            buildbot@ftp.int.buildbot.net
         rv=$?
 
         rm ${batchfile} ${readme} ${version}
