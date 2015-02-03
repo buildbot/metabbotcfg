@@ -14,6 +14,8 @@ from buildbot.steps.python import PyFlakes
 from metabbotcfg.common import GIT_URL
 from metabbotcfg.slaves import slaves, get_slaves, names
 
+_PACKAGE_STASH = 'http://ftp.buildbot.net/pub/metabuildbot/python-packages/'
+
 builders = []
 
 # slaves seem to have a hard time fetching from github, so retry
@@ -48,8 +50,7 @@ class VirtualenvSetup(ShellCommand):
         command.append("PYTHON='%s'" % self.virtualenv_python)
         command.append("VE='%s'" % self.virtualenv_dir)
         command.append("VEPYTHON='%s/bin/python'" % self.virtualenv_dir)
-        # this corresponds to ~/www/buildbot.buildbot.net/static/pkgs on the metabuildbot server
-        command.append("PKG_URL='%s'" % 'http://ftp.buildbot.net/pub/metabuildbot/python-packages/')
+        command.append("PKG_URL='%s'" % _PACKAGE_STASH)
         command.append("PYGET='import urllib, sys; urllib.urlretrieve("
                        "sys.argv[1], filename=sys.argv[2])'")
         command.append("NSP_ARG='%s'" %
@@ -78,7 +79,7 @@ class VirtualenvSetup(ShellCommand):
 
         command.append(textwrap.dedent("""\
         # remove old cached packages
-        rm ../http*buildbot.buildbot.net*
+        rm ../http*ftp.buildbot.net*
         """).strip())
 
         # now install each requested package
@@ -176,10 +177,10 @@ def mktestfactory(twisted_version='twisted', python_version='python',
     if python_version in ('python2.4', 'python2.5'):
         # and, because the latest versions of these don't work on <2.5, and the version of
         # pip that works on 2.5 doesn't understand that '==' means 'I want this version'
-        virtualenv_packages.insert(0, 'http://buildbot.buildbot.net/static/pkgs/zope.interface-3.6.1.tar.gz')
-        virtualenv_packages.insert(0, 'http://buildbot.buildbot.net/static/pkgs/setuptools-1.4.2.tar.gz')
+        virtualenv_packages.insert(0, _PACKAGE_STASH + 'zope.interface-3.6.1.tar.gz')
+        virtualenv_packages.insert(0, _PACKAGE_STASH + 'setuptools-1.4.2.tar.gz')
     else:
-        virtualenv_packages.insert(0, 'http://buildbot.buildbot.net/static/pkgs/zope.interface-4.1.1.tar.gz')
+        virtualenv_packages.insert(0, _PACKAGE_STASH + 'zope.interface-4.1.1.tar.gz')
     if sqlalchemy_migrate_version:
         virtualenv_packages.append(sqlalchemy_migrate_version)
     if not slave_only:
