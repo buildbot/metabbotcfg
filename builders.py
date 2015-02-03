@@ -67,11 +67,6 @@ class VirtualenvSetup(steps.ShellCommand):
         fi
         """).strip())
 
-        command.append(textwrap.dedent("""\
-        # remove old cached packages
-        rm ../http*buildbot.buildbot.net*
-        """).strip())
-
         # now install each requested package
         for pkg in self.virtualenv_packages:
             command.append(textwrap.dedent("""\
