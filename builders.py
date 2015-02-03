@@ -79,7 +79,7 @@ class VirtualenvSetup(ShellCommand):
 
         command.append(textwrap.dedent("""\
         # remove old cached packages
-        rm ../http*ftp.buildbot.net*
+        rm -f ../http*ftp.buildbot.net*
         """).strip())
 
         # now install each requested package
