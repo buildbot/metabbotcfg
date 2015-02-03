@@ -23,7 +23,7 @@ status.append(html.WebStatus(
     revlink="http://github.com/buildbot/buildbot/commit/%s",
     changecommentlink=(r'\b#(\d+)\b', r'http://buildbot.net/trac/ticket/\1', r'Ticket \g<0>'),
     change_hook_dialects={
-        'github': True
+        'github': {}
     }))
 
 status.append(words.IRC(
