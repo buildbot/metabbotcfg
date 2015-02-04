@@ -7,6 +7,8 @@ from buildbot.plugins import util
 from metabbotcfg.common import GIT_URL
 from metabbotcfg.slaves import slaves, get_slaves, names
 
+_PACKAGE_STASH = 'http://ftp.buildbot.net/pub/metabuildbot/python-packages/'
+
 builders = []
 
 # slaves seem to have a hard time fetching from github, so retry
@@ -42,8 +44,7 @@ class VirtualenvSetup(steps.ShellCommand):
         command.append("PYTHON='%s'" % self.virtualenv_python)
         command.append("VE='%s'" % self.virtualenv_dir)
         command.append("VEPYTHON='%s/bin/python'" % self.virtualenv_dir)
-        # this corresponds to ~/www/buildbot.buildbot.net/static/pkgs on the metabuildbot server
-        command.append("PKG_URL='%s'" % 'http://buildbot.buildbot.net/static/pkgs')
+        command.append("PKG_URL='%s'" % _PACKAGE_STASH)
         command.append("PYGET='import urllib, sys; urllib.urlretrieve("
                        "sys.argv[1], filename=sys.argv[2])'")
         command.append("NSP_ARG='%s'" %
