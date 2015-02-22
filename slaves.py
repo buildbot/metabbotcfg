@@ -129,16 +129,15 @@ slaves = [
         ),
 
     # koobs - Kubilay Kocak <koobs dot freebsd at gmail.com>
-# temporarily disabled - segfaulting
-#    MySlave('koobs-freebsd9',
-#        max_builds=4,
-#        run_single=False,
-#        run_config=True,
-#        py24=False,
-#        py25=False,
-#        py26=False,
-#        py27=True,
-#        ),
+    MySlave('koobs-freebsd9',
+        max_builds=4,
+        run_single=False,
+        run_config=True,
+        py24=False,
+        py25=False,
+        py26=False,
+        py27=True,
+        ),
 
     MySlave('koobs-freebsd10',
         max_builds=4,
