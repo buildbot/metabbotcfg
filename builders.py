@@ -535,17 +535,6 @@ for py, python_version in python_versions.items():
             'factory' : f,
             'category' : 'config' })
 
-# py24 + tw0810 for slave only
-config_slaves = names(get_slaves(run_config=True, py24=True, tw0810=True))
-f = mktestfactory(twisted_version='Twisted==8.1.0', python_version='python2.4',
-                  sqlalchemy_version='sqlalchemy==0.6.0', slave_only=True)
-name='py24-tw0810-slave'
-builders.append({
-    'name' : name,
-    'slavenames' : config_slaves,
-    'factory' : f,
-    'category' : 'config' })
-
 pypy_versions = dict(
     pypy17='pypy1.7',
     pypy18='pypy1.8',
