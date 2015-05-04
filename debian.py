@@ -73,7 +73,7 @@ def tarball_property(rc, stdout, stderr):
     }
 
 mk_tarball_property = SetPropertyFromCommand(
-    command=["ls", "--color=never", WithProperties(relative_dist_dir)],
+    command=["ls", WithProperties(relative_dist_dir)],
     extract_fn=tarball_property)
 
 upload_tarball = FileUpload(
