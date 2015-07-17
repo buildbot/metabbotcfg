@@ -51,7 +51,7 @@ class MySlaveBase(object):
     os = None
 
     def extract_attrs(self, name, **kwargs):
-        self.slavename = name
+        self.name = name
         remaining = {}
         for k in kwargs:
             if hasattr(self, k):
