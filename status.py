@@ -2,7 +2,7 @@
 
 # from buildbot.plugins import status as status_targets
 #
-# status = []
+status = []
 
 # if 0:
 #     status.append(status_targets.IRC(host="irc.freenode.net",
