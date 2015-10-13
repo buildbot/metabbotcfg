@@ -23,7 +23,6 @@ class MySlaveBase(object):
     # specific-configuration builders.  Specific supported python versions
     # are given, too
     run_config = False
-    py25 = False
     py26 = False
     py27 = False
     pypy17 = False
@@ -96,7 +95,6 @@ slaves = [
         run_single=False,
         run_config=True,
         tw0810 = True,
-        py25=True,
         py26=True,
         py27=True,
         nodejs=True,
@@ -113,7 +111,6 @@ slaves = [
         max_builds=4,
         run_single=False,
         run_config=True,
-        py25=True, # hand-compiled in /usr/local
         py26=True,
         py27=True, # hand-compiled in /usr/local
         pyqt4=True, # installed in system python
@@ -130,7 +127,6 @@ slaves = [
         max_builds=4,
         run_single=False,
         run_config=True,
-        py25=False,
         py26=False,
         py27=True,
         ),
@@ -139,7 +135,6 @@ slaves = [
         max_builds=4,
         run_single=False,
         run_config=True,
-        py25=False,
         py26=False,
         py27=True,
         ),
@@ -157,7 +152,6 @@ slaves = [
         max_builds=2,
         run_single=False,
         run_config=True,
-        py25=True,
         py26=True,
         py27=True,
         # os x mountain lion doesn't support old twisteds, it seems
