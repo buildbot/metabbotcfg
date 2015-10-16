@@ -86,11 +86,7 @@ class VirtualenvSetup(steps.ShellCommand):
         command.append(textwrap.dedent("""\
         echo "Checking for simplejson or json";
         "$VEPYTHON" -c 'import json' 2>/dev/null || "$VEPYTHON" -c 'import simplejson' ||
-                    "$VE/bin/pip" install --no-index --download-cache="$PWD/.." --find-links="$PKG_URL" simplejson || exit 1;
-        echo "Checking for sqlite3, including pysqlite3 on Python 2.5";
-        "$VEPYTHON" -c 'import sqlite3, sys; assert sys.version_info >= (2,6)' 2>/dev/null ||
-                    "$VEPYTHON" -c 'import pysqlite2.dbapi2' ||
-                    "$VE/bin/pip" install --no-index --download-cache="$PWD/.." --find-links="$PKG_URL" pysqlite || exit 1
+                    "$VE/bin/pip" install --no-index --download-cache="$PWD/.." --find-links="$PKG_URL" simplejson || exit 1
         """).strip())
 
         self.command = ';\n'.join(command)
@@ -148,20 +144,15 @@ def mktestfactory(twisted_version='twisted', python_version='python',
         extra_packages.append('--editable=www')
 
     virtualenv_packages = [
-        'zope.interface==3.6.1', twisted_version, sqlalchemy_version,
+        'http://buildbot.buildbot.net/static/pkgs/zope.interface-4.1.1.tar.gz',
+        twisted_version, sqlalchemy_version,
         sqlalchemy_migrate_version, 'multiprocessing==2.6.2.1', 'mock==0.8.0',
         '--editable=slave'
     ] + extra_packages
-    if python_version > 'python2.5':
-        # because some of the dependencies don't work on 2.5
-        virtualenv_packages.extend(['moto==0.3.1', 'boto==2.29.1'])
-    if python_version in ('python2.4', 'python2.5'):
-        # and, because the latest versions of these don't work on <2.5, and the version of
-        # pip that works on 2.5 doesn't understand that '==' means 'I want this version'
-        virtualenv_packages.insert(0, 'http://buildbot.buildbot.net/static/pkgs/zope.interface-3.6.1.tar.gz')
-        virtualenv_packages.insert(0, 'http://buildbot.buildbot.net/static/pkgs/setuptools-1.4.2.tar.gz')
-    else:
-        virtualenv_packages.insert(0, 'http://buildbot.buildbot.net/static/pkgs/zope.interface-4.1.1.tar.gz')
+
+    # Keeping the order of requirements (TODO: is it really necessary?
+    virtualenv_packages.extend(['moto==0.3.1', 'boto==2.29.1'])
+
     if sqlalchemy_migrate_version:
         virtualenv_packages.append(sqlalchemy_migrate_version)
     if not slave_only:
@@ -377,20 +368,16 @@ twisted_versions = dict(tw0900='Twisted==9.0.0',
                         tw1320='Twisted==13.2.0',
                         tw1400='Twisted==14.0.0')
 
-python_versions = dict(py25='python2.5',
-                       py26='python2.6',
+python_versions = dict(py26='python2.6',
                        py27='python2.7')
 
 # versions of twisted and python only supported by slave
 slave_only_twisted = ['tw0900', 'tw1020']
-slave_only_python = ['py25']
+slave_only_python = []
 
 # incompatible versions of twisted and python
 incompat_tw_py = [
-    ('tw0900', 'py27'),
-    ('tw1220', 'py25'),
-    ('tw1320', 'py25'),
-    ('tw1400', 'py25')
+    ('tw0900', 'py27')
 ]
 
 for py, python_version in python_versions.items():
@@ -412,18 +399,6 @@ for py, python_version in python_versions.items():
             'factory': f,
             'tags': ['config']
         })
-
-# py24 + tw0810 for slave only
-config_slaves = names(get_slaves(run_config=True, py24=True, tw0810=True))
-f = mktestfactory(twisted_version='Twisted==8.1.0', python_version='python2.4',
-                  sqlalchemy_version='sqlalchemy==0.6.0', slave_only=True)
-name = 'py24-tw0810-slave'
-builders.append({
-    'name': name,
-    'slavenames': config_slaves,
-    'factory': f,
-    'tags': ['config']
-})
 
 pypy_versions = dict(pypy17='pypy1.7',
                      pypy18='pypy1.8')
