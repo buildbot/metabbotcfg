@@ -281,7 +281,7 @@ def mkdocsfactory():
     ShellCommand(command=Interpolate(textwrap.dedent("""\
         export VERSION=latest &&
         . sandbox/bin/activate &&
-        make docs
+        gmake docs
         """)), name="create docs"),
 
     ])
