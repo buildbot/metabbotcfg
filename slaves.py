@@ -122,6 +122,15 @@ slaves = [
         },
         ),
 
+    # VM on Buildbot hardware
+    MySlave('linux',
+        max_builds=4,
+        run_single=False,
+        run_config=True,
+        py27=True,
+        pyqt4=False,
+    ),
+
     # koobs - Kubilay Kocak <koobs dot freebsd at gmail.com>
     MySlave('koobs-freebsd9',
         max_builds=4,
