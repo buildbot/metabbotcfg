@@ -129,6 +129,10 @@ slaves = [
         run_config=True,
         py27=True,
         pyqt4=False,
+        databases={
+            'mysql' : dict(BUILDBOT_TEST_DB_URL=
+                "mysql+mysqldb://${MYSQL_ENV_MYSQL_USER}:${MYSQL_ENV_MYSQL_PASSWORD}@${MYSQL_PORT_3306_TCP_ADDR}:${MYSQL_PORT_3306_TCP_PORT}/${MYSQL_ENV_MYSQL_DATABASE}"),
+        }
     ),
 
     # koobs - Kubilay Kocak <koobs dot freebsd at gmail.com>
