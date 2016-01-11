@@ -30,7 +30,7 @@ docker run -d --name bbtest-mysql \
     -e MYSQL_DATABASE=bbtest \
     -e MYSQL_USER=bbtest \
     -e MYSQL_PASSWORD=bbtest \
-    djmitche/mysql-server-bbtest:5.6 --character-set-server=utf8 --collation-server=utf8_general_ci 
+    buildbot/metamysql:5.6 --character-set-server=utf8 --collation-server=utf8_general_ci 
 
 docker run -d --name bbtest \
     -e BUILDMASTER=buildbot.buildbot.net \
@@ -39,4 +39,4 @@ docker run -d --name bbtest \
     -e WORKERPASS=$WORKERPASS \
     --link bbtest-mysql:mysql \
     --link bbtest-postgres:postgresql \
-    -d djmitche/metaworker
+    -d buildbot/metaworker:latest
