@@ -6,6 +6,11 @@
 
 set -e
 
+if [ -z "${BUILDMASTER}" ]; then
+    echo "set BUILDMASTER to the master name"
+    exit 1
+fi
+
 if [ -z "${WORKERNAME}" ]; then
     echo "set WORKERNAME to the worker name"
     exit 1
@@ -38,7 +43,7 @@ docker run -d --name bbtest-mysql \
     buildbot/metamysql:5.6 --character-set-server=utf8 --collation-server=utf8_general_ci 
 
 docker run -d --name bbtest \
-    -e BUILDMASTER=buildbot.buildbot.net \
+    -e BUILDMASTER=$BUILDMASTER \
     -e BUILDMASTER_PORT=9989 \
     -e WORKERNAME=$WORKERNAME \
     -e WORKERPASS=$WORKERPASS \
