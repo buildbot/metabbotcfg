@@ -6,6 +6,11 @@
 
 set -e
 
+if [ -z "${WORKERNAME}" ]; then
+    echo "set WORKERNAME to the worker name"
+    exit 1
+fi
+
 if [ -z "${WORKERPASS}" ]; then
     echo "set WORKERPASS to the worker password"
     exit 1
@@ -35,7 +40,7 @@ docker run -d --name bbtest-mysql \
 docker run -d --name bbtest \
     -e BUILDMASTER=buildbot.buildbot.net \
     -e BUILDMASTER_PORT=9989 \
-    -e WORKERNAME=linux \
+    -e WORKERNAME=$WORKERNAME \
     -e WORKERPASS=$WORKERPASS \
     --link bbtest-mysql:mysql \
     --link bbtest-postgres:postgresql \
