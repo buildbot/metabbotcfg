@@ -144,8 +144,8 @@ def mksimplefactory(test_master=True):
 
 # much like simple buidlers, but it uses virtualenv
 def mktestfactory(twisted_version='twisted', python_version='python',
-                sqlalchemy_version='sqlalchemy',
-                sqlalchemy_migrate_version='sqlalchemy-migrate==0.7.1',
+                sqlalchemy_version='sqlalchemy',  # latest
+                sqlalchemy_migrate_version='sqlalchemy-migrate',  # latest
                 extra_packages=None, db=None,
                 www=False, slave_only=False):
     if not extra_packages:
@@ -154,7 +154,8 @@ def mktestfactory(twisted_version='twisted', python_version='python',
     ve = "../sandbox-%(python_version)s-%(twisted_version)s" % subs
     if sqlalchemy_version != 'sqlalchemy':
         ve += '-' + sqlalchemy_version
-    ve += sqlalchemy_migrate_version.replace('sqlalchemy-migrate==', 'samigr-')
+    if sqlalchemy_migrate_versoin != 'sqlalchemy-migrate':
+        ve += sqlalchemy_migrate_version.replace('sqlalchemy-migrate==', 'samigr-')
     subs['ve'] = ve
 
     if www:
@@ -176,8 +177,6 @@ def mktestfactory(twisted_version='twisted', python_version='python',
         virtualenv_packages.insert(0, _PACKAGE_STASH + 'setuptools-1.4.2.tar.gz')
     else:
         virtualenv_packages.insert(0, _PACKAGE_STASH + 'zope.interface-4.1.1.tar.gz')
-    if sqlalchemy_migrate_version:
-        virtualenv_packages.append(sqlalchemy_migrate_version)
     if not slave_only:
         virtualenv_packages.append('--editable=master')
     f = factory.BuildFactory()
@@ -557,46 +556,26 @@ for py, python_version in pypy_versions.items():
 
 config_slaves = names(get_slaves(run_config=True, py27=True))
 
-sqlalchemy_versions = dict(
-    sa060='sqlalchemy==0.6.0',
-    sa068='sqlalchemy==0.6.8',
-    sa070='sqlalchemy==0.7.0',
-    sa074='sqlalchemy==0.7.4',
-    sa078='sqlalchemy==0.7.8',
-    sa0710='sqlalchemy==0.7.10',
-    sa086='sqlalchemy==0.8.6',
-    sa094='sqlalchemy==0.9.4',
-)
+sa0710 = 'sqlalchemy==0.7.10',
+sa087 = 'sqlalchemy==0.8.7',
+sa099 = 'sqlalchemy==0.9.9',
+sa100 = 'sqlalchemy==1.0.0',
+sam072 = 'sqlalchemy-migrate==0.7.2',
+sam090 = 'sqlalchemy-migrate==0.9.0',
+sam098 = 'sqlalchemy-migrate==0.9.8',
 
-sqlalchemy_migrate_versions = dict(
-    #sam061='sqlalchemy-migrate==0.6.1', -- not supported
-    #sam070='sqlalchemy-migrate==0.7.0', -- not on pypi..
-    sam071='sqlalchemy-migrate==0.7.1',
-    sam072='sqlalchemy-migrate==0.7.2',
-    sam09='sqlalchemy-migrate==0.9',
-)
-# these versions are not compatible with sa>=0.8
-sam_require_old_sa = set(['sam071', 'sam072'])
+sqlalchemy_combos = [
+    (sa0710, sam072),  # old, deprecated in 0.9.0
+    (sa087, sam090), (sa087, sam098),
+    (sa099, sam090), (sa099, sam098),
+    (sa100, sam090), (sa100, sam098),
+]
 
-for sa, sqlalchemy_version in sqlalchemy_versions.items():
-    f = mktestfactory(sqlalchemy_version=sqlalchemy_version,
-                      sqlalchemy_migrate_version=sqlalchemy_migrate_versions['sam09'],
+for sa, sam in sqlalchemy_combos:
+    f = mktestfactory(sqlalchemy_version=sa,
+                      sqlalchemy_migrate_version=sam,
                       python_version='python2.7')
-    name = "py27-%s" % (sa,)
-    builders.append({
-        'name' : name,
-        'slavenames' : config_slaves,
-        'factory' : f,
-        'category' : 'config' })
-
-for sam, sqlalchemy_migrate_version in sqlalchemy_migrate_versions.items():
-    sqlalchemy_version = sqlalchemy_versions['sa094']
-    if sam in sam_require_old_sa:
-        sqlalchemy_version = sqlalchemy_versions['sa0710']
-    f = mktestfactory(sqlalchemy_version=sqlalchemy_version,
-                      sqlalchemy_migrate_version=sqlalchemy_migrate_version,
-                      python_version='python2.7')
-    name = "py27-%s" % (sam,)
+    name = "%s" % (sa,)
     builders.append({
         'name' : name,
         'slavenames' : config_slaves,
