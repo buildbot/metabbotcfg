@@ -154,7 +154,7 @@ def mktestfactory(twisted_version='twisted', python_version='python',
     ve = "../sandbox-%(python_version)s-%(twisted_version)s" % subs
     if sqlalchemy_version != 'sqlalchemy':
         ve += '-' + sqlalchemy_version
-    if sqlalchemy_migrate_versoin != 'sqlalchemy-migrate':
+    if sqlalchemy_migrate_version != 'sqlalchemy-migrate':
         ve += sqlalchemy_migrate_version.replace('sqlalchemy-migrate==', 'samigr-')
     subs['ve'] = ve
 
