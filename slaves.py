@@ -137,6 +137,21 @@ slaves = [
         }
     ),
 
+    # Bill Deegan
+    MySlave('bdbaddog-eight',
+        max_builds=4,
+        run_single=False,
+        run_config=True,
+        py27=True,
+        pyqt4=False,
+        databases={
+            'postgres' : dict(BUILDBOT_TEST_DB_URL=
+                'postgresql+pg8000://${POSTGRESQL_ENV_POSTGRES_USER}:${POSTGRESQL_ENV_POSTGRES_PASSWORD}@${POSTGRESQL_PORT_5432_TCP_ADDR}:${POSTGRESQL_PORT_5432_TCP_PORT}/${POSTGRESQL_ENV_POSTGRES_USER}'),
+            'mysql' : dict(BUILDBOT_TEST_DB_URL=
+                "mysql+mysqldb://${MYSQL_ENV_MYSQL_USER}:${MYSQL_ENV_MYSQL_PASSWORD}@${MYSQL_PORT_3306_TCP_ADDR}:${MYSQL_PORT_3306_TCP_PORT}/${MYSQL_ENV_MYSQL_DATABASE}"),
+        }
+    ),
+
     # koobs - Kubilay Kocak <koobs dot freebsd at gmail.com>
     MySlave('koobs-freebsd9',
         max_builds=4,
