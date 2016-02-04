@@ -556,13 +556,13 @@ for py, python_version in pypy_versions.items():
 
 config_slaves = names(get_slaves(run_config=True, py27=True))
 
-sa0710 = 'sqlalchemy==0.7.10',
-sa087 = 'sqlalchemy==0.8.7',
-sa099 = 'sqlalchemy==0.9.9',
-sa100 = 'sqlalchemy==1.0.0',
-sam072 = 'sqlalchemy-migrate==0.7.2',
-sam090 = 'sqlalchemy-migrate==0.9.0',
-sam098 = 'sqlalchemy-migrate==0.9.8',
+sa0710 = 'sqlalchemy==0.7.10'
+sa087 = 'sqlalchemy==0.8.7'
+sa099 = 'sqlalchemy==0.9.9'
+sa100 = 'sqlalchemy==1.0.0'
+sam072 = 'sqlalchemy-migrate==0.7.2'
+sam090 = 'sqlalchemy-migrate==0.9.0'
+sam098 = 'sqlalchemy-migrate==0.9.8'
 
 sqlalchemy_combos = [
     (sa0710, sam072),  # old, deprecated in 0.9.0
@@ -575,7 +575,7 @@ for sa, sam in sqlalchemy_combos:
     f = mktestfactory(sqlalchemy_version=sa,
                       sqlalchemy_migrate_version=sam,
                       python_version='python2.7')
-    name = "%s" % (sa,)
+    name = "%s-%s" % (sa, sam)
     builders.append({
         'name' : name,
         'slavenames' : config_slaves,
