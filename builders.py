@@ -295,16 +295,14 @@ def mklintyfactory():
         # the version of Buildbot running the metabuildbot!
         VirtualenvSetup(name='virtualenv setup',
             no_site_packages=True,
-            virtualenv_packages=['pyflakes', 'pylint==1.1.0', 'pep8==1.4.6', '--editable=master', '--editable=slave'],
+            virtualenv_packages=['pyflakes', 'pylint==1.1.0', '--editable=master', '--editable=slave'],
             virtualenv_dir='../sandbox',
             haltOnFailure=True),
 
-        PyFlakes(command="../sandbox/bin/pyflakes master/buildbot", name="pyflakes - master", flunkOnFailure=True),
-        PyFlakes(command="../sandbox/bin/pyflakes slave/buildslave", name="pyflakes - slave", flunkOnFailure=True),
         ShellCommand(command="../sandbox/bin/pylint --rcfile common/pylintrc buildbot", name="pylint - master", flunkOnFailure=True),
         ShellCommand(command="../sandbox/bin/pylint --rcfile common/pylintrc buildslave", name="pylint - slave", flunkOnFailure=True),
-        ShellCommand(command="../sandbox/bin/pep8 --config common/pep8rc master/buildbot", name="pep8 - master", flunkOnFailure=True),
-        ShellCommand(command="../sandbox/bin/pep8 --config common/pep8rc slave/buildslave", name="pep8 - slave", flunkOnFailure=True),
+        ShellCommand(command="../sandbox/bin/flake8 --config common/flake8rc master/buildbot", name="flake8 - master", flunkOnFailure=True),
+        ShellCommand(command="../sandbox/bin/flake8 --config common/flake8rc slave/buildslave", name="flake8 - slave", flunkOnFailure=True),
     ])
     return f
 
