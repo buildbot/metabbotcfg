@@ -450,16 +450,13 @@ for py, python_version in pypy_versions.items():
 
 config_slaves = names(get_slaves(run_config=True, py27=True))
 
-sa0710 = 'sqlalchemy==0.7.10'
 sa087 = 'sqlalchemy==0.8.7'
 sa099 = 'sqlalchemy==0.9.9'
 sa100 = 'sqlalchemy==1.0.0'
-sam072 = 'sqlalchemy-migrate==0.7.2'
 sam090 = 'sqlalchemy-migrate==0.9.0'
 sam098 = 'sqlalchemy-migrate==0.9.8'
 
 sqlalchemy_combos = [
-    (sa0710, sam072),  # old, deprecated in 0.9.0
     (sa087, sam090), (sa087, sam098),
     (sa099, sam090), (sa099, sam098),
     (sa100, sam090), (sa100, sam098),
