@@ -40,7 +40,7 @@ docker run -d --name bbtest-mysql \
     -e MYSQL_DATABASE=bbtest \
     -e MYSQL_USER=bbtest \
     -e MYSQL_PASSWORD=bbtest \
-    buildbot/metamysql:5.6 --character-set-server=utf8 --collation-server=utf8_general_ci 
+    mysql/mysql-server:5.6 --character-set-server=utf8 --collation-server=utf8_general_ci 
 
 docker run -d --name bbtest \
     -e BUILDMASTER=$BUILDMASTER \
