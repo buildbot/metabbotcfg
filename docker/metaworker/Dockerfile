@@ -6,4 +6,4 @@ FROM        buildbot/buildbot-worker:latest
 MAINTAINER  Buildbot Maintainers
 
 # install the DB drivers we need to test against databases, as well as git
-RUN apt-get install -y libmysqlclient-dev git
+RUN apt-get install -y libmysqlclient-dev libpq-dev git
