@@ -574,7 +574,11 @@ for sa, sam in sqlalchemy_combos:
     f = mktestfactory(sqlalchemy_version=sa,
                       sqlalchemy_migrate_version=sam,
                       python_version='python2.7')
-    name = "%s-%s" % (sa, sam)
+    # need to keep this short, as it becomes a filename
+    name = "%s-%s" % (sa, sam) \
+            .replace('sqlalchemy', 'sqla') \
+            .replace('-migrate', 'm') \
+            ,replace('==', '=')
     builders.append({
         'name' : name,
         'slavenames' : config_slaves,
