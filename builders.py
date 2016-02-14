@@ -578,7 +578,7 @@ for sa, sam in sqlalchemy_combos:
     name = ("%s-%s" % (sa, sam)) \
             .replace('sqlalchemy', 'sqla') \
             .replace('-migrate', 'm') \
-            ,replace('==', '=')
+            .replace('==', '=')
     builders.append({
         'name' : name,
         'slavenames' : config_slaves,
