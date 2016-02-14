@@ -89,23 +89,6 @@ slaves = [
         max_builds=1,
         ),
 
-     # Dustin Mitchell
-    MySlave('knuth.r.igoro.us',
-        max_builds=4,
-        run_single=False,
-        run_config=True,
-        tw0810 = True,
-        py26=True,
-        py27=True,
-        nodejs=True,
-        databases={
-            'postgres' : dict(BUILDBOT_TEST_DB_URL=
-                'postgresql+pg8000://metabuildslave@localhost/metabuildslave'),
-            'mysql' : dict(BUILDBOT_TEST_DB_URL=
-                'mysql+mysqldb://metabuildslave@localhost/metabuildslave'),
-        },
-        ),
-
     # Mozilla
     MySlave('buildbot-linux4', # buildbot-linux4.community.scl3.mozilla.com
         max_builds=4,
@@ -248,7 +231,25 @@ retired_slaves = [
         os='osx-mtnlion',
         ),
 
-    MySlave("debian", run_single=False, run_config=False, max_builds=4)
+    MySlave("debian", run_single=False, run_config=False, max_builds=4),
+
+     # Dustin Mitchell
+    MySlave('knuth.r.igoro.us',
+        max_builds=4,
+        run_single=False,
+        run_config=True,
+        tw0810 = True,
+        py26=True,
+        py27=True,
+        nodejs=True,
+        databases={
+            'postgres' : dict(BUILDBOT_TEST_DB_URL=
+                'postgresql+pg8000://metabuildslave@localhost/metabuildslave'),
+            'mysql' : dict(BUILDBOT_TEST_DB_URL=
+                'mysql+mysqldb://metabuildslave@localhost/metabuildslave'),
+        },
+        ),
+
 ]
 
 def get_slaves(db=None, *args, **kwargs):
