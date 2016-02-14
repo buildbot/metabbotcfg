@@ -575,7 +575,7 @@ for sa, sam in sqlalchemy_combos:
                       sqlalchemy_migrate_version=sam,
                       python_version='python2.7')
     # need to keep this short, as it becomes a filename
-    name = "%s-%s" % (sa, sam) \
+    name = ("%s-%s" % (sa, sam)) \
             .replace('sqlalchemy', 'sqla') \
             .replace('-migrate', 'm') \
             ,replace('==', '=')
