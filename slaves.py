@@ -100,8 +100,10 @@ slaves = [
         databases={
             'postgres' : dict(BUILDBOT_TEST_DB_URL=
                 'postgresql+pg8000://metabuildslave@localhost/metabuildslave'),
-            'mysql' : dict(BUILDBOT_TEST_DB_URL=
-                'mysql+mysqldb://metabuildslave@localhost/metabuildslave'),
+            # this runs MySQL 5.1, which we do not support
+            # http://trac.buildbot.net/ticket/3457#comment:1
+#            'mysql' : dict(BUILDBOT_TEST_DB_URL=
+#                'mysql+mysqldb://metabuildslave@localhost/metabuildslave'),
         },
         ),
 
