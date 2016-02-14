@@ -303,6 +303,7 @@ def mklintyfactory():
         ShellCommand(command="../sandbox/bin/pylint --rcfile common/pylintrc buildslave", name="pylint - slave", flunkOnFailure=True),
         ShellCommand(command="../sandbox/bin/flake8 --config common/flake8rc master/buildbot", name="flake8 - master", flunkOnFailure=True),
         ShellCommand(command="../sandbox/bin/flake8 --config common/flake8rc slave/buildslave", name="flake8 - slave", flunkOnFailure=True),
+        ShellCommand(command="../sandbox/bin/flake8 --config common/flake8rc www/*/setup.py www/*/buildbot_*/", name="flake8 - www", flunkOnFailure=True),
     ])
     return f
 
