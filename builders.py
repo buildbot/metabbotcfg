@@ -295,7 +295,7 @@ def mklintyfactory():
         # the version of Buildbot running the metabuildbot!
         VirtualenvSetup(name='virtualenv setup',
             no_site_packages=True,
-            virtualenv_packages=['flake8', 'pylint==1.1.0', '--editable=master', '--editable=slave'],
+            virtualenv_packages=['flake8', 'pep9==1.5.7', 'pylint==1.1.0', '--editable=master', '--editable=slave'],
             virtualenv_dir='../sandbox',
             haltOnFailure=True),
 
