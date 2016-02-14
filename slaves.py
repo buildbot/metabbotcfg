@@ -169,35 +169,6 @@ slaves = [
         py27=True,
         ),
 
-    # tomprince
-    MySlave('tomprince-socrates-winxp-1',
-        max_builds=1,
-        run_single=False,
-        os='winxp-msys',
-        # note that use_simple is implicit
-        ),
-
-    # LSU
-    MySlave('bghimi4-2',  # ssh -p 2525 djmitche@josh.cct.lsu.edu
-        max_builds=2,
-        run_single=False,
-        run_config=True,
-        py26=True,
-        py27=True,
-        # os x mountain lion doesn't support old twisteds, it seems
-        tw0900=False,
-        tw1020=False,
-        os='osx-mtnlion',
-        ),
-
-    # Reto Sonderegger <reto.sonderegger@gmx.ch>
-    MySlave('metrohm-win81',
-        max_builds=1,
-        run_single=False,
-        os='win81',
-        # note that use_simple is implicit
-        ),
-
     # (EC2 - kept here as an indication of how to set it up)
 #    MyEC2LatentBuildSlave('ec2slave', 'm1.small',
 #        ami='ami-5a749c33',
@@ -236,6 +207,21 @@ retired_slaves = [
         # note that use_simple is implicit
         ),
 
+    # tomprince
+    MySlave('tomprince-socrates-winxp-1',
+        max_builds=1,
+        run_single=False,
+        os='winxp-msys',
+        # note that use_simple is implicit
+        ),
+
+    # Reto Sonderegger <reto.sonderegger@gmx.ch>
+    MySlave('metrohm-win81',
+        max_builds=1,
+        run_single=False,
+        os='win81',
+        # note that use_simple is implicit
+        ),
 
     # tomprince
     MySlave('tomprince-hermes-gentoo-1',
@@ -248,6 +234,19 @@ retired_slaves = [
 
     # Steve 'Ashcrow' Milner
     MySlave('centos_5_python2_4',
+        ),
+
+    # LSU
+    MySlave('bghimi4-2',  # ssh -p 2525 djmitche@josh.cct.lsu.edu
+        max_builds=2,
+        run_single=False,
+        run_config=True,
+        py26=True,
+        py27=True,
+        # os x mountain lion doesn't support old twisteds, it seems
+        tw0900=False,
+        tw1020=False,
+        os='osx-mtnlion',
         ),
 
 ]
