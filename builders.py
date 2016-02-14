@@ -559,13 +559,16 @@ config_slaves = names(get_slaves(run_config=True, py27=True))
 sa087 = 'sqlalchemy==0.8.7'
 sa099 = 'sqlalchemy==0.9.9'
 sa100 = 'sqlalchemy==1.0.0'
+sa1011 = 'sqlalchemy==1.0.11'
 sam090 = 'sqlalchemy-migrate==0.9.0'
 sam098 = 'sqlalchemy-migrate==0.9.8'
+sam0100 = 'sqlalchemy-migrate==0.10.0'
 
 sqlalchemy_combos = [
-    (sa087, sam090), (sa087, sam098),
-    (sa099, sam090), (sa099, sam098),
-    (sa100, sam090), (sa100, sam098),
+    (sa087, sam090),  (sa087, sam098),  (sa087, sam0100),
+    (sa099, sam090),  (sa099, sam098),  (sa099, sam0100),
+    (sa100, sam090),  (sa100, sam098),  (sa100, sam0100),
+    (sa1011, sam090), (sa1011, sam098), (sa1011, sam0100),
 ]
 
 for sa, sam in sqlalchemy_combos:
