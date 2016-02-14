@@ -3,7 +3,6 @@ from buildbot.schedulers.forcesched import ForceScheduler, FixedParameter, Choic
 
 from metabbotcfg import builders
 from metabbotcfg.common import GIT_URL
-from metabbotcfg.debian import schedulers as deb_schedulers
 
 schedulers = []
 
@@ -26,5 +25,3 @@ schedulers.append(ForceScheduler(
     project=FixedParameter(name="project", default=""),
     properties=[],
     builderNames=[b['name'] for b in builders.builders]))
-
-schedulers += deb_schedulers
