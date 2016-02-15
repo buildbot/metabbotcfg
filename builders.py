@@ -476,18 +476,3 @@ for sa, sam in sqlalchemy_combos:
         'factory': f,
         'tags': ['config']
     })
-
-for sam, sqlalchemy_migrate_version in sqlalchemy_migrate_versions.items():
-    sqlalchemy_version = sqlalchemy_versions['sa094']
-    if sam in sam_require_old_sa:
-        sqlalchemy_version = sqlalchemy_versions['sa0710']
-    f = mktestfactory(sqlalchemy_version=sqlalchemy_version,
-                      sqlalchemy_migrate_version=sqlalchemy_migrate_version,
-                      python_version='python2.7')
-    name = "py27-%s" % (sam,)
-    builders.append({
-        'name': name,
-        'slavenames': config_slaves,
-        'factory': f,
-        'tags': ['config']
-    })
