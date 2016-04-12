@@ -81,7 +81,7 @@ class VirtualenvSetup(ShellCommand):
         for pkg in self.virtualenv_packages:
             command.append(textwrap.dedent("""\
             echo "Installing %(pkg)s";
-            "$VE/bin/pip" install --no-index --download-cache="$PWD/../.." --find-links="$PKG_URL" %(pkg)s || exit 1
+            "$VE/bin/pip" install --download-cache="$PWD/../.." %(pkg)s || exit 1
             """).strip() % dict(pkg=pkg))
 
         # make $VE/bin/trial work, even if we inherited trial from site-packages
@@ -95,11 +95,11 @@ class VirtualenvSetup(ShellCommand):
         command.append(textwrap.dedent("""\
         echo "Checking for simplejson or json";
         "$VEPYTHON" -c 'import json' 2>/dev/null || "$VEPYTHON" -c 'import simplejson' ||
-                    "$VE/bin/pip" install --no-index --download-cache="$PWD/.." --find-links="$PKG_URL" simplejson || exit 1;
+                    "$VE/bin/pip" install --download-cache="$PWD/.." simplejson || exit 1;
         echo "Checking for sqlite3, including pysqlite3 on Python 2.5";
         "$VEPYTHON" -c 'import sqlite3, sys; assert sys.version_info >= (2,6)' 2>/dev/null ||
                     "$VEPYTHON" -c 'import pysqlite2.dbapi2' ||
-                    "$VE/bin/pip" install --no-index --download-cache="$PWD/.." --find-links="$PKG_URL" pysqlite || exit 1
+                    "$VE/bin/pip" install --download-cache="$PWD/.." pysqlite || exit 1
         """).strip())
 
         self.command = ';\n'.join(command)
