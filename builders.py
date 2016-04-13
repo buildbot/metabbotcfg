@@ -50,9 +50,6 @@ class VirtualenvSetup(ShellCommand):
         command.append("PYTHON='%s'" % self.virtualenv_python)
         command.append("VE='%s'" % self.virtualenv_dir)
         command.append("VEPYTHON='%s/bin/python'" % self.virtualenv_dir)
-        command.append("PKG_URL='%s'" % _PACKAGE_STASH)
-        command.append("PYGET='import urllib, sys; urllib.urlretrieve("
-                       "sys.argv[1], filename=sys.argv[2])'")
         command.append("NSP_ARG='%s'" %
                 ('--no-site-packages' if self.no_site_packages else ''))
 
@@ -63,15 +60,7 @@ class VirtualenvSetup(ShellCommand):
             echo "Setting up virtualenv $VE";
             rm -rf "$VE";
             test -d "$VE" && { echo "$VE couldn't be removed"; exit 1; };
-            mkdir -p "$VE" || exit 1;
-            # get the prerequisites for building a virtualenv with no pypi access (including both tarballs and wheels)
-            for prereq in virtualenv.py pip-1.5.6.tar.gz setuptools-5.8-py2.py3-none-any.whl pip-1.5.6-py2.py3-none-any.whl; do
-                [ -f "$VE/$prereq" ] && continue
-                echo "Fetching $PKG_URL/$prereq"
-                $PYTHON -c "$PYGET" "$PKG_URL/$prereq" "$VE/$prereq" || exit 1;
-            done;
-            echo "Invoking virtualenv.py (this accesses pypi)"
-            "$PYTHON" "$VE/virtualenv.py" --python="$PYTHON" $NSP_ARG "$VE" || exit 1
+            virtualenv "$VE" || exit 1;
         else
             echo "Virtualenv already exists"
         fi
@@ -81,7 +70,7 @@ class VirtualenvSetup(ShellCommand):
         for pkg in self.virtualenv_packages:
             command.append(textwrap.dedent("""\
             echo "Installing %(pkg)s";
-            "$VE/bin/pip" install --no-index --download-cache="$PWD/../.." --find-links="$PKG_URL" %(pkg)s || exit 1
+            "$VE/bin/pip" install %(pkg)s || exit 1
             """).strip() % dict(pkg=pkg))
 
         # make $VE/bin/trial work, even if we inherited trial from site-packages
@@ -95,11 +84,11 @@ class VirtualenvSetup(ShellCommand):
         command.append(textwrap.dedent("""\
         echo "Checking for simplejson or json";
         "$VEPYTHON" -c 'import json' 2>/dev/null || "$VEPYTHON" -c 'import simplejson' ||
-                    "$VE/bin/pip" install --no-index --download-cache="$PWD/.." --find-links="$PKG_URL" simplejson || exit 1;
+                    "$VE/bin/pip" install simplejson || exit 1;
         echo "Checking for sqlite3, including pysqlite3 on Python 2.5";
         "$VEPYTHON" -c 'import sqlite3, sys; assert sys.version_info >= (2,6)' 2>/dev/null ||
                     "$VEPYTHON" -c 'import pysqlite2.dbapi2' ||
-                    "$VE/bin/pip" install --no-index --download-cache="$PWD/.." --find-links="$PKG_URL" pysqlite || exit 1
+                    "$VE/bin/pip" install pysqlite || exit 1
         """).strip())
 
         self.command = ';\n'.join(command)
