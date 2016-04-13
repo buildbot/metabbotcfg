@@ -29,20 +29,18 @@ veLock = locks.SlaveLock('veLock')
 
 class VirtualenvSetup(ShellCommand):
     def __init__(self, virtualenv_dir='sandbox', virtualenv_python='python',
-                 virtualenv_packages=[], no_site_packages=False, **kwargs):
+                 virtualenv_packages=[], **kwargs):
         kwargs['locks'] = kwargs.get('locks', []) + [veLock.access('exclusive')]
         ShellCommand.__init__(self, **kwargs)
 
         self.virtualenv_dir = virtualenv_dir
         self.virtualenv_python = virtualenv_python
         self.virtualenv_packages = virtualenv_packages
-        self.no_site_packages = no_site_packages
 
         self.addFactoryArguments(
                 virtualenv_dir=virtualenv_dir,
                 virtualenv_python=virtualenv_python,
-                virtualenv_packages=virtualenv_packages,
-                no_site_packages=no_site_packages)
+                virtualenv_packages=virtualenv_packages)
 
     def start(self):
         # set up self.command as a very long sh -c invocation
@@ -50,8 +48,6 @@ class VirtualenvSetup(ShellCommand):
         command.append("PYTHON='%s'" % self.virtualenv_python)
         command.append("VE='%s'" % self.virtualenv_dir)
         command.append("VEPYTHON='%s/bin/python'" % self.virtualenv_dir)
-        command.append("NSP_ARG='%s'" %
-                ('--no-site-packages' if self.no_site_packages else ''))
 
         command.append(textwrap.dedent("""\
         # first, set up the virtualenv if it hasn't already been done, or if it's
@@ -172,7 +168,6 @@ def mktestfactory(twisted_version='twisted', python_version='python',
     f.addSteps([
     gitStep,
     VirtualenvSetup(name='virtualenv setup',
-        no_site_packages=True,
         virtualenv_python=python_version,
         virtualenv_packages=virtualenv_packages,
         virtualenv_dir=ve,
@@ -231,7 +226,6 @@ def mkcoveragefactory():
     f.addSteps([
     gitStep,
     VirtualenvSetup(name='virtualenv setup',
-        no_site_packages=True,
         virtualenv_packages=['coverage', 'mock', '--editable=master', '--editable=slave'],
         virtualenv_dir='sandbox',
         haltOnFailure=True),
@@ -260,7 +254,6 @@ def mkdocsfactory():
     # run docs tools in their own virtualenv, otherwise we end up documenting
     # the version of Buildbot running the metabuildbot!
     VirtualenvSetup(name='virtualenv setup',
-        no_site_packages=True,
         virtualenv_packages=['sphinx==1.2.2', 'Pygments==2.0.1', '--editable=master[docs]', '--editable=slave'],
         virtualenv_dir='sandbox',
         haltOnFailure=True),
@@ -283,7 +276,6 @@ def mklintyfactory():
         # run linty tools in their own virtualenv, so we can control the version
         # the version of Buildbot running the metabuildbot!
         VirtualenvSetup(name='virtualenv setup',
-            no_site_packages=True,
             virtualenv_packages=['flake8', 'pep8==1.5.7', 'pylint==1.1.0', '--editable=master', '--editable=slave'],
             virtualenv_dir='../sandbox',
             haltOnFailure=True),
@@ -301,7 +293,6 @@ def mkbuildsfactory():
     f.addSteps([
         gitStep,
         VirtualenvSetup(name='virtualenv setup',
-            no_site_packages=True,
             virtualenv_packages=[
                 # required to build www packages (#2877)
                 '--editable=master', '--editable=pkg', 'mock',
