@@ -493,7 +493,8 @@ twisted_versions = dict(
     tw1110='Twisted==11.1.0',
     tw1220='Twisted==12.2.0',
     tw1320='Twisted==13.2.0',
-    tw1400='Twisted==14.0.0',
+    tw1402='Twisted==14.0.2',
+    tw1611='Twisted==16.1.1',
 )
 
 python_versions = dict(
@@ -502,12 +503,13 @@ python_versions = dict(
 )
 
 # versions of twisted and python only supported by slave
-slave_only_twisted = ['tw0900', 'tw1020']
+slave_only_twisted = ['tw0900', 'tw1020', 'tw1110', 'tw1220', 'tw1320']
 slave_only_python = []
 
 # incompatible versions of twisted and python
 incompat_tw_py = [
     ('tw0900', 'py27'),
+    ('tw1611', 'py26'),
 ]
 
 for py, python_version in python_versions.items():
