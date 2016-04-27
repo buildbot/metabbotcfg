@@ -23,7 +23,7 @@ fi
 
 if [ -z "${WORKERSUFFIX}" ]; then
     echo "No WORKERSUFFIX defaulting to -buildbot"
-    export WORKERSUFFIX="-buildbot"
+    export WORKERSUFFIX=""
 fi
 
 
