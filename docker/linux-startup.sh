@@ -21,32 +21,38 @@ if [ -z "${WORKERPASS}" ]; then
     exit 1
 fi
 
+if [ -z "${WORKERSUFFIX}" ]; then
+    echo "No WORKERSUFFIX defaulting to -buildbot"
+    export WORKERSUFFIX=""
+fi
+
+
 stop() {
     docker stop $1 || true
     docker rm $1 || true
 }
 
-stop bbtest-postgres
-stop bbtest-mysql
-stop bbtest
+stop bbtest-postgres${WORKERSUFFIX}
+stop bbtest-mysql${WORKERSUFFIX}
+stop bbtest${WORKERSUFFIX}
 
-docker run -d --name bbtest-postgres \
+docker run -d --name bbtest-postgres${WORKERSUFFIX} \
     -e POSTGRES_USER=bbtest \
     -e POSTGRES_PASSWORD=bbtest \
     postgres:9.5
 
-docker run -d --name bbtest-mysql \
+docker run -d --name bbtest-mysql${WORKERSUFFIX} \
     -e MYSQL_RANDOM_ROOT_PASSWORD=1 \
     -e MYSQL_DATABASE=bbtest \
     -e MYSQL_USER=bbtest \
     -e MYSQL_PASSWORD=bbtest \
     mysql/mysql-server:5.6 --character-set-server=utf8 --collation-server=utf8_general_ci 
 
-docker run -d --name bbtest \
+docker run -d --name bbtest${WORKERSUFFIX} \
     -e BUILDMASTER=$BUILDMASTER \
     -e BUILDMASTER_PORT=9989 \
     -e WORKERNAME=$WORKERNAME \
     -e WORKERPASS=$WORKERPASS \
-    --link bbtest-mysql:mysql \
-    --link bbtest-postgres:postgresql \
+    --link bbtest-mysql${WORKERSUFFIX}:mysql \
+    --link bbtest-postgres${WORKERSUFFIX}:postgresql \
     -d buildbot/metaworker:latest
