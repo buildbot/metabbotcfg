@@ -1,3 +1,4 @@
 *.pass
 *.pyc
 *.ec2
+.tox
