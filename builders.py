@@ -5,11 +5,10 @@ from buildbot import locks
 from buildbot.process import factory
 from buildbot.process.properties import Interpolate
 from buildbot.steps.source.git import Git
-from buildbot.steps.shell import Compile, Test, ShellCommand
+from buildbot.steps.shell import ShellCommand
 from buildbot.steps.slave import RemoveDirectory, MakeDirectory
 from buildbot.steps.transfer import FileDownload
 from buildbot.steps.python_twisted import Trial
-from buildbot.steps.python import PyFlakes
 
 from metabbotcfg.common import GIT_URL
 from metabbotcfg.slaves import slaves, get_slaves, names
@@ -21,11 +20,10 @@ builders = []
 # slaves seem to have a hard time fetching from github, so retry
 gitStep = Git(repourl=GIT_URL, mode='full', method='fresh', retryFetch=True)
 
-####### Custom Steps
-
 # only allow one VirtualenvSetup to run on a slave at a time.  This prevents
 # collisions in the shared package cache.
 veLock = locks.SlaveLock('veLock')
+
 
 class VirtualenvSetup(ShellCommand):
     def __init__(self, virtualenv_dir='sandbox', virtualenv_python='python',
@@ -38,9 +36,9 @@ class VirtualenvSetup(ShellCommand):
         self.virtualenv_packages = virtualenv_packages
 
         self.addFactoryArguments(
-                virtualenv_dir=virtualenv_dir,
-                virtualenv_python=virtualenv_python,
-                virtualenv_packages=virtualenv_packages)
+            virtualenv_dir=virtualenv_dir,
+            virtualenv_python=virtualenv_python,
+            virtualenv_packages=virtualenv_packages)
 
     def start(self):
         # set up self.command as a very long sh -c invocation
@@ -90,6 +88,7 @@ class VirtualenvSetup(ShellCommand):
         self.command = ';\n'.join(command)
         return ShellCommand.start(self)
 
+
 class DatabaseTrial(Trial):
     def __init__(self, db, **kwargs):
         Trial.__init__(self, **kwargs)
@@ -102,21 +101,20 @@ class DatabaseTrial(Trial):
         extra_env = self.buildslave.databases[self.db]
         cmd.args['env'].update(extra_env)
 
-######## BuildFactory Factories
 
 # some slaves just do "simple" builds: get the source, run the tests.  These are mostly
 # windows machines where we don't have a lot of flexibility to mess around with virtualenv
 def mksimplefactory(test_master=True):
     f = factory.BuildFactory()
     f.addSteps([
-    gitStep,
-    # use workdir instead of testpath because setuptools sticks its own eggs (including
-    # the running version of buildbot) into sys.path *before* PYTHONPATH, but includes
-    # "." in sys.path even before the eggs
-    Trial(workdir="build/slave", testpath=".",
-        tests='buildslave.test',
-        usePTY=False,
-        name='test slave'),
+        gitStep,
+        # use workdir instead of testpath because setuptools sticks its own eggs (including
+        # the running version of buildbot) into sys.path *before* PYTHONPATH, but includes
+        # "." in sys.path even before the eggs
+        Trial(workdir="build/slave", testpath=".",
+              tests='buildslave.test',
+              usePTY=False,
+              name='test slave'),
     ])
     if test_master:
         f.addStep(
@@ -126,6 +124,7 @@ def mksimplefactory(test_master=True):
             name='test master'),
         )
     return f
+
 
 # much like simple buidlers, but it uses virtualenv
 def mktestfactory(twisted_version='twisted', python_version='python',
@@ -201,7 +200,7 @@ def mktestfactory(twisted_version='twisted', python_version='python',
         command=['./node_modules/.bin/grunt', 'ci'],
         usePTY=False,
         name='grunt ci',
-        env={'PATH':'../%(ve)s/bin/:${PATH}' % subs}),
+        env={'PATH': '../%(ve)s/bin/:${PATH}' % subs}),
     ])
     else:
         f.addSteps([
@@ -220,6 +219,7 @@ def mktestfactory(twisted_version='twisted', python_version='python',
         name='test master'),
     ])
     return f
+
 
 def mkcoveragefactory():
     f = factory.BuildFactory()
@@ -245,6 +245,7 @@ def mkcoveragefactory():
     ])
     return f
 
+
 def mkdocsfactory():
     f = factory.BuildFactory()
     f.addSteps([
@@ -268,6 +269,7 @@ def mkdocsfactory():
     ])
     return f
 
+
 def mklintyfactory():
     f = factory.BuildFactory()
     f.addSteps([
@@ -287,6 +289,7 @@ def mklintyfactory():
         ShellCommand(command="../sandbox/bin/flake8 --config common/flake8rc www/*/setup.py www/*/buildbot_*/", name="flake8 - www", flunkOnFailure=True),
     ])
     return f
+
 
 def mkbuildsfactory():
     f = factory.BuildFactory()
@@ -308,14 +311,14 @@ def mkbuildsfactory():
     ])
 
     for name, workdir, command in [
-            ('buildbot', 'build/master', 'sdist'),
-            ('buildbot-slave', 'build/slave', 'sdist'),
-            ('buildbot-pkg', 'build/pkg', 'sdist'),
-            ('buildbot-www', 'build/www/base', 'bdist_wheel'),
-            ('buildbot-console-view', 'build/www/console_view', 'bdist_wheel'),
-            ('buildbot-waterfall-view', 'build/www/waterfall_view', 'bdist_wheel'),
-            ('buildbot-codeparameter', 'build/www/codeparameter', 'bdist_wheel'),
-        ]:
+        ('buildbot', 'build/master', 'sdist'),
+        ('buildbot-slave', 'build/slave', 'sdist'),
+        ('buildbot-pkg', 'build/pkg', 'sdist'),
+        ('buildbot-www', 'build/www/base', 'bdist_wheel'),
+        ('buildbot-console-view', 'build/www/console_view', 'bdist_wheel'),
+        ('buildbot-waterfall-view', 'build/www/waterfall_view', 'bdist_wheel'),
+        ('buildbot-codeparameter', 'build/www/codeparameter', 'bdist_wheel'),
+    ]:
         levels = workdir.count('/') + 1
         sandbox = "../" * levels + "sandbox"
         extension = {'sdist': '.tar.gz', 'bdist_wheel': '-py2-none-any.whl'}[command]
@@ -381,36 +384,35 @@ def mkbuildsfactory():
     f.addStep(ShellCommand(command=script, flunkOnFailure=True))
     return f
 
-#### docs, coverage, etc.
-
 builders.append({
-    'name' : 'docs',
-    'slavenames' : names(get_slaves(buildbot_net=True)),
-    'factory' : mkdocsfactory(),
-    'category' : 'docs' })
+    'name': 'docs',
+    'slavenames': names(get_slaves(buildbot_net=True)),
+    'factory': mkdocsfactory(),
+    'category': 'docs'
+})
 
 # Disable for now.
 # NOTE(sa2ajj): I'd like to re-enable it later as it's a good example how this
 # can be done and it's the best to keep it in a working shape.
-#builders.append({
-#    'name' : 'coverage',
-#    'slavenames' : names(get_slaves(buildbot_net=True)),
-#    'factory' : mkcoveragefactory(),
-#    'category' : 'docs' })
+# builders.append({
+#     'name': 'coverage',
+#     'slavenames': names(get_slaves(buildbot_net=True)),
+#     'factory': mkcoveragefactory(),
+#     'category': 'docs' })
 
 builders.append({
-    'name' : 'linty',
-    'slavenames' : names(get_slaves(buildbot_net=True)),
-    'factory' : mklintyfactory(),
-    'category' : 'docs' })
+    'name': 'linty',
+    'slavenames': names(get_slaves(buildbot_net=True)),
+    'factory': mklintyfactory(),
+    'category': 'docs'
+})
 
 builders.append({
-    'name' : 'builds',
-    'slavenames' : names(get_slaves(buildbot_net=True)),
-    'factory' : mkbuildsfactory(),
-    'category' : 'builds' })
-
-#### single-slave builders
+    'name': 'builds',
+    'slavenames': names(get_slaves(buildbot_net=True)),
+    'factory': mkbuildsfactory(),
+    'category': 'builds'
+})
 
 for sl in get_slaves(run_single=True).values():
     if sl.use_simple:
@@ -418,12 +420,12 @@ for sl in get_slaves(run_single=True).values():
     else:
         f = mktestfactory()
     builders.append({
-        'name' : 'slave-%s' % sl.slavename,
-        'slavenames' : [ sl.slavename ],
-        'factory' : f,
-        'category' : 'slave' })
+        'name': 'slave-%s' % sl.slavename,
+        'slavenames': [sl.slavename],
+        'factory': f,
+        'category': 'slave'
+    })
 
-#### operating systems
 
 for opsys in set(sl.os for sl in slaves if sl.os is not None):
     if 'win' in opsys:
@@ -432,40 +434,36 @@ for opsys in set(sl.os for sl in slaves if sl.os is not None):
     else:
         f = mktestfactory()
     builders.append({
-        'name' : 'os-%s' % opsys,
-        'slavenames' : names(get_slaves(os=opsys)),
-        'factory' : f,
-        'category' : 'os' })
-
-#### databases
+        'name': 'os-%s' % opsys,
+        'slavenames': names(get_slaves(os=opsys)),
+        'factory': f,
+        'category': 'os'
+    })
 
 database_packages = {
-    'postgres' : [
+    'postgres': [
         # see http://trac.buildbot.net/ticket/2933#comment:4
         'pg8000==1.9.14',
     ],
-    'mysql' : [ 'mysql-python' ],
+    'mysql': ['mysql-python'],
 }
 
 for db in set(itertools.chain.from_iterable(sl.databases.keys() for sl in slaves)):
     f = mktestfactory(extra_packages=database_packages[db], db=db)
     builders.append({
-        'name' : 'db-%s' % db,
-        'slavenames' : names(get_slaves(db=db)),
-        'factory' : f,
-        'category' : 'db' })
-
-#### www
+        'name': 'db-%s' % db,
+        'slavenames': names(get_slaves(db=db)),
+        'factory': f,
+        'category': 'db'
+    })
 
 # http://trac.buildbot.net/ticket/2877#comment:7
-#f = mktestfactory(www=True)
-#builders.append({
-#    'name' : 'www',
-#    'slavenames' : names(get_slaves(nodejs=True)),
-#    'factory' : f,
-#    'category' : 'www' })
-
-#### config builders
+# f = mktestfactory(www=True)
+# builders.append({
+#     'name': 'www',
+#     'slavenames': names(get_slaves(nodejs=True)),
+#     'factory': f,
+#     'category': 'www' })
 
 twisted_versions = dict(
     tw0900='Twisted==9.0.0',
@@ -494,7 +492,7 @@ incompat_tw_py = [
 
 for py, python_version in python_versions.items():
     for tw, twisted_version in twisted_versions.items():
-        config_slaves = names(get_slaves(run_config=True, **{py:True, tw:True}))
+        config_slaves = names(get_slaves(run_config=True, **{py: True, tw: True}))
         if not config_slaves:
             continue
 
@@ -506,10 +504,11 @@ for py, python_version in python_versions.items():
                 slave_only=slave_only)
         name = "%s-%s" % (py, tw)
         builders.append({
-            'name' : name,
-            'slavenames' : config_slaves,
-            'factory' : f,
-            'category' : 'config' })
+            'name': name,
+            'slavenames': config_slaves,
+            'factory': f,
+            'category': 'config'
+        })
 
 pypy_versions = dict(
     pypy17='pypy1.7',
@@ -522,7 +521,7 @@ twisted_pypy_versions = dict(
 )
 
 for py, python_version in pypy_versions.items():
-    config_slaves = names(get_slaves(run_config=True, **{py:True}))
+    config_slaves = names(get_slaves(run_config=True, **{py: True}))
     if not config_slaves:
         continue
 
@@ -530,10 +529,11 @@ for py, python_version in pypy_versions.items():
         f = mktestfactory(twisted_version=twisted_version, python_version=python_version)
         name = "%s-%s" % (py, tw)
         builders.append({
-            'name' : name,
-            'slavenames' : config_slaves,
-            'factory' : f,
-            'category' : 'config' })
+            'name': name,
+            'slavenames': config_slaves,
+            'factory': f,
+            'category': 'config'
+        })
 
 config_slaves = names(get_slaves(run_config=True, py27=True))
 
@@ -546,9 +546,9 @@ sam098 = 'sqlalchemy-migrate==0.9.8'
 sam0100 = 'sqlalchemy-migrate==0.10.0'
 
 sqlalchemy_combos = [
-    (sa087, sam091),  (sa087, sam098),  (sa087, sam0100),
-    (sa099, sam091),  (sa099, sam098),  (sa099, sam0100),
-    (sa100, sam091),  (sa100, sam098),  (sa100, sam0100),
+    (sa087, sam091), (sa087, sam098), (sa087, sam0100),
+    (sa099, sam091), (sa099, sam098), (sa099, sam0100),
+    (sa100, sam091), (sa100, sam098), (sa100, sam0100),
     (sa1011, sam091), (sa1011, sam098), (sa1011, sam0100),
 ]
 
@@ -557,12 +557,13 @@ for sa, sam in sqlalchemy_combos:
                       sqlalchemy_migrate_version=sam,
                       python_version='python2.7')
     # need to keep this short, as it becomes a filename
-    name = ("%s-%s" % (sa, sam)) \
-            .replace('sqlalchemy', 'sqla') \
-            .replace('-migrate', 'm') \
-            .replace('==', '=')
+    name = (("%s-%s" % (sa, sam))
+            .replace('sqlalchemy', 'sqla')
+            .replace('-migrate', 'm')
+            .replace('==', '='))
     builders.append({
-        'name' : name,
-        'slavenames' : config_slaves,
-        'factory' : f,
-        'category' : 'config' })
+        'name': name,
+        'slavenames': config_slaves,
+        'factory': f,
+        'category': 'config'
+    })
