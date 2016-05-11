@@ -29,13 +29,13 @@ class MySlaveBase(object):
     pypy17 = False
     pypy18 = False
 
-    tw0810 = False
     tw0900 = True
     tw1020 = True
     tw1110 = True
     tw1220 = True
     tw1320 = True
-    tw1400 = True
+    tw1402 = True
+    tw1611 = True
 
     # true if this has nodejs installed, suitable for www
     nodejs = False
@@ -229,9 +229,6 @@ retired_slaves = [
         run_config=True,
         py26=True,
         py27=True,
-        # os x mountain lion doesn't support old twisteds, it seems
-        tw0900=False,
-        tw1020=False,
         os='osx-mtnlion',
     ),
 
@@ -243,7 +240,6 @@ retired_slaves = [
         max_builds=4,
         run_single=False,
         run_config=True,
-        tw0810=True,
         py26=True,
         py27=True,
         nodejs=True,
