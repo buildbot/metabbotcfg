@@ -65,10 +65,6 @@ class MySlaveBase(object):
         pw = open(path).read().strip()
         return pw
 
-    def get_ec2_creds(self, name):
-        path = os.path.join(os.path.dirname(__file__), "%s.ec2" % name)
-        return open(path).read().strip().split(" ")
-
 
 class MySlave(MySlaveBase, BuildSlave):
     def __init__(self, name, **kwargs):
