@@ -6,6 +6,7 @@ install:
 
 env:
 - TOXENV=lint
+- TOXENV=config
 
 sudo: false
 
