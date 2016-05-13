@@ -12,12 +12,6 @@ schedulers.append(SingleBranchScheduler(
     treeStableTimer=2,
     builderNames=[b['name'] for b in builders.builders]))
 
-#schedulers.append(SingleBranchScheduler(
-#   name="release",
-#   branch='buildbot-0.8.9',
-#   treeStableTimer=10,
-#   builderNames=[b['name'] for b in builders.builders if b['name'] not in ('docs',)]))
-
 schedulers.append(ForceScheduler(
     name="force",
     repository=FixedParameter(name="repository", default=GIT_URL),

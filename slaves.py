@@ -1,6 +1,7 @@
 import os
 from buildbot.buildslave import BuildSlave
 
+
 class MySlaveBase(object):
     # true if this box is buildbot.net, and can build docs, etc.
     buildbot_net = False
@@ -66,44 +67,37 @@ class MySlaveBase(object):
         path = os.path.join(os.path.dirname(__file__), "%s.ec2" % name)
         return open(path).read().strip().split(" ")
 
+
 class MySlave(MySlaveBase, BuildSlave):
     def __init__(self, name, **kwargs):
         password = self.get_pass(name)
         kwargs = self.extract_attrs(name, **kwargs)
         BuildSlave.__init__(self, name, password, **kwargs)
 
-#class MyEC2LatentBuildSlave(MySlaveBase, EC2LatentBuildSlave):
-#    def __init__(self, name, ec2type, **kwargs):
-#        password = self.get_pass(name)
-#        identifier, secret_identifier = self.get_ec2_creds(name)
-#        kwargs = self.extract_attrs(name, **kwargs)
-#        EC2LatentBuildSlave.__init__(self, name, password, ec2type,
-#            identifier=identifier, secret_identifier=secret_identifier, **kwargs)
-
 slaves = [
     # Local
     MySlave('buildbot.net',
-        buildbot_net=True,
-        run_config=False,
-        run_single=False,
-        max_builds=1,
-        ),
+            buildbot_net=True,
+            run_config=False,
+            run_single=False,
+            max_builds=1,
+            ),
 
     # Mozilla
-    MySlave('buildbot-linux4', # buildbot-linux4.community.scl3.mozilla.com
+    MySlave('buildbot-linux4',  # buildbot-linux4.community.scl3.mozilla.com
         max_builds=4,
         run_single=False,
         run_config=True,
         py26=True,
-        py27=True, # hand-compiled in /usr/local
-        pyqt4=True, # installed in system python
+        py27=True,  # hand-compiled in /usr/local
+        pyqt4=True,  # installed in system python
         databases={
-            'postgres' : dict(BUILDBOT_TEST_DB_URL=
-                'postgresql+pg8000://metabuildslave@localhost/metabuildslave'),
+            'postgres': {'BUILDBOT_TEST_DB_URL':
+                'postgresql+pg8000://metabuildslave@localhost/metabuildslave'},
             # this runs MySQL 5.1, which we do not support
             # http://trac.buildbot.net/ticket/3457#comment:1
-#            'mysql' : dict(BUILDBOT_TEST_DB_URL=
-#                'mysql+mysqldb://metabuildslave@localhost/metabuildslave'),
+#            'mysql': {'BUILDBOT_TEST_DB_URL':
+#                'mysql+mysqldb://metabuildslave@localhost/metabuildslave'},
         },
         ),
 
@@ -115,10 +109,10 @@ slaves = [
         py27=True,
         pyqt4=False,
         databases={
-            'postgres' : dict(BUILDBOT_TEST_DB_URL=
-                'postgresql+pg8000://${POSTGRESQL_ENV_POSTGRES_USER}:${POSTGRESQL_ENV_POSTGRES_PASSWORD}@${POSTGRESQL_PORT_5432_TCP_ADDR}:${POSTGRESQL_PORT_5432_TCP_PORT}/${POSTGRESQL_ENV_POSTGRES_USER}'),
-            'mysql' : dict(BUILDBOT_TEST_DB_URL=
-                "mysql+mysqldb://${MYSQL_ENV_MYSQL_USER}:${MYSQL_ENV_MYSQL_PASSWORD}@${MYSQL_PORT_3306_TCP_ADDR}:${MYSQL_PORT_3306_TCP_PORT}/${MYSQL_ENV_MYSQL_DATABASE}"),
+            'postgres': {'BUILDBOT_TEST_DB_URL':
+                'postgresql+pg8000://${POSTGRESQL_ENV_POSTGRES_USER}:${POSTGRESQL_ENV_POSTGRES_PASSWORD}@${POSTGRESQL_PORT_5432_TCP_ADDR}:${POSTGRESQL_PORT_5432_TCP_PORT}/${POSTGRESQL_ENV_POSTGRES_USER}'},
+            'mysql': {'BUILDBOT_TEST_DB_URL':
+                "mysql+mysqldb://${MYSQL_ENV_MYSQL_USER}:${MYSQL_ENV_MYSQL_PASSWORD}@${MYSQL_PORT_3306_TCP_ADDR}:${MYSQL_PORT_3306_TCP_PORT}/${MYSQL_ENV_MYSQL_DATABASE}"},
         }
     ),
 
@@ -130,29 +124,31 @@ slaves = [
         py27=True,
         pyqt4=False,
         databases={
-            'postgres' : dict(BUILDBOT_TEST_DB_URL=
-                'postgresql+pg8000://${POSTGRESQL_ENV_POSTGRES_USER}:${POSTGRESQL_ENV_POSTGRES_PASSWORD}@${POSTGRESQL_PORT_5432_TCP_ADDR}:${POSTGRESQL_PORT_5432_TCP_PORT}/${POSTGRESQL_ENV_POSTGRES_USER}'),
-            'mysql' : dict(BUILDBOT_TEST_DB_URL=
-                "mysql+mysqldb://${MYSQL_ENV_MYSQL_USER}:${MYSQL_ENV_MYSQL_PASSWORD}@${MYSQL_PORT_3306_TCP_ADDR}:${MYSQL_PORT_3306_TCP_PORT}/${MYSQL_ENV_MYSQL_DATABASE}"),
+            'postgres': {'BUILDBOT_TEST_DB_URL':
+                'postgresql+pg8000://${POSTGRESQL_ENV_POSTGRES_USER}:${POSTGRESQL_ENV_POSTGRES_PASSWORD}@${POSTGRESQL_PORT_5432_TCP_ADDR}:${POSTGRESQL_PORT_5432_TCP_PORT}/${POSTGRESQL_ENV_POSTGRES_USER}'},
+            'mysql': {'BUILDBOT_TEST_DB_URL':
+                "mysql+mysqldb://${MYSQL_ENV_MYSQL_USER}:${MYSQL_ENV_MYSQL_PASSWORD}@${MYSQL_PORT_3306_TCP_ADDR}:${MYSQL_PORT_3306_TCP_PORT}/${MYSQL_ENV_MYSQL_DATABASE}"},
         }
     ),
 
     # koobs - Kubilay Kocak <koobs dot freebsd at gmail.com>
-    MySlave('koobs-freebsd9',
+    MySlave(
+        'koobs-freebsd9',
         max_builds=4,
         run_single=False,
         run_config=True,
         py26=False,
         py27=True,
-        ),
+    ),
 
-    MySlave('koobs-freebsd10',
+    MySlave(
+        'koobs-freebsd10',
         max_builds=4,
         run_single=False,
         run_config=True,
         py26=False,
         py27=True,
-        ),
+    ),
 
     # (EC2 - kept here as an indication of how to set it up)
 #    MyEC2LatentBuildSlave('ec2slave', 'm1.small',
@@ -172,56 +168,60 @@ retired_slaves = [
     MySlave('freebsd_7',
         max_builds=1),
     # (gets command timeouts while doing virtualenv install)
-    MySlave('minimata',
-        ),
+    MySlave('minimata'),
 
     # maruel
-    MySlave('xp-msysgit',
+    MySlave(
+        'xp-msysgit',
         max_builds=1,
         run_single=False,
         os='winxp-msys',
         # note that use_simple is implicit
-        ),
+    ),
 
-    MySlave('win7-cygwin',
+    MySlave(
+        'win7-cygwin',
         max_builds=1,
         run_single=False,
         os='win7-cygwin',
-        test_master=False, # master doesn't work on cygwin
+        test_master=False,  # master doesn't work on cygwin
         # note that use_simple is implicit
-        ),
+    ),
 
     # tomprince
-    MySlave('tomprince-socrates-winxp-1',
+    MySlave(
+        'tomprince-socrates-winxp-1',
         max_builds=1,
         run_single=False,
         os='winxp-msys',
         # note that use_simple is implicit
-        ),
+    ),
 
     # Reto Sonderegger <reto.sonderegger@gmx.ch>
-    MySlave('metrohm-win81',
+    MySlave(
+        'metrohm-win81',
         max_builds=1,
         run_single=False,
         os='win81',
         # note that use_simple is implicit
-        ),
+    ),
 
     # tomprince
-    MySlave('tomprince-hermes-gentoo-1',
+    MySlave(
+        'tomprince-hermes-gentoo-1',
         max_builds=1,
         run_single=False,
         run_config=True,
         pypy17=True,
         pypy18=True,
-        ),
+    ),
 
     # Steve 'Ashcrow' Milner
-    MySlave('centos_5_python2_4',
-        ),
+    MySlave('centos_5_python2_4'),
 
     # LSU
-    MySlave('bghimi4-2',  # ssh -p 2525 djmitche@josh.cct.lsu.edu
+    MySlave(
+        'bghimi4-2',  # ssh -p 2525 djmitche@josh.cct.lsu.edu
         max_builds=2,
         run_single=False,
         run_config=True,
@@ -231,28 +231,29 @@ retired_slaves = [
         tw0900=False,
         tw1020=False,
         os='osx-mtnlion',
-        ),
+    ),
 
     MySlave("debian", run_single=False, run_config=False, max_builds=4),
 
-     # Dustin Mitchell
-    MySlave('knuth.r.igoro.us',
+    # Dustin Mitchell
+    MySlave(
+        'knuth.r.igoro.us',
         max_builds=4,
         run_single=False,
         run_config=True,
-        tw0810 = True,
+        tw0810=True,
         py26=True,
         py27=True,
         nodejs=True,
         databases={
-            'postgres' : dict(BUILDBOT_TEST_DB_URL=
-                'postgresql+pg8000://metabuildslave@localhost/metabuildslave'),
-            'mysql' : dict(BUILDBOT_TEST_DB_URL=
-                'mysql+mysqldb://metabuildslave@localhost/metabuildslave'),
+            'postgres': {'BUILDBOT_TEST_DB_URL':
+                'postgresql+pg8000://metabuildslave@localhost/metabuildslave'},
+            'mysql': {'BUILDBOT_TEST_DB_URL':
+                'mysql+mysqldb://metabuildslave@localhost/metabuildslave'},
         },
-        ),
-
+    ),
 ]
+
 
 def get_slaves(db=None, *args, **kwargs):
     rv = {}
@@ -267,6 +268,7 @@ def get_slaves(db=None, *args, **kwargs):
         else:
             rv[sl.slavename] = sl
     return rv
+
 
 def names(slavedict):
     return slavedict.keys()
