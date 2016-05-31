@@ -58,7 +58,7 @@ class MySlaveBase(object):
         return remaining
 
     def get_pass(self, name):
-        if os.environ['CHECK_CONFIG'] == 'true':
+        if os.environ.get('CHECK_CONFIG') == 'true':
             return ''
         # get the password based on the name
         path = os.path.join(os.path.dirname(__file__), "%s.pass" % name)
