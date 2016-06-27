@@ -1,9 +1,9 @@
-status = []
-
 from buildbot.status import html
 from buildbot.status import words
 from buildbot.status.web.auth import BasicAuth
 from buildbot.status.web.authz import Authz
+
+status = []
 
 users = [
     ('dev', 'bbot!')    # it's not *that* secret..
