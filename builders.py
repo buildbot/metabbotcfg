@@ -111,10 +111,10 @@ def mksimplefactory(test_master=True):
         # use workdir instead of testpath because setuptools sticks its own eggs (including
         # the running version of buildbot) into sys.path *before* PYTHONPATH, but includes
         # "." in sys.path even before the eggs
-        Trial(workdir="build/slave", testpath=".",
-              tests='buildslave.test',
+        Trial(workdir="build/worker", testpath=".",
+              tests='buildbot_worker.test',
               usePTY=False,
-              name='test slave'),
+              name='test worker'),
     ])
     if test_master:
         f.addStep(
@@ -150,7 +150,7 @@ def mktestfactory(twisted_version='twisted', python_version='python',
 
     virtualenv_packages = [twisted_version, sqlalchemy_version,
         sqlalchemy_migrate_version, 'multiprocessing==2.6.2.1', 'mock==0.8.0',
-        '--editable=slave'] + extra_packages
+        '--editable=worker'] + extra_packages
     if python_version > 'python2.5':
         # because some of the dependencies don't work on 2.5
         virtualenv_packages.extend(['moto==0.3.1', 'boto==2.29.1'])
@@ -204,11 +204,11 @@ def mktestfactory(twisted_version='twisted', python_version='python',
     ])
     else:
         f.addSteps([
-    Trial(workdir="build/slave", testpath='.',
-        tests='buildslave.test',
+    Trial(workdir="build/worker", testpath='.',
+        tests='buildbot_worker.test',
         trial="../%(ve)s/bin/trial" % subs,
         usePTY=False,
-        name='test slave'),
+        name='test worker'),
     ])
     if not slave_only and not db:
         f.addSteps([
@@ -226,13 +226,13 @@ def mkcoveragefactory():
     f.addSteps([
     gitStep,
     VirtualenvSetup(name='virtualenv setup',
-        virtualenv_packages=['coverage', 'mock', '--editable=master', '--editable=slave'],
+        virtualenv_packages=['coverage', 'mock', '--editable=master', '--editable=worker'],
         virtualenv_dir='sandbox',
         haltOnFailure=True),
     ShellCommand(usePTY=False, command=textwrap.dedent("""
         PYTHON=sandbox/bin/python;
         sandbox/bin/coverage run --rcfile=common/coveragerc \
-            sandbox/bin/trial buildbot.test buildslave.test \
+            sandbox/bin/trial buildbot.test buildbot_worker.test \
             || exit 1;
         sandbox/bin/coverage html -i --rcfile=.coveragerc \
             -d /home/buildbot/www/buildbot.buildbot.net/static/coverage \
@@ -255,7 +255,7 @@ def mkdocsfactory():
     # run docs tools in their own virtualenv, otherwise we end up documenting
     # the version of Buildbot running the metabuildbot!
     VirtualenvSetup(name='virtualenv setup',
-        virtualenv_packages=['sphinx==1.2.2', 'Pygments==2.0.1', '--editable=master[docs]', '--editable=slave'],
+        virtualenv_packages=['sphinx==1.2.2', 'Pygments==2.0.1', '--editable=master[docs]', '--editable=worker'],
         virtualenv_dir='sandbox',
         haltOnFailure=True),
 
@@ -278,14 +278,14 @@ def mklintyfactory():
         # run linty tools in their own virtualenv, so we can control the version
         # the version of Buildbot running the metabuildbot!
         VirtualenvSetup(name='virtualenv setup',
-            virtualenv_packages=['flake8', 'pep8==1.5.7', 'pylint==1.1.0', '--editable=master', '--editable=slave'],
+            virtualenv_packages=['flake8', 'pep8==1.5.7', 'pylint==1.1.0', '--editable=master', '--editable=worker'],
             virtualenv_dir='../sandbox',
             haltOnFailure=True),
 
         ShellCommand(command="../sandbox/bin/pylint --rcfile common/pylintrc buildbot", name="pylint - master", flunkOnFailure=True),
-        ShellCommand(command="../sandbox/bin/pylint --rcfile common/pylintrc buildslave", name="pylint - slave", flunkOnFailure=True),
+        ShellCommand(command="../sandbox/bin/pylint --rcfile common/pylintrc buildbot_worker", name="pylint - worker", flunkOnFailure=True),
         ShellCommand(command="../sandbox/bin/flake8 --config common/flake8rc master/buildbot", name="flake8 - master", flunkOnFailure=True),
-        ShellCommand(command="../sandbox/bin/flake8 --config common/flake8rc slave/buildslave", name="flake8 - slave", flunkOnFailure=True),
+        ShellCommand(command="../sandbox/bin/flake8 --config common/flake8rc worker/buildbot_worker", name="flake8 - worker", flunkOnFailure=True),
         ShellCommand(command="../sandbox/bin/flake8 --config common/flake8rc www/*/setup.py www/*/buildbot_*/", name="flake8 - www", flunkOnFailure=True),
     ])
     return f
@@ -312,7 +312,7 @@ def mkbuildsfactory():
 
     for name, workdir, command in [
         ('buildbot', 'build/master', 'sdist'),
-        ('buildbot-slave', 'build/slave', 'sdist'),
+        ('buildbot-worker', 'build/worker', 'sdist'),
         ('buildbot-pkg', 'build/pkg', 'sdist'),
         ('buildbot-www', 'build/www/base', 'bdist_wheel'),
         ('buildbot-console-view', 'build/www/console_view', 'bdist_wheel'),
