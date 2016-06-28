@@ -13,6 +13,7 @@ authz = Authz(
     auth=BasicAuth(users),
     forceBuild='auth',
     forceAllBuilds='auth',
+    gracefulShutdown='auth'
 )
 
 status.append(html.WebStatus(
