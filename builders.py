@@ -1,17 +1,16 @@
-import textwrap
 import itertools
+import textwrap
 
 from buildbot import locks
 from buildbot.process import factory
 from buildbot.process.properties import Interpolate
-from buildbot.steps.source.git import Git
-from buildbot.steps.shell import ShellCommand
-from buildbot.steps.slave import RemoveDirectory, MakeDirectory
-from buildbot.steps.transfer import FileDownload
 from buildbot.steps.python_twisted import Trial
-
+from buildbot.steps.shell import ShellCommand
+from buildbot.steps.slave import MakeDirectory, RemoveDirectory
+from buildbot.steps.source.git import Git
+from buildbot.steps.transfer import FileDownload
 from metabbotcfg.common import GIT_URL
-from metabbotcfg.slaves import slaves, get_slaves, names
+from metabbotcfg.slaves import get_slaves, names, slaves
 
 _PACKAGE_STASH = 'http://ftp.buildbot.net/pub/metabuildbot/python-packages/'
 
@@ -59,6 +58,12 @@ class VirtualenvSetup(ShellCommand):
             echo "Virtualenv already exists"
         fi
         """).strip())
+
+        # make sure pip is upgraded to latest version (so that master[test] works recursively)
+        command.append(textwrap.dedent("""\
+        echo "Upgrading pip";
+        $VE/bin/pip install -U pip
+        """))
 
         # now install each requested package
         for pkg in self.virtualenv_packages:
@@ -162,7 +167,7 @@ def mktestfactory(twisted_version='twisted', python_version='python',
     else:
         virtualenv_packages.insert(0, _PACKAGE_STASH + 'zope.interface-4.1.1.tar.gz')
     if not slave_only:
-        virtualenv_packages.append('--editable=master')
+        virtualenv_packages.append('--editable=master[tls,test]')
     f = factory.BuildFactory()
     f.addSteps([
     gitStep,
@@ -226,7 +231,7 @@ def mkcoveragefactory():
     f.addSteps([
     gitStep,
     VirtualenvSetup(name='virtualenv setup',
-        virtualenv_packages=['coverage', 'mock', '--editable=master', '--editable=worker'],
+        virtualenv_packages=['coverage', 'mock', '--editable=master[tls,test]', '--editable=worker'],
         virtualenv_dir='sandbox',
         haltOnFailure=True),
     ShellCommand(usePTY=False, command=textwrap.dedent("""
@@ -278,7 +283,7 @@ def mklintyfactory():
         # run linty tools in their own virtualenv, so we can control the version
         # the version of Buildbot running the metabuildbot!
         VirtualenvSetup(name='virtualenv setup',
-            virtualenv_packages=['flake8', 'pep8==1.5.7', 'pylint==1.1.0', '--editable=master', '--editable=worker'],
+            virtualenv_packages=['flake8', 'pep8==1.5.7', 'pylint==1.1.0', '--editable=master[tls,test]', '--editable=worker'],
             virtualenv_dir='../sandbox',
             haltOnFailure=True),
 
@@ -298,7 +303,7 @@ def mkbuildsfactory():
         VirtualenvSetup(name='virtualenv setup',
             virtualenv_packages=[
                 # required to build www packages (#2877)
-                '--editable=master', '--editable=pkg', 'mock',
+                '--editable=master[tls,test]', '--editable=pkg', 'mock',
                 # required to make wheels
                 'wheel',
                 # ..and this is required to actually build them correctly (#2883)
