@@ -63,7 +63,7 @@ class VirtualenvSetup(ShellCommand):
         command.append(textwrap.dedent("""\
         echo "Upgrading pip";
         $VE/bin/pip install -U pip
-        """))
+        """)).strip()
 
         # now install each requested package
         for pkg in self.virtualenv_packages:
