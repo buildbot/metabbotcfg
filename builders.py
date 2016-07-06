@@ -65,12 +65,11 @@ class VirtualenvSetup(ShellCommand):
         $VE/bin/pip install -U pip
         """).strip())
 
-        # now install each requested package
-        for pkg in self.virtualenv_packages:
-            command.append(textwrap.dedent("""\
+        # now install each requested package in one command
+        command.append(textwrap.dedent("""\
             echo "Installing %(pkg)s";
             "$VE/bin/pip" install -U %(pkg)s || exit 1
-            """).strip() % dict(pkg=pkg))
+            """).strip() % dict(pkg=' '.join(self.virtualenv_packages)))
 
         # make $VE/bin/trial work, even if we inherited trial from site-packages
         command.append(textwrap.dedent("""\
