@@ -69,7 +69,7 @@ class VirtualenvSetup(ShellCommand):
         for pkg in self.virtualenv_packages:
             command.append(textwrap.dedent("""\
             echo "Installing %(pkg)s";
-            "$VE/bin/pip" install %(pkg)s || exit 1
+            "$VE/bin/pip" install -U %(pkg)s || exit 1
             """).strip() % dict(pkg=pkg))
 
         # make $VE/bin/trial work, even if we inherited trial from site-packages
