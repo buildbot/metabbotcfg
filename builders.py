@@ -154,11 +154,8 @@ def mktestfactory(twisted_version='twisted', python_version='python',
         extra_packages.append('--editable=www/waterfall_view')
 
     virtualenv_packages = [twisted_version, sqlalchemy_version,
-        sqlalchemy_migrate_version, 'multiprocessing==2.6.2.1', 'mock==0.8.0',
+        sqlalchemy_migrate_version,
         '--editable=worker'] + extra_packages
-    if python_version > 'python2.5':
-        # because some of the dependencies don't work on 2.5
-        virtualenv_packages.extend(['moto==0.3.1', 'boto==2.29.1'])
     if python_version in ('python2.4', 'python2.5'):
         # and, because the latest versions of these don't work on <2.5, and the version of
         # pip that works on 2.5 doesn't understand that '==' means 'I want this version'
@@ -260,7 +257,7 @@ def mkdocsfactory():
     # run docs tools in their own virtualenv, otherwise we end up documenting
     # the version of Buildbot running the metabuildbot!
     VirtualenvSetup(name='virtualenv setup',
-        virtualenv_packages=['sphinx==1.2.2', 'Pygments==2.0.1', '--editable=master[docs]', '--editable=worker'],
+        virtualenv_packages=['--editable=master[docs]', '--editable=worker'],
         virtualenv_dir='sandbox',
         haltOnFailure=True),
 
