@@ -1,7 +1,6 @@
 import itertools
 import textwrap
 
-from buildbot import locks
 from buildbot.process import factory
 from buildbot.process.properties import Interpolate
 from buildbot.steps.python_twisted import Trial
@@ -11,6 +10,7 @@ from buildbot.steps.source.git import Git
 from buildbot.steps.transfer import FileDownload
 from metabbotcfg.common import GIT_URL
 from metabbotcfg.slaves import get_slaves, names, slaves
+from metabbotcfg.virtualenvsetup import VirtualenvSetup
 
 _PACKAGE_STASH = 'http://ftp.buildbot.net/pub/metabuildbot/python-packages/'
 
@@ -18,79 +18,6 @@ builders = []
 
 # slaves seem to have a hard time fetching from github, so retry
 gitStep = Git(repourl=GIT_URL, mode='full', method='fresh', retryFetch=True)
-
-# only allow one VirtualenvSetup to run on a slave at a time.  This prevents
-# collisions in the shared package cache.
-veLock = locks.SlaveLock('veLock')
-
-
-class VirtualenvSetup(ShellCommand):
-    def __init__(self, virtualenv_dir='sandbox', virtualenv_python='python2.7',
-                 virtualenv_packages=[], **kwargs):
-        kwargs['locks'] = kwargs.get('locks', []) + [veLock.access('exclusive')]
-        ShellCommand.__init__(self, **kwargs)
-
-        self.virtualenv_dir = virtualenv_dir
-        self.virtualenv_python = virtualenv_python
-        self.virtualenv_packages = virtualenv_packages
-
-        self.addFactoryArguments(
-            virtualenv_dir=virtualenv_dir,
-            virtualenv_python=virtualenv_python,
-            virtualenv_packages=virtualenv_packages)
-
-    def start(self):
-        # set up self.command as a very long sh -c invocation
-        command = []
-        command.append("PYTHON='%s'" % self.virtualenv_python)
-        command.append("VE='%s'" % self.virtualenv_dir)
-        command.append("VEPYTHON='%s/bin/python'" % self.virtualenv_dir)
-
-        command.append(textwrap.dedent("""\
-        # first, set up the virtualenv if it hasn't already been done, or if it's
-        # broken (as sometimes happens when a slave's Python is updated)
-        if ! test -f "$VE/bin/pip" || ! "$VE/bin/python" -c 'import math'; then
-            echo "Setting up virtualenv $VE";
-            rm -rf "$VE";
-            test -d "$VE" && { echo "$VE couldn't be removed"; exit 1; };
-            virtualenv "$VE" || exit 1;
-        else
-            echo "Virtualenv already exists"
-        fi
-        """).strip())
-
-        # make sure pip is upgraded to latest version (so that master[test] works recursively)
-        command.append(textwrap.dedent("""\
-        echo "Upgrading pip";
-        $VE/bin/pip install -U pip
-        """).strip())
-
-        # now install each requested package in one command
-        command.append(textwrap.dedent("""\
-            echo "Installing %(pkg)s";
-            "$VE/bin/pip" install -U %(pkg)s || exit 1
-            """).strip() % dict(pkg=' '.join(self.virtualenv_packages)))
-
-        # make $VE/bin/trial work, even if we inherited trial from site-packages
-        command.append(textwrap.dedent("""\
-        if ! test -x "$VE/bin/trial"; then
-            echo "adding $VE/bin/trial";
-            ln -s `which trial` "$VE/bin/trial";
-        fi
-        """).strip())
-        # and finally, straighten out some preferred versions
-        command.append(textwrap.dedent("""\
-        echo "Checking for simplejson or json";
-        "$VEPYTHON" -c 'import json' 2>/dev/null || "$VEPYTHON" -c 'import simplejson' ||
-                    "$VE/bin/pip" install simplejson || exit 1;
-        echo "Checking for sqlite3, including pysqlite3 on Python 2.5";
-        "$VEPYTHON" -c 'import sqlite3, sys; assert sys.version_info >= (2,6)' 2>/dev/null ||
-                    "$VEPYTHON" -c 'import pysqlite2.dbapi2' ||
-                    "$VE/bin/pip" install pysqlite || exit 1
-        """).strip())
-
-        self.command = ';\n'.join(command)
-        return ShellCommand.start(self)
 
 
 class DatabaseTrial(Trial):
