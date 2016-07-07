@@ -9,8 +9,6 @@ veLock = locks.SlaveLock('veLock')
 
 
 # we hardcode a decent version of virtualenv here
-VIRTUALENV_URL = 'https://pypi.python.org/packages/bf/f4/43525ce41d4de0128460da3dce059c2c969f4d076bbdbac21b6bc1e996e8/virtualenv-15.0.2-py2.py3-none-any.whl'  # noqa
-VIRTUALENV_FILENAME = VIRTUALENV_URL.split("/")[-1]
 
 
 class VirtualenvSetup(ShellCommand):
@@ -38,8 +36,7 @@ class VirtualenvSetup(ShellCommand):
         # first, set up the virtualenv if it hasn't already been done, or if it's
         # broken (as sometimes happens when a slave's Python is updated)
         if ! test -f "$VE/bin/pip" || ! test -d "$VE/lib/$PYTHON" || ! "$VE/bin/python" -c 'import math'; then
-            wget {VIRTUALENV_URL}
-            unzip {VIRTUALENV_FILENAME}
+            unzip virtualenv.whl
             echo "Setting up virtualenv $VE";
             rm -rf "$VE";
             test -d "$VE" && {{ echo "$VE couldn't be removed"; exit 1; }};
@@ -67,8 +64,7 @@ class VirtualenvSetup(ShellCommand):
                     "$VEPYTHON" -c 'import pysqlite2.dbapi2' ||
                     "$VE/bin/pip" install pysqlite || exit 1
 
-        """.format(VIRTUALENV_URL=VIRTUALENV_URL, VIRTUALENV_FILENAME=VIRTUALENV_FILENAME,
-                   virtualenv_python=self.virtualenv_python, virtualenv_dir=self.virtualenv_dir,
+        """.format(virtualenv_python=self.virtualenv_python, virtualenv_dir=self.virtualenv_dir,
                    virtualenv_packages=" ".join(self.virtualenv_packages)))
         return command
 
