@@ -18,6 +18,7 @@ builders = []
 
 # slaves seem to have a hard time fetching from github, so retry
 gitStep = Git(repourl=GIT_URL, mode='full', method='fresh', retryFetch=True)
+downloadStep = FileDownload(mastersrc="metabbotcfg/virtualenv.whl", slavedest="virtualenv.whl", flunkOnFailure=True)
 
 
 class DatabaseTrial(Trial):
@@ -86,7 +87,7 @@ def mktestfactory(twisted_version='twisted', python_version='python',
         virtualenv_packages.append('--editable=master[tls,test]')
     f = factory.BuildFactory()
     f.addSteps([
-    gitStep,
+    gitStep, downloadStep,
     VirtualenvSetup(name='virtualenv setup',
         virtualenv_python=python_version,
         virtualenv_packages=virtualenv_packages,
@@ -145,7 +146,7 @@ def mktestfactory(twisted_version='twisted', python_version='python',
 def mkcoveragefactory():
     f = factory.BuildFactory()
     f.addSteps([
-    gitStep,
+    gitStep, downloadStep,
     VirtualenvSetup(name='virtualenv setup',
         virtualenv_packages=['coverage', 'mock', '--editable=master[tls,test]', '--editable=worker'],
         virtualenv_dir='sandbox',
@@ -170,8 +171,7 @@ def mkcoveragefactory():
 def mkdocsfactory():
     f = factory.BuildFactory()
     f.addSteps([
-        gitStep,
-        FileDownload(mastersrc="virtualenv.py", slavedest="virtualenv.py", flunkOnFailure=True),
+        gitStep, downloadStep,
 
     # run docs tools in their own virtualenv, otherwise we end up documenting
     # the version of Buildbot running the metabuildbot!
@@ -194,7 +194,7 @@ def mkdocsfactory():
 def mklintyfactory():
     f = factory.BuildFactory()
     f.addSteps([
-        gitStep,
+        gitStep, downloadStep,
 
         # run linty tools in their own virtualenv, so we can control the version
         # the version of Buildbot running the metabuildbot!
@@ -215,7 +215,7 @@ def mklintyfactory():
 def mkbuildsfactory():
     f = factory.BuildFactory()
     f.addSteps([
-        gitStep,
+        gitStep, downloadStep,
         VirtualenvSetup(name='virtualenv setup',
             virtualenv_packages=[
                 # required to build www packages (#2877)
