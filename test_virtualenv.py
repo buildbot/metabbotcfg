@@ -7,6 +7,7 @@ from twisted.python import util
 
 from metabbotcfg.virtualenvsetup import VirtualenvSetup
 
+
 class VirtualEnv(unittest.SynchronousTestCase):
     def test_virtualenv_command(self):
         shutil.copyfile(util.sibpath(__file__, "virtualenv.whl"), "virtualenv.whl")

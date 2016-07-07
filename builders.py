@@ -18,7 +18,7 @@ builders = []
 
 # slaves seem to have a hard time fetching from github, so retry
 gitStep = Git(repourl=GIT_URL, mode='full', method='fresh', retryFetch=True)
-downloadStep = FileDownload(mastersrc="metabbotcfg/virtualenv.whl", slavedest="virtualenv.whl", flunkOnFailure=True),
+downloadStep = FileDownload(mastersrc="metabbotcfg/virtualenv.whl", slavedest="virtualenv.whl", flunkOnFailure=True)
 
 
 class DatabaseTrial(Trial):
