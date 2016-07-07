@@ -37,13 +37,13 @@ class VirtualenvSetup(ShellCommand):
 
         # first, set up the virtualenv if it hasn't already been done, or if it's
         # broken (as sometimes happens when a slave's Python is updated)
-        if ! test -f "$VE/bin/pip" || ! "$VE/bin/python" -c 'import math'; then
+        if ! test -f "$VE/bin/pip" || ! test -d "$VE/lib/$PYTHON" || ! "$VE/bin/python" -c 'import math'; then
             wget {VIRTUALENV_URL}
             unzip {VIRTUALENV_FILENAME}
             echo "Setting up virtualenv $VE";
             rm -rf "$VE";
             test -d "$VE" && {{ echo "$VE couldn't be removed"; exit 1; }};
-            $PYTHON virtualenv.py "$VE" || exit 1;
+            $PYTHON virtualenv.py -p $PYTHON "$VE" || exit 1;
         else
             echo "Virtualenv already exists"
         fi
