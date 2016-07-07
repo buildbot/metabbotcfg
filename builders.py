@@ -25,7 +25,7 @@ veLock = locks.SlaveLock('veLock')
 
 
 class VirtualenvSetup(ShellCommand):
-    def __init__(self, virtualenv_dir='sandbox', virtualenv_python='python',
+    def __init__(self, virtualenv_dir='sandbox', virtualenv_python='python2.7',
                  virtualenv_packages=[], **kwargs):
         kwargs['locks'] = kwargs.get('locks', []) + [veLock.access('exclusive')]
         ShellCommand.__init__(self, **kwargs)
@@ -155,13 +155,6 @@ def mktestfactory(twisted_version='twisted', python_version='python',
     virtualenv_packages = [twisted_version, sqlalchemy_version,
         sqlalchemy_migrate_version,
         '--editable=worker'] + extra_packages
-    if python_version in ('python2.4', 'python2.5'):
-        # and, because the latest versions of these don't work on <2.5, and the version of
-        # pip that works on 2.5 doesn't understand that '==' means 'I want this version'
-        virtualenv_packages.insert(0, _PACKAGE_STASH + 'zope.interface-3.6.1.tar.gz')
-        virtualenv_packages.insert(0, _PACKAGE_STASH + 'setuptools-1.4.2.tar.gz')
-    else:
-        virtualenv_packages.insert(0, _PACKAGE_STASH + 'zope.interface-4.1.1.tar.gz')
     if not slave_only:
         virtualenv_packages.append('--editable=master[tls,test]')
     f = factory.BuildFactory()
