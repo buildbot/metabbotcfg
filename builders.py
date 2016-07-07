@@ -25,7 +25,7 @@ veLock = locks.SlaveLock('veLock')
 
 
 class VirtualenvSetup(ShellCommand):
-    def __init__(self, virtualenv_dir='sandbox', virtualenv_python='python',
+    def __init__(self, virtualenv_dir='sandbox', virtualenv_python='python2.7',
                  virtualenv_packages=[], **kwargs):
         kwargs['locks'] = kwargs.get('locks', []) + [veLock.access('exclusive')]
         ShellCommand.__init__(self, **kwargs)
