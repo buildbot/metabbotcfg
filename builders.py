@@ -59,32 +59,42 @@ def mksimplefactory(test_master=True):
 
 
 # much like simple buidlers, but it uses virtualenv
-def mktestfactory(twisted_version='twisted', python_version='python',
-                sqlalchemy_version='sqlalchemy',  # latest
-                sqlalchemy_migrate_version='sqlalchemy-migrate',  # latest
+def mktestfactory(twisted_version=None, python_version='python',
+                sqlalchemy_version=None,  # latest taken by master's setup.py
+                sqlalchemy_migrate_version=None,  # latest taken by master's setup.py
                 extra_packages=None, db=None,
                 www=False, slave_only=False):
     if not extra_packages:
         extra_packages = []
     subs = dict(twisted_version=twisted_version, python_version=python_version)
     ve = "../sandbox-%(python_version)s-%(twisted_version)s" % subs
-    if sqlalchemy_version != 'sqlalchemy':
+    if sqlalchemy_version is not None:
         ve += '-' + sqlalchemy_version
-    if sqlalchemy_migrate_version != 'sqlalchemy-migrate':
+    if sqlalchemy_migrate_version is not None:
         ve += sqlalchemy_migrate_version.replace('sqlalchemy-migrate==', 'samigr-')
     subs['ve'] = ve
 
-    if www:
-        extra_packages.append('--editable=pkg')
-        extra_packages.append('--editable=www/base')
-        extra_packages.append('--editable=www/console_view')
-        extra_packages.append('--editable=www/waterfall_view')
+    virtualenv_packages = []
 
-    virtualenv_packages = [twisted_version, sqlalchemy_version,
-        sqlalchemy_migrate_version,
-        '--editable=worker'] + extra_packages
+    def maybeAppend(*args):
+        for v in args:
+            if v is not None:
+                virtualenv_packages.append(v)
+
+    maybeAppend(twisted_version, sqlalchemy_version,
+                sqlalchemy_migrate_version)
+
+    if www:
+        maybeAppend('--editable=pkg',
+                    '--editable=www/base',
+                    '--editable=www/console_view',
+                    '--editable=www/waterfall_view')
+
     if not slave_only:
-        virtualenv_packages.append('--editable=master[tls,test]')
+        maybeAppend('--editable=master')
+
+    maybeAppend('--editable=worker')
+
     f = factory.BuildFactory()
     f.addSteps([
     gitStep, downloadStep,
