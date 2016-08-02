@@ -34,7 +34,13 @@ class VirtualenvSetup(ShellCommand):
         VE='{virtualenv_dir}'
         VEPYTHON='{virtualenv_dir}/bin/python'
 
-        # first, set up the virtualenv if it hasn't already been done, or if it's
+        # first remove the virtualenv if it is too old (once a week)
+        if [ 0 -ne `find -H "$VE" -ctime 8 |wc -l` ]; then
+           echo "virtualenv too old, recreating..."
+           rm -rf "$VE"
+        fi
+
+        # second, set up the virtualenv if it hasn't already been done, or if it's
         # broken (as sometimes happens when a slave's Python is updated)
         if ! test -f "$VE/bin/pip" || ! test -d "$VE/lib/$PYTHON" || ! "$VE/bin/python" -c 'import math'; then
             $PYTHON -m zipfile -e virtualenv.whl .
