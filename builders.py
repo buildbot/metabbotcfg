@@ -91,8 +91,10 @@ def mktestfactory(twisted_version=None, python_version='python',
                     '--editable=www/waterfall_view')
 
     if not slave_only:
-        maybeAppend('--editable=master')
-
+        maybeAppend('--editable=master[test,tls]')
+    # master[test] embeddeds all test deps, but not worker, which only needs mock
+    else:
+        maybeAppend('mock')
     maybeAppend('--editable=worker')
 
     f = factory.BuildFactory()
