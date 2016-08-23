@@ -382,7 +382,9 @@ database_packages = {
 }
 
 for db in set(itertools.chain.from_iterable(sl.databases.keys() for sl in slaves)):
-    f = mktestfactory(extra_packages=database_packages[db], db=db)
+    f = mktestfactory(extra_packages=database_packages[db], 
+                      db=db,
+                      python_version='python2.7')
     builders.append({
         'name': 'db-%s' % db,
         'slavenames': names(get_slaves(db=db)),
