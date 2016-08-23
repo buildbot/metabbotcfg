@@ -74,7 +74,7 @@ def mktestfactory(twisted_version=None, python_version='python',
         ve += sqlalchemy_migrate_version.replace('sqlalchemy-migrate==', 'samigr-')
     subs['ve'] = ve
 
-    virtualenv_packages = []
+    virtualenv_packages = extra_packages
 
     def maybeAppend(*args):
         for v in args:
