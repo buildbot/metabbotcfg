@@ -1,0 +1,17 @@
+language: python
+python: 2.7
+
+install:
+- pip install tox
+
+env:
+- TOXENV=lint
+- TOXENV=config
+
+sudo: false
+
+script:
+- tox
+
+notifications:
+    email: false

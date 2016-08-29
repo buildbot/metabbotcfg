@@ -1,9 +1,11 @@
-import sys
 import os
+import random
+import string
 
-from buildbot.plugins import buildslave
+from buildbot.plugins import worker
 
-class MySlaveBase(object):
+
+class MyWorkerBase(object):
     # true if this box is buildbot.net, and can build docs, etc.
     buildbot_net = False
 
@@ -61,6 +63,14 @@ class MySlaveBase(object):
     def get_pass(self, name):
         # get the password based on the name
         path = os.path.join(os.path.dirname(__file__), "%s.pass" % name)
+        if not os.path.exists(path):
+            print "warning {} does not exit. creating one".format(path)
+            pw = ''.join(
+                random.choice(string.ascii_uppercase + string.digits)
+                for _ in range(20))
+            with open(path, 'w') as f:
+                f.write(pw)
+
         pw = open(path).read().strip()
         return pw
 
@@ -68,76 +78,76 @@ class MySlaveBase(object):
         path = os.path.join(os.path.dirname(__file__), "%s.ec2" % name)
         return open(path).read().strip().split(" ")
 
-class MySlave(MySlaveBase, buildslave.BuildSlave):
+
+class MyWorker(MyWorkerBase, worker.Worker):
     def __init__(self, name, **kwargs):
         password = self.get_pass(name)
         kwargs = self.extract_attrs(name, **kwargs)
-        buildslave.BuildSlave.__init__(self, name, password, **kwargs)
+        worker.Worker.__init__(self, name, password, **kwargs)
 
-#class MyEC2LatentBuildSlave(MySlaveBase, EC2LatentBuildSlave):
-#    def __init__(self, name, ec2type, **kwargs):
-#        password = self.get_pass(name)
-#        identifier, secret_identifier = self.get_ec2_creds(name)
-#        kwargs = self.extract_attrs(name, **kwargs)
-#        EC2LatentBuildSlave.__init__(self, name, password, ec2type,
-#            identifier=identifier, secret_identifier=secret_identifier,
-#            **kwargs)
 
 _PG_TEST_DB_URL = 'postgresql+pg8000://metabuildslave@localhost/ninebuildslave'
 _MYSQL_TEST_DB_URL = 'mysql+mysqldb://metabuildslave@localhost/ninebuildslave'
 
-slaves = [
+workers = [
     # Local
     # Dustin Mitchell
-    MySlave('knuth',
-            max_builds=4,
-            run_single=False,
-            run_config=True,
-            tw0810=True,
-            py26=True,
-            py27=True,
-            nodejs=True),
+    MyWorker(
+        'knuth',
+        max_builds=4,
+        run_single=False,
+        run_config=True,
+        tw0810=True,
+        py26=True,
+        py27=True,
+        nodejs=True),
 
     # Mozilla
-    MySlave('buildbot-linux4', # buildbot-linux4.community.scl3.mozilla.com
-            max_builds=4,
-            run_single=False,
-            run_config=True,
-            py26=True,
-            py27=True, # hand-compiled in /usr/local
-            pyqt4=True, # installed in system python
-            databases={
-                'postgres' : dict(BUILDBOT_TEST_DB_URL=_PG_TEST_DB_URL),
-                'mysql' : dict(BUILDBOT_TEST_DB_URL=_MYSQL_TEST_DB_URL)
-            }),
+    MyWorker(
+        'buildbot-linux4',  # buildbot-linux4.community.scl3.mozilla.com
+        max_builds=4,
+        run_single=False,
+        run_config=True,
+        py26=True,
+        py27=True,  # hand-compiled in /usr/local
+        pyqt4=True,  # installed in system python
+        databases={
+            'postgres': dict(BUILDBOT_TEST_DB_URL=_PG_TEST_DB_URL),
+            'mysql': dict(BUILDBOT_TEST_DB_URL=_MYSQL_TEST_DB_URL)
+        }),
     # Bill Deegan
-    MySlave('bdbaddog-nine',
+    MyWorker(
+        'bdbaddog-nine',
         max_builds=4,
         run_single=False,
         run_config=True,
         py27=True,
         pyqt4=False,
         databases={
-            'postgres' : dict(BUILDBOT_TEST_DB_URL=
-                'postgresql+pg8000://${POSTGRESQL_ENV_POSTGRES_USER}:${POSTGRESQL_ENV_POSTGRES_PASSWORD}@${POSTGRESQL_PORT_5432_TCP_ADDR}:${POSTGRESQL_PORT_5432_TCP_PORT}/${POSTGRESQL_ENV_POSTGRES_USER}'),
-            'mysql' : dict(BUILDBOT_TEST_DB_URL=
-                "mysql+mysqldb://${MYSQL_ENV_MYSQL_USER}:${MYSQL_ENV_MYSQL_PASSWORD}@${MYSQL_PORT_3306_TCP_ADDR}:${MYSQL_PORT_3306_TCP_PORT}/${MYSQL_ENV_MYSQL_DATABASE}"),
+            'postgres': dict(BUILDBOT_TEST_DB_URL='postgresql+pg8000://${POSTGRESQL_ENV_POSTGRES_USER}:'
+                             '${POSTGRESQL_ENV_POSTGRES_PASSWORD}@${POSTGRESQL_PORT_5432_TCP_ADDR}:'
+                             '${POSTGRESQL_PORT_5432_TCP_PORT}/${POSTGRESQL_ENV_POSTGRES_USER}'),
+            'mysql': dict(BUILDBOT_TEST_DB_URL='mysql+mysqldb://${MYSQL_ENV_MYSQL_USER}:'
+                          '${MYSQL_ENV_MYSQL_PASSWORD}@${MYSQL_PORT_3306_TCP_ADDR}:'
+                          '${MYSQL_PORT_3306_TCP_PORT}/${MYSQL_ENV_MYSQL_DATABASE}'),
         }
     ),
- 
+
     # First build slave on Buildbot infrastructure
-    MySlave('bslave1',
-            max_builds=4,
-            run_single=False,
-            run_config=True,
-            py27=True)
+    MyWorker(
+        'bslave1',
+        max_builds=4,
+        run_single=False,
+        run_config=True,
+        py27=True)
 ]
+
 
 def get_slaves(db=None, *args, **kwargs):
     rv = {}
     for arg in args:
         rv.update(arg)
-    for sl in slaves:
+    for sl in workers:
         if db and db not in sl.databases:
             continue
         for k in kwargs:
@@ -146,6 +156,7 @@ def get_slaves(db=None, *args, **kwargs):
         else:
             rv[sl.slavename] = sl
     return rv
+
 
 def names(slavedict):
     return slavedict.keys()
