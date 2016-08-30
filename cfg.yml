@@ -1,0 +1,11 @@
+env: {}
+not_important_files: []
+projects:
+-   branches:
+    - master
+    name: buildbot
+    repository: https://github.com/tardyp/buildbot
+    stages: []
+    tags: []
+    vcs_type: github
+stages: []

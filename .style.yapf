@@ -1,0 +1,3 @@
+[style]
+# YAPF by default uses the chromium style, but we want pep8
+based_on_style = pep8
