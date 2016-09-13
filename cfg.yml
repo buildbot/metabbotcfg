@@ -1,3 +1,10 @@
+auth:
+    authztype: Groups
+    clientid: managedby
+    clientsecret: ansible
+    groups:
+    - buildbot
+    type: GitHub
 env: {}
 not_important_files: []
 projects:
