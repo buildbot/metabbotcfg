@@ -1,0 +1,3 @@
+buildbot      ALL=(root) NOPASSWD: /etc/init.d/postgresql
+buildbot      ALL=(root) NOPASSWD: /etc/init.d/mysql
+
