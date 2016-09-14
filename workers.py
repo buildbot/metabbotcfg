@@ -1,3 +1,4 @@
+import json
 import os
 import random
 import string
@@ -60,14 +61,17 @@ class MyWorkerBase(object):
                 remaining[k] = kwargs[k]
         return remaining
 
+    def get_random_pass(self):
+        return ''.join(
+            random.choice(string.ascii_uppercase + string.digits)
+            for _ in range(20))
+
     def get_pass(self, name):
         # get the password based on the name
         path = os.path.join(os.path.dirname(__file__), "%s.pass" % name)
         if not os.path.exists(path):
             print "warning {} does not exit. creating one".format(path)
-            pw = ''.join(
-                random.choice(string.ascii_uppercase + string.digits)
-                for _ in range(20))
+            pw = self.get_random_pass()
             with open(path, 'w') as f:
                 f.write(pw)
 
@@ -84,6 +88,19 @@ class MyWorker(MyWorkerBase, worker.Worker):
         password = self.get_pass(name)
         kwargs = self.extract_attrs(name, **kwargs)
         worker.Worker.__init__(self, name, password, **kwargs)
+
+
+class MyHyperWorker(MyWorkerBase, worker.HyperLatentWorker):
+    creds = json.load(open(os.path.join(os.path.dirname(__file__), "hyper.pass")))
+
+    def __init__(self, name, **kwargs):
+        kwargs = self.extract_attrs(name, **kwargs)
+        return worker.HyperLatentWorker.__init__(
+            self,
+            name, str(self.get_random_pass()),
+            hyper_host="tcp://us-west-1.hyper.sh:443", image="tardyp/metabbotcfg",
+            hyper_accesskey=self.creds['access_key'], hyper_secretkey=self.creds['secret_key'],
+            hyper_size="m1", **kwargs)
 
 
 _PG_TEST_DB_URL = 'postgresql+pg8000://metabuildslave@localhost/ninebuildslave'
@@ -140,6 +157,16 @@ workers = [
         run_single=False,
         run_config=True,
         py27=True)
+] + [
+    # add 5 hyper workers
+    MyHyperWorker(
+        'hyper' + str(i),
+        max_builds=1,
+        run_single=False,
+        run_config=True,
+        py26=True,
+        py27=True)
+    for i in xrange(5)
 ]
 
 
