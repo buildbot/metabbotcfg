@@ -183,7 +183,7 @@ workers = [
 ] + [
     # add 4 local workers
     MyLocalWorker(
-        'hyper' + str(i),
+        'local' + str(i),
         max_builds=1,
         run_single=False,
         run_config=True,
