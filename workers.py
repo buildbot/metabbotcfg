@@ -90,17 +90,30 @@ class MyWorker(MyWorkerBase, worker.Worker):
         worker.Worker.__init__(self, name, password, **kwargs)
 
 
-class MyHyperWorker(MyWorkerBase, worker.HyperLatentWorker):
-    creds = json.load(open(os.path.join(os.path.dirname(__file__), "hyper.pass")))
+class MyLocalWorker(MyWorkerBase, worker.LocalWorker):
 
     def __init__(self, name, **kwargs):
         kwargs = self.extract_attrs(name, **kwargs)
-        return worker.HyperLatentWorker.__init__(
+        return worker.LocalWorker.__init__(
             self,
             name, str(self.get_random_pass()),
-            hyper_host="tcp://us-west-1.hyper.sh:443", image="tardyp/metabbotcfg",
-            hyper_accesskey=self.creds['access_key'], hyper_secretkey=self.creds['secret_key'],
-            hyper_size="m1", **kwargs)
+            **kwargs)
+
+if not hasattr(worker, 'HyperLatentWorker'):
+    MyHyperWorker = MyLocalWorker
+else:
+    class MyHyperWorker(MyWorkerBase, worker.HyperLatentWorker):
+        creds = json.load(open(os.path.join(os.path.dirname(__file__), "hyper.pass")))
+
+        def __init__(self, name, **kwargs):
+            kwargs = self.extract_attrs(name, **kwargs)
+            return worker.HyperLatentWorker.__init__(
+                self,
+                name, str(self.get_random_pass()),
+                hyper_host="tcp://us-west-1.hyper.sh:443", image="tardyp/metabbotcfg",
+                hyper_accesskey=self.creds['access_key'], hyper_secretkey=self.creds['secret_key'],
+                hyper_size="m1", **kwargs)
+
 
 
 _PG_TEST_DB_URL = 'postgresql+pg8000://metabuildslave@localhost/ninebuildslave'
@@ -158,7 +171,7 @@ workers = [
         run_config=True,
         py27=True)
 ] + [
-    # add 5 hyper workers
+    # add 20 hyper workers
     MyHyperWorker(
         'hyper' + str(i),
         max_builds=1,
@@ -166,7 +179,17 @@ workers = [
         run_config=True,
         py26=True,
         py27=True)
-    for i in xrange(5)
+    for i in xrange(20)
+] + [
+    # add 4 local workers
+    MyLocalWorker(
+        'hyper' + str(i),
+        max_builds=1,
+        run_single=False,
+        run_config=True,
+        py26=True,
+        py27=True)
+    for i in xrange(4)
 ]
 
 

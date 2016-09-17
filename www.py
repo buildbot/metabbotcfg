@@ -4,8 +4,12 @@ import platform
 
 
 def setupWWW(c):
+    # if prod
     if platform.node() == 'nine':
         c['www']['port'] = 'tcp:8010:interface=192.168.80.244'
+        c['buildbotURL'] = "https://nine.buildbot.net/"
+    else:  # for testing
+        c['buildbotURL'] = "http://localhost:8010/"
     c['www']['plugins']['waterfall_view'] = {}
 
     # read the password that ansible did sent to us, and override what is in the yaml
