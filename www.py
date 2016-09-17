@@ -5,7 +5,7 @@ import platform
 
 def setupWWW(c):
     # if prod
-    if platform.node() == 'nine':
+    if 'nine' in platform.node():
         c['www']['port'] = 'tcp:8010:interface=192.168.80.244'
         c['buildbotURL'] = "https://nine.buildbot.net/"
     else:  # for testing
