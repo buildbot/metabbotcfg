@@ -14,5 +14,5 @@ def setupWWW(c):
 
     # read the password that ansible did sent to us, and override what is in the yaml
     creds = json.load(open(os.path.join(os.path.dirname(__file__), "github_oauth.pass")))
-    c['www']['auth'].clientId = creds['client_id']
-    c['www']['auth'].clientSecret = creds['client_secret']
+    c['www']['auth'].clientId = creds['clientid']
+    c['www']['auth'].clientSecret = creds['clientsecret']

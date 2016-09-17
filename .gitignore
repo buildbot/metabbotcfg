@@ -2,3 +2,4 @@
 *.pass
 *.pyc
 *.ec2
+github_token
