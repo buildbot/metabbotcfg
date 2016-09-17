@@ -13,7 +13,7 @@ projects:
     github_token: file:metabbotcfg/github_token
     name: buildbot
     reporter_context: bb%(prop:TESTS:+/)s%(prop:TESTS)s%(prop:TESTS:+/)s%(prop:python)s%(prop:TESTS:+/tw:)s%(prop:TWISTED)s%(prop:TESTS:+/sqla:)s%(prop:SQLALCHEMY)s%(prop:TESTS:+/db:)s%(prop:BUILDBOT_TEST_DB_URL)s
-    repository: https://github.com/tardyp/buildbot
+    repository: https://github.com/buildbot/buildbot
     stages: []
     tags: []
     vcs_type: github
