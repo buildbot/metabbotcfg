@@ -11,6 +11,7 @@ from twisted import logger
 from twisted.internet import endpoints, protocol, reactor, task
 from twisted.protocols import basic
 from zope import interface
+from twisted.python import log
 
 
 class LogstashBaseFormatter(logging.Formatter):
@@ -56,6 +57,8 @@ class LogstashBaseFormatter(logging.Formatter):
             for key, value in record:
                 if not key.startswith(self.prefix):
                     continue
+                if key == "message":
+                    continue
                 if isinstance(value, easy_types):
                     fields[key] = value
                 else:
@@ -65,6 +68,8 @@ class LogstashBaseFormatter(logging.Formatter):
             # get every field that isn't prefixed with log_
             for key, value in record.items():
                 if key.startswith('log_'):
+                    continue
+                if key == "message":
                     continue
                 if isinstance(value, easy_types):
                     fields[key] = value
@@ -116,7 +121,6 @@ class LogstashFormatterVersion1(LogstashBaseFormatter):
             'levelname': record['log_level'].name,
             'logger': self.get_namespace(record),
         }
-
         # extra fields
         message.update(self.get_extra_fields(record))
 
@@ -191,3 +195,12 @@ class LogstashLogObserver(object):
             from twisted.internet import reactor
         endpoint = endpoints.TCP4ClientEndpoint(reactor, self.host, self.port)
         return endpoint.connect(_factory)
+
+if __name__ == '__main__':
+    from twisted.python import log
+    log.addObserver(LogstashLogObserver("localhost", 5556))
+    def lognow():
+        log.msg("hi", "this works", {'a': 'b'})
+        reactor.callLater(1, lognow)
+    lognow()
+    reactor.run()

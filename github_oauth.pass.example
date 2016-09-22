@@ -1,1 +1,1 @@
-{"clientid": "foo", "secretkey": "bar"}
+{"clientid": "foo", "clientsecret": "bar"}
