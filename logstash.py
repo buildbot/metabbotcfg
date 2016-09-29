@@ -181,8 +181,8 @@ class LogstashLogObserver(object):
     def __call__(self, event):
         if 'log_namespace' in event and "LogstashFactory" in event['log_namespace']:
             return
-        with open("test.log", "a") as f:
-            f.write(repr(event) + "\n")
+        if 'metric' in event:
+            return
         # log_ prefix is the one used by twisted, risk of collision...
         # see https://twistedmatrix.com/documents/15.2.1/core/howto/logger.html
         event['log_stack'] = inspect.stack()
