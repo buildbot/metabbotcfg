@@ -3,16 +3,19 @@ from __future__ import absolute_import, division, print_function
 import inspect
 import json
 import logging
+import pprint
 import socket
 import sys
+import traceback
 from datetime import datetime
 
 from twisted import logger
 from twisted.internet import endpoints, protocol, reactor, task
 from twisted.protocols import basic
-from zope import interface
 from twisted.python import log
+from zope import interface
 
+stdout = sys.stdout
 
 class LogstashBaseFormatter(logging.Formatter):
     def __init__(self, prefix=None, message_type='Logstash', tags=None, fqdn=False):
@@ -29,21 +32,23 @@ class LogstashBaseFormatter(logging.Formatter):
         failure = record['log_failure']
 
         try:
-            traceback = failure.getTraceback()
+            _traceback = failure.getTraceback()
         except Exception:
-            traceback = u"(UNABLE TO OBTAIN TRACEBACK FROM EVENT)\n"
-
-        innermost_frame = failure.frames.pop(0)
-        fields = {
-            'type': str(failure.type),
-            'module': innermost_frame[0],
-            'file': innermost_frame[1],
-            'lineno': innermost_frame[2],
-            'stack': failure.stack,
-            'parents': failure.parents,
-            'traceback': traceback,
-        }
-
+            _traceback = u"(UNABLE TO OBTAIN TRACEBACK FROM EVENT)\n"
+            return {"traceback": _traceback, "error": traceback.format_exc(), "failure": repr(failure)}
+        try:
+            innermost_frame = failure.frames.pop(0)
+            fields = {
+                'type': str(failure.type),
+                'module': innermost_frame[0],
+                'file': innermost_frame[1],
+                'lineno': innermost_frame[2],
+                'stack': failure.stack,
+                'parents': failure.parents,
+                'traceback': _traceback,
+            }
+        except:
+            return {"traceback": _traceback, "error": traceback.format_exc(), "failure": repr(failure)}
         return fields
 
     def get_extra_fields(self, record):
@@ -116,6 +121,7 @@ class LogstashFormatterVersion1(LogstashBaseFormatter):
             'message': logger.formatEvent(record),
             'host': self.host,
             'path': record['log_stack'][-1][1],
+            'function': record['log_stack'][-1][3],
             'tags': self.tags,
             'type': self.message_type,
             'levelname': record['log_level'].name,
@@ -186,10 +192,19 @@ class LogstashLogObserver(object):
         # log_ prefix is the one used by twisted, risk of collision...
         # see https://twistedmatrix.com/documents/15.2.1/core/howto/logger.html
         event['log_stack'] = inspect.stack()
-        event = self.formatter.format(event)
+        try:
+            eventline = self.formatter.format(event)
+        except Exception as e:
+            eventline = json.dumps(dict(message="unable to format event", event=repr(event), exception=str(e)), indent=2)
+            traceback.print_exc(5, file=stdout)
+            pprint.pprint(event, stdout)
         d = task.deferLater(reactor, 0, self._connect, reactor)
-        d.addCallback(lambda client, event: client.emit(event), event)
+        d.addCallback(lambda client, event: client.emit(event), eventline)
 
+        # we catch the error and print to stdout it case of connection refused
+        @d.addErrback
+        def onRefused(err):
+            stdout.write(repr(err) + "\n")
     def _connect(self, reactor=None):
         if reactor is None:
             from twisted.internet import reactor
