@@ -10,11 +10,18 @@ MAINTAINER  Buildbot Maintainers
 
 # Switch to root to be able to install stuff
 USER root
+
+# This will make apt-get install without question
+ARG         DEBIAN_FRONTEND=noninteractive
+
+# Switch to root to be able to install stuff
+USER root
 # install the DB drivers we need to test against databases, as well as git and nodejs + phantomjs
 RUN apt-get update && \
     curl -sL https://deb.nodesource.com/setup_6.x | bash - && \
     apt-get install -y \
         libmysqlclient-dev \
+        libjpeg-dev \
         libpq-dev \
         git \
         python-virtualenv \
@@ -27,10 +34,12 @@ RUN apt-get update && \
         fontconfig \
         nodejs \
         postgresql \
+        sudo \
         mysql-server && \
     \
     curl -sL https://github.com/paladox/phantomjs/releases/download/2.1.7/phantomjs-2.1.1-linux-x86_64.tar.bz2 | \
     tar  --strip-components=1 -C /usr/local -xj phantomjs-2.1.1-linux-x86_64/bin/phantomjs && \
+    npm install -g yarn && \
     rm -rf /var/lib/apt/lists/*
 
 COPY pg_hba.conf /etc/postgresql/9.3/main/pg_hba.conf
@@ -38,11 +47,24 @@ COPY sudoers /etc/sudoers
 
 RUN \
     /etc/init.d/mysql start && \
-    /etc/init.d/postgresql start && \
     mysql -e "CREATE USER 'travis'@'localhost';" && \
     mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'travis'@'localhost' WITH GRANT OPTION; FLUSH PRIVILEGES;" && \
     mysql -e 'create database bbtest;' && \
-    psql -c 'create database bbtest;' -U postgres
-
+    /etc/init.d/postgresql start && \
+    su postgres -c "createuser buildbot" && \
+    su postgres -c "psql -c 'create database bbtest;'"
 # Switch to regular user for security reasons
 USER buildbot
+
+# generate cache for the buildbot dependencies
+RUN \
+    mkdir -p /tmp/bb && \
+    curl -sL https://github.com/buildbot/buildbot/archive/master.tar.gz | \
+    tar  --strip-components=1 -C /tmp/bb -xz && \
+    virtualenv /tmp/bb/sandbox && \
+    . /tmp/bb/sandbox/bin/activate && \
+    pip install -U pip && \
+    pip install -e '/tmp/bb/master[test,docs,tls]' && \
+    pip install -e /tmp/bb/pkg && \
+    pip install -e /tmp/bb/www/base && \
+    rm -rf /tmp/bb
