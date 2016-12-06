@@ -16,6 +16,11 @@ ARG         DEBIAN_FRONTEND=noninteractive
 
 # Switch to root to be able to install stuff
 USER root
+
+# on debian postgresql sets default encoding to the one of the distro, so we need to force it for utf8
+RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+ENV LANG=en_US.utf8
+
 # install the DB drivers we need to test against databases, as well as git and nodejs + phantomjs
 RUN apt-get update && \
     curl -sL https://deb.nodesource.com/setup_6.x | bash - && \
@@ -27,6 +32,7 @@ RUN apt-get update && \
         python-virtualenv \
         enchant \
         libenchant-dev \
+        locales \
         aspell \
         aspell-en \
         ispell \
@@ -37,6 +43,7 @@ RUN apt-get update && \
         sudo \
         mysql-server && \
     \
+    localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 &&/
     curl -sL https://github.com/paladox/phantomjs/releases/download/2.1.7/phantomjs-2.1.1-linux-x86_64.tar.bz2 | \
     tar  --strip-components=1 -C /usr/local -xj phantomjs-2.1.1-linux-x86_64/bin/phantomjs && \
     npm install -g yarn && \
@@ -52,7 +59,7 @@ RUN \
     mysql -e 'create database bbtest;' && \
     /etc/init.d/postgresql start && \
     su postgres -c "createuser buildbot" && \
-    su postgres -c "psql -c 'create database bbtest;'"
+    su postgres -c "psql -c 'create database bbtest WITH ENCODING UTF8 TEMPLATE template0 ;'"
 # Switch to regular user for security reasons
 USER buildbot
 
