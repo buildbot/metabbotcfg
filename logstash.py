@@ -3,17 +3,18 @@ from __future__ import absolute_import, division, print_function
 import inspect
 import json
 import logging
+import pprint
 import socket
 import traceback
 import sys
+import traceback
 from datetime import datetime
 
 from twisted import logger
 from twisted.internet import endpoints, protocol, reactor, task
 from twisted.protocols import basic
-from zope import interface
 from twisted.python import log
-import pprint
+from zope import interface
 
 stdout = sys.stdout
 
@@ -121,6 +122,7 @@ class LogstashFormatterVersion1(LogstashBaseFormatter):
             'message': logger.formatEvent(record),
             'host': self.host,
             'path': record['log_stack'][-1][1],
+            'function': record['log_stack'][-1][3],
             'tags': self.tags,
             'type': self.message_type,
             'levelname': record['log_level'].name,
@@ -203,6 +205,8 @@ class LogstashLogObserver(object):
             pprint.pprint(event, stdout)
         d = task.deferLater(reactor, 0, self._connect, reactor)
         d.addCallback(lambda client, event: client.emit(event), eventline)
+
+        # we catch the error and print to stdout it case of connection refused
         @d.addErrback
         def onRefused(err):
             stdout.write(repr(err) + "\n")
