@@ -4,6 +4,7 @@ import inspect
 import json
 import logging
 import socket
+import traceback
 import sys
 from datetime import datetime
 
@@ -12,7 +13,9 @@ from twisted.internet import endpoints, protocol, reactor, task
 from twisted.protocols import basic
 from zope import interface
 from twisted.python import log
+import pprint
 
+stdout = sys.stdout
 
 class LogstashBaseFormatter(logging.Formatter):
     def __init__(self, prefix=None, message_type='Logstash', tags=None, fqdn=False):
@@ -29,21 +32,23 @@ class LogstashBaseFormatter(logging.Formatter):
         failure = record['log_failure']
 
         try:
-            traceback = failure.getTraceback()
+            _traceback = failure.getTraceback()
         except Exception:
-            traceback = u"(UNABLE TO OBTAIN TRACEBACK FROM EVENT)\n"
-
-        innermost_frame = failure.frames.pop(0)
-        fields = {
-            'type': str(failure.type),
-            'module': innermost_frame[0],
-            'file': innermost_frame[1],
-            'lineno': innermost_frame[2],
-            'stack': failure.stack,
-            'parents': failure.parents,
-            'traceback': traceback,
-        }
-
+            _traceback = u"(UNABLE TO OBTAIN TRACEBACK FROM EVENT)\n"
+            return {"traceback": _traceback, "error": traceback.format_exc(), "failure": repr(failure)}
+        try:
+            innermost_frame = failure.frames.pop(0)
+            fields = {
+                'type': str(failure.type),
+                'module': innermost_frame[0],
+                'file': innermost_frame[1],
+                'lineno': innermost_frame[2],
+                'stack': failure.stack,
+                'parents': failure.parents,
+                'traceback': _traceback,
+            }
+        except:
+            return {"traceback": _traceback, "error": traceback.format_exc(), "failure": repr(failure)}
         return fields
 
     def get_extra_fields(self, record):
@@ -181,15 +186,26 @@ class LogstashLogObserver(object):
     def __call__(self, event):
         if 'log_namespace' in event and "LogstashFactory" in event['log_namespace']:
             return
-        with open("test.log", "a") as f:
-            f.write(repr(event) + "\n")
+        if 'metric' in event:
+            return
         # log_ prefix is the one used by twisted, risk of collision...
         # see https://twistedmatrix.com/documents/15.2.1/core/howto/logger.html
-        event['log_stack'] = inspect.stack()
-        event = self.formatter.format(event)
+        try:
+            event['log_stack'] = inspect.stack()
+        except:
+            pass
+        try:
+            eventline = self.formatter.format(event)
+            stdout.write(eventline + "\n")
+        except Exception as e:
+            eventline = json.dumps(dict(message="unable to format event", event=repr(event), exception=str(e)), indent=2)
+            traceback.print_exc(5, file=stdout)
+            pprint.pprint(event, stdout)
         d = task.deferLater(reactor, 0, self._connect, reactor)
-        d.addCallback(lambda client, event: client.emit(event), event)
-
+        d.addCallback(lambda client, event: client.emit(event), eventline)
+        @d.addErrback
+        def onRefused(err):
+            stdout.write(repr(err) + "\n")
     def _connect(self, reactor=None):
         if reactor is None:
             from twisted.internet import reactor

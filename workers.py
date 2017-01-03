@@ -112,7 +112,7 @@ else:
                 name, str(self.get_random_pass()),
                 hyper_host="tcp://us-west-1.hyper.sh:443", image="tardyp/metabbotcfg",
                 hyper_accesskey=self.creds['access_key'], hyper_secretkey=self.creds['secret_key'],
-                hyper_size="m1", **kwargs)
+                hyper_size="m1", masterFQDN="nine.buildbot.net", **kwargs)
 
 
 
@@ -179,7 +179,7 @@ workers = [
         run_config=True,
         py26=True,
         py27=True)
-    for i in xrange(20)
+    for i in xrange(10)
 ] + [
     # add 4 local workers
     MyLocalWorker(
