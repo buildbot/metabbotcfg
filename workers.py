@@ -16,7 +16,7 @@ class MyWorkerBase(object):
 
     # true if this box can test the buildmaster and worker, respectively
     test_master = True
-    test_slave = True
+    test_worker = True
 
     # true if this worker should have a single-worker builder of its own
     run_single = True
