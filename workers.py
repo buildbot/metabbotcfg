@@ -191,22 +191,3 @@ workers = [
         py27=True)
     for i in xrange(4)
 ]
-
-
-def get_slaves(db=None, *args, **kwargs):
-    rv = {}
-    for arg in args:
-        rv.update(arg)
-    for w in workers:
-        if db and db not in w.databases:
-            continue
-        for k in kwargs:
-            if getattr(w, k) != kwargs[k]:
-                break
-        else:
-            rv[w.slavename] = w
-    return rv
-
-
-def names(workerdict):
-    return workerdict.keys()
