@@ -208,5 +208,5 @@ def get_slaves(db=None, *args, **kwargs):
     return rv
 
 
-def names(slavedict):
-    return slavedict.keys()
+def names(workerdict):
+    return workerdict.keys()
