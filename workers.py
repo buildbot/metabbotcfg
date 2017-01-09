@@ -197,14 +197,14 @@ def get_slaves(db=None, *args, **kwargs):
     rv = {}
     for arg in args:
         rv.update(arg)
-    for sl in workers:
-        if db and db not in sl.databases:
+    for w in workers:
+        if db and db not in w.databases:
             continue
         for k in kwargs:
-            if getattr(sl, k) != kwargs[k]:
+            if getattr(w, k) != kwargs[k]:
                 break
         else:
-            rv[sl.slavename] = sl
+            rv[w.slavename] = w
     return rv
 
 
