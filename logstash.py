@@ -5,7 +5,6 @@ import json
 import logging
 import pprint
 import socket
-import traceback
 import sys
 import traceback
 from datetime import datetime
@@ -13,10 +12,10 @@ from datetime import datetime
 from twisted import logger
 from twisted.internet import endpoints, protocol, reactor, task
 from twisted.protocols import basic
-from twisted.python import log
 from zope import interface
 
 stdout = sys.stdout
+
 
 class LogstashBaseFormatter(logging.Formatter):
     def __init__(self, prefix=None, message_type='Logstash', tags=None, fqdn=False):
@@ -200,7 +199,12 @@ class LogstashLogObserver(object):
             eventline = self.formatter.format(event)
             stdout.write(eventline + "\n")
         except Exception as e:
-            eventline = json.dumps(dict(message="unable to format event", event=repr(event), exception=str(e)), indent=2)
+            eventline = json.dumps(
+                dict(
+                    message="unable to format event",
+                    event=repr(event),
+                    exception=str(e)),
+                indent=2)
             traceback.print_exc(5, file=stdout)
             pprint.pprint(event, stdout)
         d = task.deferLater(reactor, 0, self._connect, reactor)
@@ -210,15 +214,18 @@ class LogstashLogObserver(object):
         @d.addErrback
         def onRefused(err):
             stdout.write(repr(err) + "\n")
+
     def _connect(self, reactor=None):
         if reactor is None:
             from twisted.internet import reactor
         endpoint = endpoints.TCP4ClientEndpoint(reactor, self.host, self.port)
         return endpoint.connect(_factory)
 
+
 if __name__ == '__main__':
     from twisted.python import log
     log.addObserver(LogstashLogObserver("localhost", 5556))
+
     def lognow():
         log.msg("hi", "this works", {'a': 'b'})
         reactor.callLater(1, lognow)
