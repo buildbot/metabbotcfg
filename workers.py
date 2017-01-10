@@ -14,17 +14,17 @@ class MyWorkerBase(object):
     # (basically good for windows)
     use_simple = False
 
-    # true if this box can test the buildmaster and buildslave, respectively
+    # true if this box can test the buildmaster and worker, respectively
     test_master = True
-    test_slave = True
+    test_worker = True
 
-    # true if this slave should have a single-slave builder of its own
+    # true if this worker should have a single-worker builder of its own
     run_single = True
 
     # true if this host has PyQt4 installed in its default python
     pyqt4 = False
 
-    # true if this slave can contribute to the virtualenv-managed pool of
+    # true if this worker can contribute to the virtualenv-managed pool of
     # specific-configuration builders.  Specific supported python versions
     # are given, too
     run_config = False
@@ -163,7 +163,7 @@ workers = [
         }
     ),
 
-    # First build slave on Buildbot infrastructure
+    # First worker on Buildbot infrastructure
     MyWorker(
         'bslave1',
         max_builds=4,
@@ -191,22 +191,3 @@ workers = [
         py27=True)
     for i in xrange(4)
 ]
-
-
-def get_slaves(db=None, *args, **kwargs):
-    rv = {}
-    for arg in args:
-        rv.update(arg)
-    for sl in workers:
-        if db and db not in sl.databases:
-            continue
-        for k in kwargs:
-            if getattr(sl, k) != kwargs[k]:
-                break
-        else:
-            rv[sl.slavename] = sl
-    return rv
-
-
-def names(slavedict):
-    return slavedict.keys()

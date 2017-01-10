@@ -5,12 +5,11 @@ master.cfg linked to from that basedir:
 
 basedir/master.cfg -> metabbotcfg/master.cfg
        /metabbotcfg/master.cfg
-                   /slaves.py
-                   /slaves.py
+                   /workers.py
                     ...
 
-The slave passwords are not included here - they are in *.pass files on the
-local machine, which are read by the MySlave class.
+The worker passwords are not included here - they are in *.pass files on the
+local machine, which are read by the MyWorker class.
 
 Note that this file is not intended as a good example of a buildbot
 configuration - it's just what works for us!
