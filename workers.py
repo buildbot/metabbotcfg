@@ -99,6 +99,7 @@ class MyLocalWorker(MyWorkerBase, worker.LocalWorker):
             name, str(self.get_random_pass()),
             **kwargs)
 
+
 if not hasattr(worker, 'HyperLatentWorker'):
     MyHyperWorker = MyLocalWorker
 else:
@@ -113,7 +114,6 @@ else:
                 hyper_host="tcp://us-west-1.hyper.sh:443", image="tardyp/metabbotcfg",
                 hyper_accesskey=self.creds['access_key'], hyper_secretkey=self.creds['secret_key'],
                 hyper_size="m1", masterFQDN="nine.buildbot.net", **kwargs)
-
 
 
 _PG_TEST_DB_URL = 'postgresql+pg8000://metabuildslave@localhost/ninebuildslave'

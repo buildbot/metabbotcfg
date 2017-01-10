@@ -1,4 +1,4 @@
-from buildbot.plugins import reporters as reporters_plugins
+# from buildbot.plugins import reporters as reporters_plugins
 
 reporters = []
 
