@@ -179,7 +179,7 @@ workers = [
         run_config=True,
         py26=True,
         py27=True)
-    for i in xrange(10)
+    for i in xrange(20)
 ] + [
     # add 4 local workers
     MyLocalWorker(
