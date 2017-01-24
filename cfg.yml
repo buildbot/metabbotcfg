@@ -14,7 +14,7 @@ projects:
     name: buildbot
     reporter_context: bb%(prop:TESTS:+/)s%(prop:TESTS)s%(prop:TESTS:+/)s%(prop:python)s%(prop:TESTS:+/tw:)s%(prop:TWISTED)s%(prop:TESTS:+/sqla:)s%(prop:SQLALCHEMY)s%(prop:TESTS:+/db:)s%(prop:BUILDBOT_TEST_DB_URL)s
     repository: https://github.com/buildbot/buildbot
-    shallow: 1
+    shallow: 100
     retryFetch: true
     mode: "full"
     method: "clobber"
