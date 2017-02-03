@@ -111,7 +111,7 @@ else:
             return worker.HyperLatentWorker.__init__(
                 self,
                 name, str(self.get_random_pass()),
-                hyper_host="tcp://us-west-1.hyper.sh:443", image="tardyp/metabbotcfg",
+                hyper_host="tcp://us-west-1.hyper.sh:443", image="buildbot/metabbotcfg",
                 hyper_accesskey=self.creds['access_key'], hyper_secretkey=self.creds['secret_key'],
                 hyper_size="m1", masterFQDN="nine.buildbot.net", **kwargs)
 
