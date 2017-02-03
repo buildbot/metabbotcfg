@@ -24,6 +24,10 @@ ENV LANG=en_US.utf8
 # install the DB drivers we need to test against databases, as well as git and nodejs + phantomjs
 RUN apt-get update && \
     curl -sL https://deb.nodesource.com/setup_6.x | bash - && \
+    apt-get install -y python-software-properties software-properties-common && \
+    # add python2.6 and python3.6 repositories
+    add-apt-repository ppa:fkrull/deadsnakes  && \
+    apt-get update && \
     apt-get install -y \
         libmysqlclient-dev \
         libjpeg-dev \
@@ -41,10 +45,13 @@ RUN apt-get update && \
         nodejs \
         postgresql \
         sudo \
+        python3.5-dev  \
+        python3.6-dev  \
+        python2.6-dev  \
         mysql-server && \
     \
-    localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 &&/
-    curl -sL https://github.com/paladox/phantomjs/releases/download/2.1.7/phantomjs-2.1.1-linux-x86_64.tar.bz2 | \
+    localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
+    curl -sL https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2 | \
     tar  --strip-components=1 -C /usr/local -xj phantomjs-2.1.1-linux-x86_64/bin/phantomjs && \
     npm install -g yarn && \
     rm -rf /var/lib/apt/lists/*
