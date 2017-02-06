@@ -21,4 +21,5 @@ projects:
     stages: []
     tags: []
     vcs_type: github
+    treeStableTimer: 1
 stages: []

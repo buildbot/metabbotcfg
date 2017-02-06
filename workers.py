@@ -171,15 +171,16 @@ workers = [
         run_config=True,
         py27=True)
 ] + [
-    # add 20 hyper workers
+    # add 40 hyper workers
     MyHyperWorker(
         'hyper' + str(i),
         max_builds=1,
+        build_wait_timer=1,
         run_single=False,
         run_config=True,
         py26=True,
         py27=True)
-    for i in xrange(20)
+    for i in xrange(40)
 ] + [
     # add 4 local workers
     MyLocalWorker(
