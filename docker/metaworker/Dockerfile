@@ -32,6 +32,11 @@ RUN apt-get update && \
         libmysqlclient-dev \
         libjpeg-dev \
         libpq-dev \
+        # selenium is a java thing
+        default-jre \
+        # chromium needs xvfb even with --headless
+        xvfb \
+        chromium-browser \
         git \
         python-virtualenv \
         enchant \
