@@ -175,7 +175,7 @@ workers = [
     MyHyperWorker(
         'hyper' + str(i),
         max_builds=1,
-        build_wait_timer=1,
+        build_wait_timeout=1,
         run_single=False,
         run_config=True,
         py26=True,
