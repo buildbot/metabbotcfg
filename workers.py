@@ -96,7 +96,7 @@ class MyLocalWorker(MyWorkerBase, worker.LocalWorker):
         kwargs = self.extract_attrs(name, **kwargs)
         return worker.LocalWorker.__init__(
             self,
-            name, str(self.get_random_pass()),
+            name,
             **kwargs)
 
 
