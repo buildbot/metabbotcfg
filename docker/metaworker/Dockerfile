@@ -50,6 +50,7 @@ RUN apt-get update && \
         nodejs \
         postgresql \
         sudo \
+        python3.4-dev  \
         python3.5-dev  \
         python3.6-dev  \
         python2.6-dev  \
