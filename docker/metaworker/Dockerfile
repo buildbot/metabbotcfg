@@ -63,7 +63,7 @@ RUN apt-get update && \
 
 COPY pg_hba.conf /etc/postgresql/9.3/main/pg_hba.conf
 COPY sudoers /etc/sudoers
-
+COPY mysql /etc/init.d/mysql
 RUN \
     /etc/init.d/mysql start && \
     mysql -e "CREATE USER 'travis'@'localhost';" && \
