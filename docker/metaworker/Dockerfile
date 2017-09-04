@@ -38,6 +38,7 @@ RUN apt-get update && \
         xvfb \
         chromium-browser \
         git \
+        gconf2 \
         python-virtualenv \
         enchant \
         libenchant-dev \
@@ -60,16 +61,13 @@ RUN apt-get update && \
     curl -sL https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2 | \
     tar  --strip-components=1 -C /usr/local -xj phantomjs-2.1.1-linux-x86_64/bin/phantomjs && \
     npm install -g yarn && \
+    yarn global add protractor coffee-script && webdriver-manager update --chrome --no-gecko &&\
     rm -rf /var/lib/apt/lists/*
 
 COPY pg_hba.conf /etc/postgresql/9.3/main/pg_hba.conf
 COPY sudoers /etc/sudoers
 COPY mysql /etc/init.d/mysql
 RUN \
-    /etc/init.d/mysql start && \
-    mysql -e "CREATE USER 'travis'@'localhost';" && \
-    mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'travis'@'localhost' WITH GRANT OPTION; FLUSH PRIVILEGES;" && \
-    mysql -e 'create database bbtest;' && \
     /etc/init.d/postgresql start && \
     su postgres -c "createuser buildbot" && \
     su postgres -c "psql -c 'create database bbtest WITH ENCODING UTF8 TEMPLATE template0 ;'"

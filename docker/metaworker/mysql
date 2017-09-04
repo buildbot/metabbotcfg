@@ -57,3 +57,6 @@ for i in $(seq 1 30); do
     sleep 1
     if mysqld_status check_alive nowarn ; then break; fi
 done
+mysql -e "CREATE USER 'travis'@'localhost';"
+mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'travis'@'localhost' WITH GRANT OPTION; FLUSH PRIVILEGES;"
+mysql -e 'create database bbtest;'
