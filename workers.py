@@ -3,7 +3,7 @@ import os
 import random
 import string
 
-from buildbot.plugins import worker
+from buildbot.plugins import worker, util
 
 
 class MyWorkerBase(object):
@@ -111,9 +111,9 @@ else:
             return worker.HyperLatentWorker.__init__(
                 self,
                 name, str(self.get_random_pass()),
-                hyper_host="tcp://us-west-1.hyper.sh:443", image="buildbot/metabbotcfg",
+                hyper_host="tcp://us-west-1.hyper.sh:443", image=util.Interpolate("%(DOCKER_IMAGE:-buildbot/metabbotcfg)s"),
                 hyper_accesskey=self.creds['access_key'], hyper_secretkey=self.creds['secret_key'],
-                hyper_size="m1", masterFQDN="nine.buildbot.net", **kwargs)
+                hyper_size=util.Interpolate("%(HYPER_SIZE:-m1)s"), masterFQDN="nine.buildbot.net", **kwargs)
 
 
 _PG_TEST_DB_URL = 'postgresql+pg8000://metabuildslave@localhost/ninebuildslave'
