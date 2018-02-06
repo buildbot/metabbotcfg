@@ -16,3 +16,8 @@ def setupWWW(c):
     creds = json.load(open(os.path.join(os.path.dirname(__file__), "github_oauth.pass")))
     c['www']['auth'].clientId = creds['clientid']
     c['www']['auth'].clientSecret = creds['clientsecret']
+    c['www']['ui_default_config'] = {
+        'Waterfall.scaling_waterfall': 0.19753086419753088,
+        'Builders.show_old_builders': True,
+        'Builders.buildFetchLimit': 1000,
+    }
