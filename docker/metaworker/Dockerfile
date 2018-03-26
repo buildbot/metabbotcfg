@@ -26,7 +26,7 @@ RUN apt-get update && \
     curl -sL https://deb.nodesource.com/setup_6.x | bash - && \
     apt-get install -y python-software-properties software-properties-common && \
     # add python2.6 and python3.6 repositories
-    add-apt-repository ppa:fkrull/deadsnakes  && \
+    add-apt-repository -y ppa:deadsnakes/ppa  && \
     apt-get update && \
     apt-get install -y \
         libmysqlclient-dev \
