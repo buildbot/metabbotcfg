@@ -47,7 +47,7 @@ class LogstashBaseFormatter(logging.Formatter):
                 'parents': failure.parents,
                 'traceback': _traceback,
             }
-        except:
+        except Exception:
             return {"traceback": _traceback, "error": traceback.format_exc(), "failure": repr(failure)}
         return fields
 
@@ -193,7 +193,7 @@ class LogstashLogObserver(object):
         # see https://twistedmatrix.com/documents/15.2.1/core/howto/logger.html
         try:
             event['log_stack'] = inspect.stack()
-        except:
+        except Exception:
             pass
         try:
             eventline = self.formatter.format(event)
