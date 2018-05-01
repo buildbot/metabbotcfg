@@ -72,7 +72,7 @@ class MyWorkerBase(object):
         # get the password based on the name
         path = os.path.join(os.path.dirname(__file__), "%s.pass" % name)
         if not os.path.exists(path):
-            print "warning {} does not exit. creating one".format(path)
+            print("warning {} does not exit. creating one".format(path))
             pw = self.get_random_pass()
             with open(path, 'w') as f:
                 f.write(pw)
