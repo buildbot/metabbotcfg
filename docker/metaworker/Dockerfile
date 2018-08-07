@@ -21,12 +21,12 @@ USER root
 RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 ENV LANG=en_US.utf8
 
-# install the DB drivers we need to test against databases, as well as git and nodejs + phantomjs
+# install the DB drivers we need to test against databases, as well as git and nodejs
 RUN apt-get update && \
-    curl -sL https://deb.nodesource.com/setup_6.x | bash - && \
+    curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
     apt-get install -y python-software-properties software-properties-common && \
     # add python2.6 and python3.x repositories
-    add-apt-repository ppa:fkrull/deadsnakes  && \
+    add-apt-repository -y ppa:deadsnakes/ppa  && \
     apt-get update && \
     apt-get install -y \
         libmysqlclient-dev \
@@ -59,8 +59,6 @@ RUN apt-get update && \
         mysql-server && \
     \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
-    curl -sL https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2 | \
-    tar  --strip-components=1 -C /usr/local -xj phantomjs-2.1.1-linux-x86_64/bin/phantomjs && \
     npm install -g yarn && \
     yarn global add protractor coffee-script && webdriver-manager update --chrome --no-gecko &&\
     rm -rf /var/lib/apt/lists/*

@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 import json
 import os
 import random
@@ -70,7 +72,7 @@ class MyWorkerBase(object):
         # get the password based on the name
         path = os.path.join(os.path.dirname(__file__), "%s.pass" % name)
         if not os.path.exists(path):
-            print "warning {} does not exit. creating one".format(path)
+            print("warning {} does not exit. creating one".format(path))
             pw = self.get_random_pass()
             with open(path, 'w') as f:
                 f.write(pw)
@@ -111,9 +113,13 @@ else:
             return worker.HyperLatentWorker.__init__(
                 self,
                 name, str(self.get_random_pass()),
-                hyper_host="tcp://us-west-1.hyper.sh:443", image=util.Interpolate("%(prop:DOCKER_IMAGE:-buildbot/metabbotcfg)s"),
-                hyper_accesskey=self.creds['access_key'], hyper_secretkey=self.creds['secret_key'],
-                hyper_size=util.Interpolate("%(prop:HYPER_SIZE:-m1)s"), masterFQDN="nine.buildbot.net", **kwargs)
+                hyper_host="tcp://us-west-1.hyper.sh:443",
+                image=util.Interpolate("%(prop:DOCKER_IMAGE:-buildbot/metabbotcfg)s"),
+                hyper_accesskey=self.creds['access_key'],
+                hyper_secretkey=self.creds['secret_key'],
+                hyper_size=util.Interpolate("%(prop:HYPER_SIZE:-m1)s"),
+                masterFQDN="nine.buildbot.net",
+                **kwargs)
 
 
 _PG_TEST_DB_URL = 'postgresql+pg8000://metabuildslave@localhost/ninebuildslave'
@@ -180,7 +186,7 @@ workers = [
         run_config=True,
         py26=True,
         py27=True)
-    for i in xrange(40)
+    for i in range(40)
 ] + [
     # add 4 local workers
     MyLocalWorker(
@@ -190,5 +196,5 @@ workers = [
         run_config=True,
         py26=True,
         py27=True)
-    for i in xrange(4)
+    for i in range(4)
 ]
