@@ -25,7 +25,7 @@ ENV LANG=en_US.utf8
 RUN apt-get update && \
     curl -sL https://deb.nodesource.com/setup_6.x | bash - && \
     apt-get install -y python-software-properties software-properties-common && \
-    # add python2.6 and python3.6 repositories
+    # add python2.6 and python3.x repositories
     add-apt-repository ppa:fkrull/deadsnakes  && \
     apt-get update && \
     apt-get install -y \
@@ -54,6 +54,7 @@ RUN apt-get update && \
         python3.4-dev  \
         python3.5-dev  \
         python3.6-dev  \
+        python3.7-dev  \
         python2.6-dev  \
         mysql-server && \
     \
