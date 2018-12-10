@@ -40,6 +40,10 @@ RUN apt-get update && \
         git \
         gconf2 \
         python-virtualenv \
+        python3.4-venv \
+        python3.5-venv \
+        python3.6-venv \
+        python3.7-venv \
         enchant \
         libenchant-dev \
         locales \
