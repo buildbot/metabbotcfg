@@ -8,6 +8,9 @@ def setupWWW(c):
     if 'nine' in platform.node():
         c['www']['port'] = 'tcp:8010:interface=192.168.80.244'
         c['buildbotURL'] = "https://nine.buildbot.net/"
+    elif 'buildbot' in platform.node():
+        c['www']['port'] = 'tcp:8010:interface=192.168.80.239'
+        c['buildbotURL'] = "https://buildbot.buildbot.net/"
     else:  # for testing
         c['buildbotURL'] = "http://localhost:8010/"
     c['www']['plugins']['waterfall_view'] = {}
