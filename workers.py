@@ -118,7 +118,7 @@ else:
                 hyper_accesskey=self.creds['access_key'],
                 hyper_secretkey=self.creds['secret_key'],
                 hyper_size=util.Interpolate("%(prop:HYPER_SIZE:-m1)s"),
-                masterFQDN="nine.buildbot.net",
+                masterFQDN="buildbot.buildbot.net",
                 **kwargs)
 
 
