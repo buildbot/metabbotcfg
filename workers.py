@@ -102,18 +102,19 @@ class MyLocalWorker(MyWorkerBase, worker.LocalWorker):
             **kwargs)
 
 
-if not hasattr(worker, 'HyperLatentWorker'):
-    MyHyperWorker = MyLocalWorker
+if not hasattr(worker, 'KubeLatentWorker'):
+    MyKubeWorker = MyLocalWorker
 else:
-    class MyHyperWorker(MyWorkerBase, worker.HyperLatentWorker):
+    kube_config = 
+    class MyKubeWorker(MyWorkerBase, worker.KubeLatentWorker):
         creds = json.load(open(os.path.join(os.path.dirname(__file__), "hyper.pass")))
 
         def __init__(self, name, **kwargs):
             kwargs = self.extract_attrs(name, **kwargs)
             return worker.HyperLatentWorker.__init__(
                 self,
-                name, str(self.get_random_pass()),
-                hyper_host="tcp://us-west-1.hyper.sh:443",
+                name,
+                kube_config=util.KubeCtlProxyConfigLoader(),
                 image=util.Interpolate("%(prop:DOCKER_IMAGE:-buildbot/metabbotcfg)s"),
                 hyper_accesskey=self.creds['access_key'],
                 hyper_secretkey=self.creds['secret_key'],
@@ -178,10 +179,10 @@ workers = [
         py27=True)
 ] + [
     # add 40 hyper workers
-    MyHyperWorker(
-        'hyper' + str(i),
+    MyKubeWorker(
+        'kube{:02d}'.format(i),
         max_builds=1,
-        build_wait_timeout=1,
+        build_wait_timeout=0,
         run_single=False,
         run_config=True,
         py26=True,
@@ -190,7 +191,7 @@ workers = [
 ] + [
     # add 4 local workers
     MyLocalWorker(
-        'local' + str(i),
+        'local{:01d}'.format(i),
         max_builds=1,
         run_single=False,
         run_config=True,
