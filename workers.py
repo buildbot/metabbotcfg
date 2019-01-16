@@ -102,95 +102,101 @@ class MyLocalWorker(MyWorkerBase, worker.LocalWorker):
             **kwargs)
 
 
-if not hasattr(worker, 'HyperLatentWorker'):
-    MyHyperWorker = MyLocalWorker
+if not hasattr(worker, 'KubeLatentWorker'):
+    MyKubeWorker = MyLocalWorker
 else:
-    class MyHyperWorker(MyWorkerBase, worker.HyperLatentWorker):
-        creds = json.load(open(os.path.join(os.path.dirname(__file__), "hyper.pass")))
+    from buildbot.interfaces import LatentWorkerFailedToSubstantiate
+    from buildbot.util import kubeclientservice
+    from twisted.internet import defer
+    kube_config=util.KubeCtlProxyConfigLoader()
 
+    class MyKubeWorker(MyWorkerBase, worker.KubeLatentWorker):
+
+        def get_pod_spec(self, build):
+
+            cpu = str(build.getProperty("NUM_CPU", "1"))
+            mem = str(build.getProperty("MEMORY_SIZE", "1G"))
+            image = str(build.getProperty("DOCKER_IMAGE", "buildbot/metabbotcfg"))
+
+            # ensure proper configuration
+            if mem not in ["256M", "512M", "1G", "2G", "4G"]:
+                mem = "1G"
+            if cpu not in ["1", "2", "4"]:
+                cpu = "1"
+            size = build.getProperty("HYPER_SIZE")
+
+            if size is not None:
+                # backward compat for rebuilding old commits
+                HYPER_SIZES = {
+                    "s3": [1, "256M"],
+                    "s4": [1, "512M"],
+                    "m1": [1, "1G"],
+                    "m2": [2, "2G"],
+                    "m3": [2, "4G"]
+                }
+                cpu, mem = HYPER_SIZES[size]
+
+            return {
+                "apiVersion": "v1",
+                "kind": "Pod",
+                "metadata": {
+                    "name": self.getContainerName()
+                },
+                "spec": {
+                    "containers": [{
+                        "name": self.getContainerName(),
+                        "image": image,
+                        "env": [{
+                            "name": k,
+                            "value": v
+                        } for k, v in self.createEnvironment().items()],
+                        "resources": {
+                            "requests": {
+                                "cpu": cpu,
+                                "memory": mem
+                            }
+                        }
+                    }],
+                    "restartPolicy":
+                    "Never"
+                }
+            }
         def __init__(self, name, **kwargs):
             kwargs = self.extract_attrs(name, **kwargs)
             return worker.HyperLatentWorker.__init__(
                 self,
-                name, str(self.get_random_pass()),
-                hyper_host="tcp://us-west-1.hyper.sh:443",
+                name,
+                kube_config=kube_config,
                 image=util.Interpolate("%(prop:DOCKER_IMAGE:-buildbot/metabbotcfg)s"),
-                hyper_accesskey=self.creds['access_key'],
-                hyper_secretkey=self.creds['secret_key'],
-                hyper_size=util.Interpolate("%(prop:HYPER_SIZE:-m1)s"),
                 masterFQDN="buildbot.buildbot.net",
                 **kwargs)
 
-
-_PG_TEST_DB_URL = 'postgresql+pg8000://metabuildslave@localhost/ninebuildslave'
-_MYSQL_TEST_DB_URL = 'mysql+mysqldb://metabuildslave@localhost/ninebuildslave'
+        # todo: upstream this!
+        @defer.inlineCallbacks
+        def start_instance(self, build):
+            yield self.stop_instance(reportFailure=False)
+            pod_spec = self.get_pod_spec(build)
+            try:
+                yield self._kube.createPod(self.namespace, pod_spec)
+            except kubeclientservice.KubeError as e:
+                raise LatentWorkerFailedToSubstantiate(str(e))
+            defer.returnValue(True)
 
 workers = [
-    # Local
-    # Dustin Mitchell
-    MyWorker(
-        'knuth',
-        max_builds=4,
-        run_single=False,
-        run_config=True,
-        tw0810=True,
-        py26=True,
-        py27=True,
-        nodejs=True),
-
-    # Mozilla
-    MyWorker(
-        'buildbot-linux4',  # buildbot-linux4.community.scl3.mozilla.com
-        max_builds=4,
-        run_single=False,
-        run_config=True,
-        py26=True,
-        py27=True,  # hand-compiled in /usr/local
-        pyqt4=True,  # installed in system python
-        databases={
-            'postgres': dict(BUILDBOT_TEST_DB_URL=_PG_TEST_DB_URL),
-            'mysql': dict(BUILDBOT_TEST_DB_URL=_MYSQL_TEST_DB_URL)
-        }),
-    # Bill Deegan
-    MyWorker(
-        'bdbaddog-nine',
-        max_builds=4,
-        run_single=False,
-        run_config=True,
-        py27=True,
-        pyqt4=False,
-        databases={
-            'postgres': dict(BUILDBOT_TEST_DB_URL='postgresql+pg8000://${POSTGRESQL_ENV_POSTGRES_USER}:'
-                             '${POSTGRESQL_ENV_POSTGRES_PASSWORD}@${POSTGRESQL_PORT_5432_TCP_ADDR}:'
-                             '${POSTGRESQL_PORT_5432_TCP_PORT}/${POSTGRESQL_ENV_POSTGRES_USER}'),
-            'mysql': dict(BUILDBOT_TEST_DB_URL='mysql+mysqldb://${MYSQL_ENV_MYSQL_USER}:'
-                          '${MYSQL_ENV_MYSQL_PASSWORD}@${MYSQL_PORT_3306_TCP_ADDR}:'
-                          '${MYSQL_PORT_3306_TCP_PORT}/${MYSQL_ENV_MYSQL_DATABASE}'),
-        }
-    ),
-
-    # First worker on Buildbot infrastructure
-    MyWorker(
-        'bslave1',
-        max_builds=4,
-        run_single=False,
-        run_config=True,
-        py27=True)
-] + [
-    # add 40 hyper workers
-    MyHyperWorker(
-        'hyper' + str(i),
+    # add 7 kube workers
+    MyKubeWorker(
+        'kube{:02d}'.format(i),
         max_builds=1,
-        build_wait_timeout=1,
+        build_wait_timeout=0,
         run_single=False,
         run_config=True,
         py26=True,
         py27=True)
-    for i in range(40)
+    for i in range(6)
 ] + [
     # add 4 local workers
     MyLocalWorker(
-        'local' + str(i),
+        'local{:01d}'.format(i),
         max_builds=1,
         run_single=False,
         run_config=True,
