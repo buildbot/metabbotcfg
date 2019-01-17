@@ -135,7 +135,8 @@ else:
                     "m3": [2, "4G"]
                 }
                 cpu, mem = HYPER_SIZES[size]
-
+                # squeeze a bit more containers
+                cpu = cpu*0.7
             return {
                 "apiVersion": "v1",
                 "kind": "Pod",
