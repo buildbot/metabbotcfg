@@ -164,7 +164,7 @@ else:
             }
         def __init__(self, name, **kwargs):
             kwargs = self.extract_attrs(name, **kwargs)
-            return worker.HyperLatentWorker.__init__(
+            return worker.KubeLatentWorker.__init__(
                 self,
                 name,
                 kube_config=kube_config,
