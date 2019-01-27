@@ -184,7 +184,7 @@ else:
             defer.returnValue(True)
 
 workers = [
-    # add 7 kube workers
+    # add 21 kube workers
     MyKubeWorker(
         'kube{:02d}'.format(i),
         max_builds=1,
@@ -193,7 +193,7 @@ workers = [
         run_config=True,
         py26=True,
         py27=True)
-    for i in range(7)
+    for i in range(21)
 ] + [
     # add 4 local workers
     MyLocalWorker(
