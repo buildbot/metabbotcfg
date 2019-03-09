@@ -112,11 +112,9 @@ else:
 
     class MyKubeWorker(MyWorkerBase, worker.KubeLatentWorker):
 
-        def get_pod_spec(self, build):
-
+        def getBuildContainerResources(self, build):
             cpu = str(build.getProperty("NUM_CPU", "1"))
             mem = str(build.getProperty("MEMORY_SIZE", "1G"))
-            image = str(build.getProperty("DOCKER_IMAGE", "buildbot/metabbotcfg"))
 
             # ensure proper configuration
             if mem not in ["256M", "512M", "1G", "2G", "4G"]:
@@ -134,32 +132,14 @@ else:
                     "m2": [2, "2G"],
                     "m3": [2, "4G"]
                 }
-                cpu, mem = HYPER_SIZES[size]
-                # squeeze a bit more containers
-                cpu = cpu*0.7
+                if size in HYPER_SIZES:
+                    cpu, mem = HYPER_SIZES[size]
+            # squeeze a bit more containers
+            cpu = cpu*0.7
             return {
-                "apiVersion": "v1",
-                "kind": "Pod",
-                "metadata": {
-                    "name": self.getContainerName()
-                },
-                "spec": {
-                    "containers": [{
-                        "name": self.getContainerName(),
-                        "image": image,
-                        "env": [{
-                            "name": k,
-                            "value": v
-                        } for k, v in self.createEnvironment().items()],
-                        "resources": {
-                            "requests": {
-                                "cpu": cpu,
-                                "memory": mem
-                            }
-                        }
-                    }],
-                    "restartPolicy":
-                    "Never"
+                "requests": {
+                    "cpu": cpu,
+                    "memory": mem
                 }
             }
         def __init__(self, name, **kwargs):
@@ -171,17 +151,6 @@ else:
                 image=util.Interpolate("%(prop:DOCKER_IMAGE:-buildbot/metabbotcfg)s"),
                 masterFQDN="buildbot.buildbot.net",
                 **kwargs)
-
-        # todo: upstream this!
-        @defer.inlineCallbacks
-        def start_instance(self, build):
-            yield self.stop_instance(reportFailure=False)
-            pod_spec = self.get_pod_spec(build)
-            try:
-                yield self._kube.createPod(self.namespace, pod_spec)
-            except kubeclientservice.KubeError as e:
-                raise LatentWorkerFailedToSubstantiate(str(e))
-            defer.returnValue(True)
 
 workers = [
     # add 21 kube workers
