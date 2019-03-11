@@ -1,6 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-import json
 import os
 import random
 import string
@@ -105,10 +104,7 @@ class MyLocalWorker(MyWorkerBase, worker.LocalWorker):
 if not hasattr(worker, 'KubeLatentWorker'):
     MyKubeWorker = MyLocalWorker
 else:
-    from buildbot.interfaces import LatentWorkerFailedToSubstantiate
-    from buildbot.util import kubeclientservice
-    from twisted.internet import defer
-    kube_config=util.KubeCtlProxyConfigLoader()
+    kube_config = util.KubeCtlProxyConfigLoader()
 
     class MyKubeWorker(MyWorkerBase, worker.KubeLatentWorker):
 
@@ -142,6 +138,7 @@ else:
                     "memory": mem
                 }
             }
+
         def __init__(self, name, **kwargs):
             kwargs = self.extract_attrs(name, **kwargs)
             return worker.KubeLatentWorker.__init__(
