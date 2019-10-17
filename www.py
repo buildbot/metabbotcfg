@@ -14,6 +14,7 @@ def setupWWW(c):
     else:  # for testing
         c['buildbotURL'] = "http://localhost:8010/"
     c['www']['plugins']['waterfall_view'] = {}
+    c['www']['plugins']['grid_view'] = {}
 
     # read the password that ansible did sent to us, and override what is in the yaml
     creds = json.load(open(os.path.join(os.path.dirname(__file__), "github_oauth.pass")))
