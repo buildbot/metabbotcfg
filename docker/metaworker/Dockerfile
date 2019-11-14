@@ -84,7 +84,7 @@ RUN \
     mkdir -p /tmp/bb && \
     curl -sL https://github.com/buildbot/buildbot/archive/master.tar.gz | \
     tar  --strip-components=1 -C /tmp/bb -xz && \
-    virtualenv /tmp/bb/sandbox && \
+    python3.7 -m venv /tmp/bb/sandbox && \
     . /tmp/bb/sandbox/bin/activate && \
     pip install -U pip && \
     pip install -e '/tmp/bb/master[test,docs,tls]' && \
