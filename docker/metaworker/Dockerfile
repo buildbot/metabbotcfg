@@ -89,5 +89,5 @@ RUN \
     pip install -U pip && \
     pip install -e '/tmp/bb/master[test,docs,tls]' && \
     pip install -e /tmp/bb/pkg && \
-    pip install -e /tmp/bb/www/base && \
+    cd  /tmp/bb/www/base && yarn install && \
     rm -rf /tmp/bb
