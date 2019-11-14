@@ -44,6 +44,7 @@ RUN apt-get update && \
         python3.5-venv \
         python3.6-venv \
         python3.7-venv \
+        python3.8-venv \
         enchant \
         libenchant-dev \
         locales \
@@ -59,6 +60,7 @@ RUN apt-get update && \
         python3.5-dev  \
         python3.6-dev  \
         python3.7-dev  \
+        python3.8-dev  \
         python2.6-dev  \
         mysql-server && \
     \
