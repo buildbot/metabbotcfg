@@ -25,7 +25,7 @@ ENV LANG=en_US.utf8
 RUN apt-get update && \
     curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
     apt-get install -y software-properties-common && \
-    # add python2.6 and python3.x repositories
+    # add python3.x repositories
     add-apt-repository -y ppa:deadsnakes/ppa  && \
     apt-get update && \
     apt-get install -y \
@@ -61,7 +61,7 @@ RUN apt-get update && \
         python3.6-dev  \
         python3.7-dev  \
         python3.8-dev  \
-        python2.6-dev  \
+        python-dev  \
         mysql-server && \
     \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
