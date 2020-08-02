@@ -23,7 +23,7 @@ ENV LANG=en_US.utf8
 
 # install the DB drivers we need to test against databases, as well as git and nodejs
 RUN apt-get update && \
-    curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
+    curl -sL https://deb.nodesource.com/setup_lts.x | bash - && \
     apt-get install -y software-properties-common && \
     # add python3.x repositories
     add-apt-repository -y ppa:deadsnakes/ppa  && \
@@ -61,7 +61,7 @@ RUN apt-get update && \
         python3.6-dev  \
         python3.7-dev  \
         python3.8-dev  \
-        python-dev  \
+        python-dev     \
         mysql-server && \
     \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
