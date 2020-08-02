@@ -24,7 +24,7 @@ ENV LANG=en_US.utf8
 # install the DB drivers we need to test against databases, as well as git and nodejs
 RUN apt-get update && \
     curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
-    apt-get install -y python-software-properties software-properties-common && \
+    apt-get install -y software-properties-common && \
     # add python2.6 and python3.x repositories
     add-apt-repository -y ppa:deadsnakes/ppa  && \
     apt-get update && \
