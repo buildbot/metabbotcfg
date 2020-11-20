@@ -39,8 +39,7 @@ RUN apt-get update && \
         chromium-browser \
         git \
         gconf2 \
-        python-virtualenv \
-        python3.4-venv \
+        python3-virtualenv \
         python3.5-venv \
         python3.6-venv \
         python3.7-venv \
@@ -54,22 +53,21 @@ RUN apt-get update && \
         iamerican \
         fontconfig \
         nodejs \
-        postgresql \
+        postgresql-12 \
         sudo \
-        python3.4-dev  \
         python3.5-dev  \
         python3.6-dev  \
         python3.7-dev  \
         python3.8-dev  \
         python-dev     \
-        mysql-server && \
+        mysql-server-8.0 && \
     \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
     npm install -g yarn && \
     yarn global add protractor coffee-script && webdriver-manager update --chrome --no-gecko &&\
     rm -rf /var/lib/apt/lists/*
 
-COPY pg_hba.conf /etc/postgresql/9.3/main/pg_hba.conf
+COPY pg_hba.conf /etc/postgresql/12/main/pg_hba.conf
 COPY sudoers /etc/sudoers
 COPY mysql /etc/init.d/mysql
 RUN \
