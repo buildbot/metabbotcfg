@@ -116,6 +116,7 @@ else:
 
             cpu = str(build.getProperty("NUM_CPU", "1"))
             mem = str(build.getProperty("MEMORY_SIZE", "1G"))
+            scratch_size = str(build.getProperty("SCRATCH_SIZE", "64M"))
             image = str(build.getProperty("DOCKER_IMAGE", "buildbot/metabbotcfg"))
 
             # ensure proper configuration
@@ -156,10 +157,20 @@ else:
                                 "cpu": cpu,
                                 "memory": mem
                             }
+                        },
+                        "volumeMounts": {
+                            "mountPath": "/scratch",
+                            "name": "scratch"
                         }
                     }],
-                    "restartPolicy":
-                    "Never"
+                    "volumes": [{
+                        "name": "scratch",
+                        "emptyDir": {
+                            "medium": "Memory",
+                            "sizeLimit": scratch_size,
+                        }
+                    }],
+                    "restartPolicy": "Never"
                 }
             }
         def __init__(self, name, **kwargs):
