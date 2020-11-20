@@ -68,17 +68,17 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 COPY pg_hba.conf /etc/postgresql/12/main/pg_hba.conf
+COPY prepare_postgres /prepare_postgres
+COPY prepare_mysql /prepare_mysql
+RUN sed -i "s/data_directory = '.*'/data_directory = '\/scratch\/postgres'/g" /etc/postgresql/12/main/postgresql.conf
+RUN sed -i "s/.*datadir\\s*=.*/datadir='\/scratch\/mysql'/g" /etc/mysql/mysql.conf.d/mysqld.cnf
 COPY sudoers /etc/sudoers
-COPY mysql /etc/init.d/mysql
-RUN \
-    /etc/init.d/postgresql start && \
-    su postgres -c "createuser buildbot" && \
-    su postgres -c "psql -c 'create database bbtest WITH ENCODING UTF8 TEMPLATE template0 ;'"
+
 # Switch to regular user for security reasons
 USER buildbot
 
 # generate cache for the buildbot dependencies
-RUN \
+RUN exit 0 || \
     mkdir -p /tmp/bb && \
     curl -sL https://github.com/buildbot/buildbot/archive/master.tar.gz | \
     tar  --strip-components=1 -C /tmp/bb -xz && \
