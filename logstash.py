@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import inspect
 import json
 import logging
@@ -53,10 +51,7 @@ class LogstashBaseFormatter(logging.Formatter):
 
     def get_extra_fields(self, record):
         fields = {}
-        if sys.version_info < (3, 0):
-            easy_types = (basestring, bool, dict, float, int, long, list, type(None))
-        else:
-            easy_types = (str, bool, dict, float, int, list, type(None))
+        easy_types = (str, bool, dict, float, int, list, type(None))
 
         if self.prefix is not None:
             for key, value in record:
