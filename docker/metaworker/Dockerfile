@@ -79,7 +79,7 @@ COPY sudoers /etc/sudoers
 USER buildbot
 
 # generate cache for the buildbot dependencies
-RUN exit 0 || \
+RUN \
     mkdir -p /tmp/bb && \
     curl -sL https://github.com/buildbot/buildbot/archive/master.tar.gz | \
     tar  --strip-components=1 -C /tmp/bb -xz && \
