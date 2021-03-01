@@ -11,7 +11,7 @@ env:
 sudo: false
 
 script:
-- tox
+- CRYPTOGRAPHY_DONT_BUILD_RUST=1 tox
 
 notifications:
     email: false
