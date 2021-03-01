@@ -22,4 +22,32 @@ projects:
     tags: []
     vcs_type: github
     treeStableTimer: 1
+-   branches:
+    - master
+    github_token: file:metabbotcfg/github_token
+    name: buildbot_travis
+    reporter_context: bb/%(prop:python)s/
+    repository: https://github.com/buildbot/buildbot_travis
+    shallow: 100
+    retryFetch: true
+    mode: "full"
+    method: "clobber"
+    stages: []
+    tags: []
+    vcs_type: github
+    treeStableTimer: 1
+-   branches:
+    - master
+    github_token: file:metabbotcfg/github_token
+    name: metabbotcfg
+    reporter_context: bb/%(prop:python)s/
+    repository: https://github.com/buildbot/metabbotcfg
+    shallow: 100
+    retryFetch: true
+    mode: "full"
+    method: "clobber"
+    stages: []
+    tags: []
+    vcs_type: github
+    treeStableTimer: 1
 stages: []

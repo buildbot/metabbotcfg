@@ -101,53 +101,50 @@ class MyLocalWorker(MyWorkerBase, worker.LocalWorker):
             **kwargs)
 
 
-if not hasattr(worker, 'KubeLatentWorker'):
-    MyKubeWorker = MyLocalWorker
-else:
-    kube_config = util.KubeCtlProxyConfigLoader()
+  kube_config = util.KubeCtlProxyConfigLoader()
 
-    class MyKubeWorker(MyWorkerBase, worker.KubeLatentWorker):
+  class MyKubeWorker(MyWorkerBase, worker.KubeLatentWorker):
 
-        def getBuildContainerResources(self, build):
-            cpu = str(build.getProperty("NUM_CPU", "1"))
-            mem = str(build.getProperty("MEMORY_SIZE", "1G"))
+      def getBuildContainerResources(self, build):
+          cpu = str(build.getProperty("NUM_CPU", "1"))
+          mem = str(build.getProperty("MEMORY_SIZE", "1G"))
 
-            # ensure proper configuration
-            if mem not in ["256M", "512M", "1G", "2G", "4G"]:
-                mem = "1G"
-            if cpu not in ["1", "2", "4"]:
-                cpu = "1"
-            size = build.getProperty("HYPER_SIZE")
+          # ensure proper configuration
+          if mem not in ["256M", "512M", "1G", "2G", "4G"]:
+              mem = "1G"
+          if cpu not in ["1", "2", "4"]:
+              cpu = "1"
+          size = build.getProperty("HYPER_SIZE")
 
-            if size is not None:
-                # backward compat for rebuilding old commits
-                HYPER_SIZES = {
-                    "s3": [1, "256M"],
-                    "s4": [1, "512M"],
-                    "m1": [1, "1G"],
-                    "m2": [2, "2G"],
-                    "m3": [2, "4G"]
-                }
-                if size in HYPER_SIZES:
-                    cpu, mem = HYPER_SIZES[size]
-            # squeeze a bit more containers
-            cpu = cpu*0.7
-            return {
-                "requests": {
-                    "cpu": cpu,
-                    "memory": mem
-                }
-            }
+          if size is not None:
+              # backward compat for rebuilding old commits
+              HYPER_SIZES = {
+                  "s3": [1, "256M"],
+                  "s4": [1, "512M"],
+                  "m1": [1, "1G"],
+                  "m2": [2, "2G"],
+                  "m3": [2, "4G"]
+              }
+              if size in HYPER_SIZES:
+                  cpu, mem = HYPER_SIZES[size]
+          # squeeze a bit more containers
+          cpu = cpu*0.7
+          return {
+              "requests": {
+                  "cpu": cpu,
+                  "memory": mem
+              }
+          }
 
-        def __init__(self, name, **kwargs):
-            kwargs = self.extract_attrs(name, **kwargs)
-            return worker.KubeLatentWorker.__init__(
-                self,
-                name,
-                kube_config=kube_config,
-                image=util.Interpolate("%(prop:DOCKER_IMAGE:-buildbot/metabbotcfg)s"),
-                masterFQDN="buildbot.buildbot.net",
-                **kwargs)
+      def __init__(self, name, **kwargs):
+          kwargs = self.extract_attrs(name, **kwargs)
+          return worker.KubeLatentWorker.__init__(
+              self,
+              name,
+              kube_config=kube_config,
+              image=util.Interpolate("%(prop:DOCKER_IMAGE:-buildbot/metabbotcfg)s"),
+              masterFQDN="buildbot.buildbot.net",
+              **kwargs)
 
 workers = [
     # add 21 kube workers

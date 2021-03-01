@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -e
+
+DBPATH=/scratch/postgres
+
+if [ -d "$DBPATH" ]
+then
+    /etc/init.d/postgresql stop
+fi
+
+rm -rf $DBPATH
+mkdir -p $DBPATH
+chown postgres:postgres $DBPATH
+
+su postgres -c "/usr/lib/postgresql/12/bin/pg_ctl init -D /scratch/postgres"
+cp /etc/postgresql/12/main/pg_hba.conf /scratch/postgres/pg_hba.conf
+/etc/init.d/postgresql start
+
+su postgres -c "createuser buildbot"
+su postgres -c "psql -c 'create database bbtest WITH ENCODING UTF8 TEMPLATE template0 ;'"

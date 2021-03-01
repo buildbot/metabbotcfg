@@ -23,9 +23,9 @@ ENV LANG=en_US.utf8
 
 # install the DB drivers we need to test against databases, as well as git and nodejs
 RUN apt-get update && \
-    curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
-    apt-get install -y python-software-properties software-properties-common && \
-    # add python2.6 and python3.x repositories
+    curl -sL https://deb.nodesource.com/setup_lts.x | bash - && \
+    apt-get install -y software-properties-common && \
+    # add python3.x repositories
     add-apt-repository -y ppa:deadsnakes/ppa  && \
     apt-get update && \
     apt-get install -y \
@@ -39,11 +39,12 @@ RUN apt-get update && \
         chromium-browser \
         git \
         gconf2 \
-        python-virtualenv \
-        python3.4-venv \
+        python3-virtualenv \
         python3.5-venv \
         python3.6-venv \
         python3.7-venv \
+        python3.8-venv \
+        python3.9-venv \
         enchant \
         libenchant-dev \
         locales \
@@ -53,39 +54,40 @@ RUN apt-get update && \
         iamerican \
         fontconfig \
         nodejs \
-        postgresql \
+        postgresql-12 \
         sudo \
-        python3.4-dev  \
         python3.5-dev  \
         python3.6-dev  \
         python3.7-dev  \
-        python2.6-dev  \
-        mysql-server && \
+        python3.8-dev  \
+        python3.9-dev  \
+        python-dev     \
+        mysql-server-8.0 && \
     \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
     npm install -g yarn && \
     yarn global add protractor coffee-script && webdriver-manager update --chrome --no-gecko &&\
     rm -rf /var/lib/apt/lists/*
 
-COPY pg_hba.conf /etc/postgresql/9.3/main/pg_hba.conf
+COPY pg_hba.conf /etc/postgresql/12/main/pg_hba.conf
+COPY prepare_postgres /prepare_postgres
+COPY prepare_mysql /prepare_mysql
+RUN sed -i "s/data_directory = '.*'/data_directory = '\/scratch\/postgres'/g" /etc/postgresql/12/main/postgresql.conf
+RUN sed -i "s/.*datadir\\s*=.*/datadir='\/scratch\/mysql'/g" /etc/mysql/mysql.conf.d/mysqld.cnf
 COPY sudoers /etc/sudoers
-COPY mysql /etc/init.d/mysql
-RUN \
-    /etc/init.d/postgresql start && \
-    su postgres -c "createuser buildbot" && \
-    su postgres -c "psql -c 'create database bbtest WITH ENCODING UTF8 TEMPLATE template0 ;'"
+
 # Switch to regular user for security reasons
 USER buildbot
 
 # generate cache for the buildbot dependencies
-RUN \
+RUN exit 0 || \
     mkdir -p /tmp/bb && \
     curl -sL https://github.com/buildbot/buildbot/archive/master.tar.gz | \
     tar  --strip-components=1 -C /tmp/bb -xz && \
-    virtualenv /tmp/bb/sandbox && \
+    python3.7 -m venv /tmp/bb/sandbox && \
     . /tmp/bb/sandbox/bin/activate && \
     pip install -U pip && \
     pip install -e '/tmp/bb/master[test,docs,tls]' && \
     pip install -e /tmp/bb/pkg && \
-    pip install -e /tmp/bb/www/base && \
+    cd  /tmp/bb/www/base && yarn install && \
     rm -rf /tmp/bb
