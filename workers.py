@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import os
 import random
 import string
@@ -101,98 +99,54 @@ class MyLocalWorker(MyWorkerBase, worker.LocalWorker):
             **kwargs)
 
 
-if not hasattr(worker, 'KubeLatentWorker'):
-    MyKubeWorker = MyLocalWorker
-else:
-    from buildbot.interfaces import LatentWorkerFailedToSubstantiate
-    from buildbot.util import kubeclientservice
-    from twisted.internet import defer
-    kube_config = util.KubeCtlProxyConfigLoader()
+# has to be the same for all workers
+kube_config = util.KubeCtlProxyConfigLoader()
 
-    class MyKubeWorker(MyWorkerBase, worker.KubeLatentWorker):
 
-        def get_pod_spec(self, build):
+class MyKubeWorker(MyWorkerBase, worker.KubeLatentWorker):
 
-            cpu = str(build.getProperty("NUM_CPU", "1"))
-            mem = str(build.getProperty("MEMORY_SIZE", "1G"))
-            scratch_size = str(build.getProperty("SCRATCH_SIZE", "64M"))
-            image = str(build.getProperty("DOCKER_IMAGE", "buildbot/metabbotcfg"))
+    def getBuildContainerResources(self, build):
+        cpu = str(build.getProperty("NUM_CPU", "1"))
+        mem = str(build.getProperty("MEMORY_SIZE", "1G"))
 
-            # ensure proper configuration
-            if mem not in ["256M", "512M", "1G", "2G", "4G"]:
-                mem = "1G"
-            if cpu not in ["1", "2", "4"]:
-                cpu = "1"
-            size = build.getProperty("HYPER_SIZE")
+        # ensure proper configuration
+        if mem not in ["256M", "512M", "1G", "2G", "4G"]:
+            mem = "1G"
+        if cpu not in ["1", "2", "4"]:
+            cpu = "1"
+        size = build.getProperty("HYPER_SIZE")
 
-            if size is not None:
-                # backward compat for rebuilding old commits
-                HYPER_SIZES = {
-                    "s3": [1, "256M"],
-                    "s4": [1, "512M"],
-                    "m1": [1, "1G"],
-                    "m2": [2, "2G"],
-                    "m3": [2, "4G"]
-                }
-                cpu, mem = HYPER_SIZES[size]
-                # squeeze a bit more containers
-                cpu = cpu*0.7
-            return {
-                "apiVersion": "v1",
-                "kind": "Pod",
-                "metadata": {
-                    "name": self.getContainerName()
-                },
-                "spec": {
-                    "containers": [{
-                        "name": self.getContainerName(),
-                        "image": image,
-                        "env": [{
-                            "name": k,
-                            "value": v
-                        } for k, v in self.createEnvironment().items()],
-                        "resources": {
-                            "requests": {
-                                "cpu": cpu,
-                                "memory": mem
-                            }
-                        },
-                        "volumeMounts": {
-                            "mountPath": "/scratch",
-                            "name": "scratch"
-                        }
-                    }],
-                    "volumes": [{
-                        "name": "scratch",
-                        "emptyDir": {
-                            "medium": "Memory",
-                            "sizeLimit": scratch_size,
-                        }
-                    }],
-                    "restartPolicy": "Never"
-                }
+        if size is not None:
+            # backward compat for rebuilding old commits
+            HYPER_SIZES = {
+                "s3": [1, "256M"],
+                "s4": [1, "512M"],
+                "m1": [1, "1G"],
+                "m2": [2, "2G"],
+                "m3": [2, "4G"]
             }
+            if size in HYPER_SIZES:
+                cpu, mem = HYPER_SIZES[size]
+        # squeeze a bit more containers
+        cpu = cpu*0.7
+        return {
+            "requests": {
+                "cpu": cpu,
+                "memory": mem
+            }
+        }
 
-        def __init__(self, name, **kwargs):
-            kwargs = self.extract_attrs(name, **kwargs)
-            return worker.KubeLatentWorker.__init__(
-                self,
-                name,
-                kube_config=kube_config,
-                image=util.Interpolate("%(prop:DOCKER_IMAGE:-buildbot/metabbotcfg)s"),
-                masterFQDN="buildbot.buildbot.net",
-                **kwargs)
+    def __init__(self, name, **kwargs):
+        kwargs = self.extract_attrs(name, **kwargs)
 
-        # todo: upstream this!
-        @defer.inlineCallbacks
-        def start_instance(self, build):
-            yield self.stop_instance(reportFailure=False)
-            pod_spec = self.get_pod_spec(build)
-            try:
-                yield self._kube.createPod(self.namespace, pod_spec)
-            except kubeclientservice.KubeError as e:
-                raise LatentWorkerFailedToSubstantiate(str(e))
-            defer.returnValue(True)
+        return worker.KubeLatentWorker.__init__(
+            self,
+            name,
+            kube_config=kube_config,
+            image=util.Interpolate("%(prop:DOCKER_IMAGE:-buildbot/metabbotcfg)s"),
+            masterFQDN="buildbot.buildbot.net",
+            **kwargs)
+
 
 workers = [
     # add 21 kube workers
