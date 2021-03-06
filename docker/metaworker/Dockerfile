@@ -47,6 +47,7 @@ RUN apt-get update && \
         python3.9-venv \
         enchant \
         libenchant-dev \
+        libcairo2-dev \
         locales \
         aspell \
         aspell-en \
