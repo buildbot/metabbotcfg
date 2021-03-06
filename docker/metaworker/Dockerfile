@@ -36,7 +36,6 @@ RUN apt-get update && \
         default-jre \
         # chromium needs xvfb even with --headless
         xvfb \
-        chromium-browser \
         git \
         gconf2 \
         python3-virtualenv \
@@ -67,8 +66,10 @@ RUN apt-get update && \
     \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
     npm install -g yarn && \
-    yarn global add protractor coffee-script && webdriver-manager update --chrome --no-gecko &&\
-    rm -rf /var/lib/apt/lists/*
+    yarn global add protractor coffee-script && webdriver-manager update --chrome --no-gecko && \
+    curl -o /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
+    (dpkg -i /tmp/chrome.deb || apt-get --fix-broken -y install) && \
+    rm -rf /var/lib/apt/lists/* /tmp/chrome.deb
 
 COPY pg_hba.conf /etc/postgresql/12/main/pg_hba.conf
 COPY prepare_postgres /prepare_postgres
