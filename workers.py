@@ -128,7 +128,7 @@ class MyKubeWorker(MyWorkerBase, worker.KubeLatentWorker):
             if size in HYPER_SIZES:
                 cpu, mem = HYPER_SIZES[size]
         # squeeze a bit more containers
-        cpu = cpu*0.7
+        cpu = int(cpu)*0.7
         return {
             "requests": {
                 "cpu": cpu,
