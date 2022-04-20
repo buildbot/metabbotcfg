@@ -89,6 +89,5 @@ RUN \
     . /tmp/bb/sandbox/bin/activate && \
     pip install -U pip && \
     pip install -e '/tmp/bb/master[test,docs,tls]' && \
-    pip install -e /tmp/bb/pkg && \
-    cd  /tmp/bb/www/base && yarn install && \
+    make -C /tmp/bb frontend_deps && \
     rm -rf /tmp/bb
