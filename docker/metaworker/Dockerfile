@@ -38,11 +38,14 @@ RUN apt-get update && \
         xvfb \
         git \
         gconf2 \
+        python3.4-venv \
         python3.5-venv \
         python3.6-venv \
         python3.7-venv \
         python3.8-venv \
         python3.9-venv \
+        python3.10-venv \
+        python3.11-venv \
         enchant \
         libenchant-dev \
         libcairo2-dev \
@@ -55,11 +58,14 @@ RUN apt-get update && \
         nodejs \
         postgresql-12 \
         sudo \
+        python3.4-dev  \
         python3.5-dev  \
         python3.6-dev  \
         python3.7-dev  \
         python3.8-dev  \
         python3.9-dev  \
+        python3.10-dev  \
+        python3.11-dev  \
         python-dev     \
         mysql-server-8.0 && \
     \
