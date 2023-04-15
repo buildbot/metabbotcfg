@@ -38,7 +38,6 @@ RUN apt-get update && \
         xvfb \
         git \
         gconf2 \
-        python3.4-venv \
         python3.5-venv \
         python3.6-venv \
         python3.7-venv \
@@ -58,7 +57,6 @@ RUN apt-get update && \
         nodejs \
         postgresql-12 \
         sudo \
-        python3.4-dev  \
         python3.5-dev  \
         python3.6-dev  \
         python3.7-dev  \
