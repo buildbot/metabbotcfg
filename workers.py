@@ -109,25 +109,6 @@ class MyKubeWorker(MyWorkerBase, worker.KubeLatentWorker):
         cpu = str(build.getProperty("NUM_CPU", "1"))
         mem = str(build.getProperty("MEMORY_SIZE", "1G"))
 
-        # ensure proper configuration
-        if mem not in ["256M", "512M", "1G", "2G", "4G"]:
-            mem = "1G"
-        if cpu not in ["1", "2", "4"]:
-            cpu = "1"
-        size = build.getProperty("HYPER_SIZE")
-
-        if size is not None:
-            # backward compat for rebuilding old commits
-            HYPER_SIZES = {
-                "s3": [1, "256M"],
-                "s4": [1, "512M"],
-                "m1": [1, "1G"],
-                "m2": [2, "2G"],
-                "m3": [2, "4G"]
-            }
-            if size in HYPER_SIZES:
-                cpu, mem = HYPER_SIZES[size]
-        cpu = int(cpu)
         return {
             "requests": {
                 "cpu": cpu,
