@@ -23,7 +23,8 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -sL https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer -o pyenv-installer \
-    && PYENV_ROOT=/pyenv bash pyenv-installer \
+    && export PYENV_ROOT=/pyenv \
+    && bash pyenv-installer \
     && /pyenv/bin/pyenv install 2.7.18 \
     && /pyenv/bin/pyenv install 3.5.10 \
     && /pyenv/bin/pyenv install 3.6.15 \
