@@ -64,7 +64,7 @@ RUN mkdir -p /etc/apt/keyrings \
     && (dpkg -i /tmp/chrome.deb || apt-get --fix-broken -y install) \
     && rm -rf /var/lib/apt/lists/* /tmp/chrome.deb
 
-COPY pg_hba.conf /etc/postgresql/12/main/pg_hba.conf
+COPY pg_hba.conf /etc/postgresql/13/main/pg_hba.conf
 COPY prepare_postgres /prepare_postgres
 COPY prepare_mysql /prepare_mysql
 RUN sed -i "s/data_directory = '.*'/data_directory = '\/scratch\/postgres'/g" /etc/postgresql/13/main/postgresql.conf
