@@ -12,7 +12,7 @@ projects:
     - master
     github_token: file:metabbotcfg/github_token
     name: buildbot
-    reporter_context: bb%(prop:TESTS:+/)s%(prop:TESTS)s%(prop:TESTS:+/)s%(prop:python)s%(prop:TESTS:+/tw:)s%(prop:TWISTED)s%(prop:TESTS:+/sqla:)s%(prop:SQLALCHEMY)s%(prop:TESTS:+/db:)s%(prop:BUILDBOT_TEST_DB_URL)s%(prop:TESTS:+/wp:)s%(prop:WORKER_PYTHON)s
+    reporter_context: bb%(prop:TESTS:+/)s%(prop:TESTS)s%(prop:TESTS:+/)s%(prop:PYTHON)s%(prop:TESTS:+/tw:)s%(prop:TWISTED)s%(prop:TESTS:+/sqla:)s%(prop:SQLALCHEMY)s%(prop:TESTS:+/db:)s%(prop:BUILDBOT_TEST_DB_URL)s%(prop:TESTS:+/wp:)s%(prop:WORKER_PYTHON)s
     repository: https://github.com/buildbot/buildbot
     shallow: 100
     retryFetch: true
