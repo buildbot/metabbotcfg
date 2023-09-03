@@ -5,7 +5,7 @@
 # Provided here as a real life example on how to make a customized
 # worker Dockerfile for your project
 
-FROM metabbotcfg-python AS python-build
+FROM buildbot/metabbotcfg-python AS python-build
 
 FROM buildbot/buildbot-worker:master
 MAINTAINER  Buildbot Maintainers
