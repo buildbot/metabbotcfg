@@ -41,6 +41,9 @@ RUN mkdir -p /etc/apt/keyrings \
         gconf2 \
         libcairo2-dev \
         locales \
+        enchant-2 \
+        libenchant-2-2 \
+        libenchant-2-dev \
         aspell \
         aspell-en \
         ispell \
