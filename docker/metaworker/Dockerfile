@@ -60,7 +60,7 @@ RUN mkdir -p /etc/apt/keyrings \
     && npm install -g yarn \
     && yarn global add protractor coffee-script \
     && webdriver-manager update --chrome --no-gecko \
-    && curl -o /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
+    && curl -sL -o /tmp/chrome.deb https://github.com/p12tic/buildbot-test-data/raw/master/packages/google-chrome-stable_114.0.5735.198-1_amd64.deb \
     && (dpkg -i /tmp/chrome.deb || apt-get --fix-broken -y install) \
     && rm -rf /var/lib/apt/lists/* /tmp/chrome.deb
 
