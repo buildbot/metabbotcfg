@@ -33,13 +33,13 @@ RUN mkdir -p /etc/apt/keyrings \
         libmariadb-dev \
         libjpeg-dev \
         libpq-dev \
+        postgresql-13 \
+        mariadb-server-10.5 \
         # selenium is a java thing
         default-jre \
         # chromium needs xvfb even with --headless
         xvfb \
         git \
-        gconf2 \
-        libcairo2-dev \
         locales \
         enchant-2 \
         libenchant-2-2 \
@@ -48,19 +48,33 @@ RUN mkdir -p /etc/apt/keyrings \
         aspell-en \
         ispell \
         iamerican \
-        fontconfig \
         nodejs \
-        postgresql-13 \
-        sudo \
+        fontconfig \
+        gconf2 \
+        gstreamer1.0-libav \
+        libcairo2-dev \
+        libegl1 \
+        libenchant-2-2 \
+        libevdev2 \
+        libevent-2.1-7 \
+        libflite1 \
+        libgles2 \
+        libgudev-1.0-0 \
+        libharfbuzz-icu0 \
+        libhyphen0 \
+        libopenjp2-7 \
+        libopus0 \
+        libsecret-1-0 \
+        libwebpdemux2 \
+        libwoff1 \
         python3-dev \
         python3-venv  \
-        mariadb-server-10.5 \
+        sudo \
     \
     && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 \
     && npm install -g yarn \
-    && yarn global add protractor coffee-script \
-    && webdriver-manager update --chrome --no-gecko \
-    && curl -o /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
+    && yarn global add protractor \
+    && curl -sL -o /tmp/chrome.deb https://github.com/p12tic/buildbot-test-data/raw/master/packages/google-chrome-stable_114.0.5735.198-1_amd64.deb \
     && (dpkg -i /tmp/chrome.deb || apt-get --fix-broken -y install) \
     && rm -rf /var/lib/apt/lists/* /tmp/chrome.deb
 
