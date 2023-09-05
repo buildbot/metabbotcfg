@@ -59,9 +59,12 @@ RUN mkdir -p /etc/apt/keyrings \
         libevent-2.1-7 \
         libflite1 \
         libgles2 \
+        libgstreamer-gl1.0-0 \
+        libgstreamer-plugins-bad1.0-0 \
         libgudev-1.0-0 \
         libharfbuzz-icu0 \
         libhyphen0 \
+        libmanette-0.2-0 \
         libopenjp2-7 \
         libopus0 \
         libsecret-1-0 \
