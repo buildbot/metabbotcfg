@@ -73,7 +73,7 @@ RUN mkdir -p /etc/apt/keyrings \
     \
     && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 \
     && npm install -g yarn \
-    && yarn global add protractor coffee-script \
+    && yarn global add protractor \
     && curl -sL -o /tmp/chrome.deb https://github.com/p12tic/buildbot-test-data/raw/master/packages/google-chrome-stable_114.0.5735.198-1_amd64.deb \
     && (dpkg -i /tmp/chrome.deb || apt-get --fix-broken -y install) \
     && rm -rf /var/lib/apt/lists/* /tmp/chrome.deb
