@@ -116,6 +116,24 @@ class MyKubeWorker(MyWorkerBase, worker.KubeLatentWorker):
             }
         }
 
+    def get_build_container_volume_mounts(self, build):
+        return [
+            {
+                "name": "scratch-volume",
+                "mountPath": "/scratch",
+            }
+        ]
+
+    def get_volumes(self, build):
+        return [
+            {
+                "name": "scratch-volume",
+                "emptyDir": {
+                    "sizeLimit": "500Mi",
+                },
+            }
+        ]
+
     def __init__(self, name, **kwargs):
         kwargs = self.extract_attrs(name, **kwargs)
 
