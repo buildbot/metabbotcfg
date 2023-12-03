@@ -32,7 +32,8 @@ RUN curl -sL https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/
     && /pyenv/bin/pyenv install 3.8.18 \
     && /pyenv/bin/pyenv install 3.9.18 \
     && /pyenv/bin/pyenv install 3.10.13 \
-    && /pyenv/bin/pyenv install 3.11.5
+    && /pyenv/bin/pyenv install 3.11.6 \
+    && /pyenv/bin/pyenv install 3.12.0
 
 RUN mkdir /pyenv/pybin \
     && cd /pyenv/pybin \
@@ -43,4 +44,5 @@ RUN mkdir /pyenv/pybin \
     && ln -s /pyenv/versions/3.8.18/bin/python python3.8 \
     && ln -s /pyenv/versions/3.9.18/bin/python python3.9 \
     && ln -s /pyenv/versions/3.10.13/bin/python python3.10 \
-    && ln -s /pyenv/versions/3.11.5/bin/python python3.11
+    && ln -s /pyenv/versions/3.11.6/bin/python python3.11 \
+    && ln -s /pyenv/versions/3.12.0/bin/python python3.12
