@@ -5,47 +5,7 @@ import string
 from buildbot.plugins import worker, util
 
 
-class MyWorkerBase(object):
-    # true if this box is buildbot.net, and can build docs, etc.
-    buildbot_net = False
-
-    # true if this box should use a 'simple' factory, meaning no virtualenv
-    # (basically good for windows)
-    use_simple = False
-
-    # true if this box can test the buildmaster and worker, respectively
-    test_master = True
-    test_worker = True
-
-    # true if this worker should have a single-worker builder of its own
-    run_single = True
-
-    # true if this host has PyQt4 installed in its default python
-    pyqt4 = False
-
-    # true if this worker can contribute to the virtualenv-managed pool of
-    # specific-configuration builders.  Specific supported python versions
-    # are given, too
-    run_config = False
-    py26 = False
-    py27 = False
-    pypy17 = False
-    pypy18 = False
-
-    tw0810 = False
-    tw0900 = True
-    tw1020 = True
-    tw1110 = True
-    tw1220 = True
-    tw1320 = True
-    tw1400 = True
-
-    # true if this has nodejs installed, suitable for www
-    nodejs = False
-
-    # dictionary mapping databases to the env vars required to make them go
-    databases = {}
-
+class MyWorkerBase:
     # operating system, for os-specific builders; this should only be used
     # for fleets of machines that are basically interchangebale
     os = None
@@ -145,26 +105,10 @@ class MyKubeWorker(MyWorkerBase, worker.KubeLatentWorker):
             masterFQDN="buildbot.buildbot.net",
             **kwargs)
 
-
 workers = [
     # add 40 kube workers
-    MyKubeWorker(
-        'kube{:02d}'.format(i),
-        max_builds=1,
-        build_wait_timeout=0,
-        run_single=False,
-        run_config=True,
-        py26=True,
-        py27=True)
-    for i in range(40)
+    MyKubeWorker(f"kube{i:02d}", max_builds=1, build_wait_timeout=0) for i in range(40)
 ] + [
     # add 4 local workers
-    MyLocalWorker(
-        'local{:01d}'.format(i),
-        max_builds=1,
-        run_single=False,
-        run_config=True,
-        py26=True,
-        py27=True)
-    for i in range(4)
+    MyLocalWorker('local{:01d}'.format(i), max_builds=1) for i in range(4)
 ]
