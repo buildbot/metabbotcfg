@@ -27,7 +27,13 @@ class MyWorkerBase:
 
     def get_pass(self, name):
         # get the password based on the name
-        path = os.path.join(os.path.dirname(__file__), "%s.pass" % name)
+        file_name = name
+        if name.startswith("p12-pd"):
+            file_name = "p12-pd-any"
+        if name.startswith("p12-ep2"):
+            file_name = "p12-ep2-any"
+
+        path = os.path.join(os.path.dirname(__file__), f"{file_name}.pass")
         if not os.path.exists(path):
             print("warning {} does not exit. creating one".format(path))
             pw = self.get_random_pass()
