@@ -112,7 +112,7 @@ workers = [
     # add 4 local workers
     MyLocalWorker('local{:01d}'.format(i), max_builds=1) for i in range(4)
 ] + [
-    MyWorker(f"p12-pd-{i}", max_builds=2) for i in range(8)
+    MyWorker(f"p12-pd-{i}", max_builds=1) for i in range(24)
 ] + [
-    MyWorker(f"p12-ep2-{i}", max_builds=2) for i in range(16)
+    MyWorker(f"p12-ep2-{i}", max_builds=1) for i in range(48)
 ]
