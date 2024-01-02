@@ -100,6 +100,11 @@ class MyKubeWorker(MyWorkerBase, worker.KubeLatentWorker):
             }
         ]
 
+    def get_node_selector(self, props):
+        return {
+            "bb-pool-type": "work"
+        }
+
     def __init__(self, name, **kwargs):
         kwargs = self.extract_attrs(name, **kwargs)
 
