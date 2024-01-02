@@ -121,9 +121,9 @@ workers = [
     MyKubeWorker(f"kube{i:02d}", max_builds=1, build_wait_timeout=0) for i in range(40)
 ] + [
     # add 4 local workers
-    MyLocalWorker('local{:01d}'.format(i), max_builds=1) for i in range(4)
+    MyLocalWorker('local{:01d}'.format(i), max_builds=1) for i in range(5)
 ] + [
-    MyWorker(f"p12-pd-{i}", max_builds=1) for i in range(24)
+    MyWorker(f"p12-pd-{i}", max_builds=1) for i in range(40)
 ] + [
-    MyWorker(f"p12-ep2-{i}", max_builds=1) for i in range(48)
+    MyWorker(f"p12-ep2-{i}", max_builds=1) for i in range(80)
 ]
