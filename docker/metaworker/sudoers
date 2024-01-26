@@ -1,2 +1,0 @@
-buildbot      ALL=(root) NOPASSWD: /prepare_postgres
-buildbot      ALL=(root) NOPASSWD: /prepare_mysql

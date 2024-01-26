@@ -72,7 +72,6 @@ RUN mkdir -p /etc/apt/keyrings \
         libwoff1 \
         python3-dev \
         python3-venv  \
-        sudo \
     \
     && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 \
     && npm install -g yarn \
@@ -84,9 +83,23 @@ RUN mkdir -p /etc/apt/keyrings \
 COPY pg_hba.conf /etc/postgresql/13/main/pg_hba.conf
 COPY prepare_postgres /prepare_postgres
 COPY prepare_mysql /prepare_mysql
+
+# container runtimes such as runsc (gVisor) do not support elevating privileges via sudo (missing
+# setuid support). Therefore the permissions are adjusted to support running the database from the
+# same container user as the tests.
+
 RUN sed -i "s/data_directory = '.*'/data_directory = '\/scratch\/postgres'/g" /etc/postgresql/13/main/postgresql.conf
+RUN sed -i "s/ssl\\s*=\\s*.*/ssl = off/g" /etc/postgresql/13/main/postgresql.conf
 RUN sed -i "s/.*datadir\\s*=.*/datadir='\/scratch\/mysql'/g" /etc/mysql/mariadb.conf.d/50-server.cnf
-COPY sudoers /etc/sudoers
+RUN sed -i "s/.*user\\s*=.*/user=buildbot/g" /etc/mysql/mariadb.conf.d/50-server.cnf
+RUN mkdir -p /scratch \
+    && mkdir -p /run/mysqld \
+    && mkdir -p /run/postgresql \
+    && chown buildbot:buildbot /scratch \
+    && chown buildbot:buildbot /run/mysqld \
+    && chown buildbot:buildbot /run/postgresql \
+    && chown buildbot:buildbot /var/log/postgresql \
+    && chown buildbot:buildbot /etc/mysql/debian.cnf
 
 COPY --from=python-build /pyenv /pyenv
 ENV PATH="/pyenv/pybin:${PATH}"

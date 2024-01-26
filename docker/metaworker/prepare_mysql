@@ -11,16 +11,9 @@ fi
 
 rm -rf $DBPATH
 mkdir -p $DBPATH
-chown mysql:mysql $DBPATH
 mysql_install_db --auth-root-authentication-method=normal
-/etc/init.d/mariadb start
+/etc/init.d/mariadb start --skip-grant-tables
 
-MAINT_PASSWORD=$(cat /etc/mysql/debian.cnf | grep password | head -n 1 | sed 's/.* //g')
-
-mysql -e "CREATE USER 'travis'@'localhost';"
-mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'travis'@'localhost' WITH GRANT OPTION; FLUSH PRIVILEGES;"
-mysql -e "CREATE USER 'debian-sys-maint'@'localhost' IDENTIFIED BY '$MAINT_PASSWORD';"
-mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'debian-sys-maint'@'localhost' WITH GRANT OPTION; FLUSH PRIVILEGES;"
 mysql -e 'create database bbtest;'
 mysql -e 'create database bbtest0;'
 mysql -e 'create database bbtest1;'
