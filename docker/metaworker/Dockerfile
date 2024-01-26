@@ -99,6 +99,7 @@ RUN mkdir -p /scratch \
     && chown buildbot:buildbot /run/mysqld \
     && chown buildbot:buildbot /run/postgresql \
     && chown buildbot:buildbot /var/log/postgresql \
+    && rm -f /var/log/postgresql/* \
     && chown buildbot:buildbot /etc/mysql/debian.cnf
 
 COPY --from=python-build /pyenv /pyenv
