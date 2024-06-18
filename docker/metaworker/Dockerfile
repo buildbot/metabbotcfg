@@ -33,7 +33,7 @@ RUN mkdir -p /etc/apt/keyrings \
         libmariadb-dev \
         libjpeg-dev \
         libpq-dev \
-        postgresql-13 \
+        postgresql-15 \
         mariadb-server-10.5 \
         # selenium is a java thing
         default-jre \
@@ -80,7 +80,7 @@ RUN mkdir -p /etc/apt/keyrings \
     && (dpkg -i /tmp/chrome.deb || apt-get --fix-broken -y install) \
     && rm -rf /var/lib/apt/lists/* /tmp/chrome.deb
 
-COPY pg_hba.conf /etc/postgresql/13/main/pg_hba.conf
+COPY pg_hba.conf /etc/postgresql/15/main/pg_hba.conf
 COPY prepare_postgres /prepare_postgres
 COPY prepare_mysql /prepare_mysql
 
@@ -88,8 +88,8 @@ COPY prepare_mysql /prepare_mysql
 # setuid support). Therefore the permissions are adjusted to support running the database from the
 # same container user as the tests.
 
-RUN sed -i "s/data_directory = '.*'/data_directory = '\/scratch\/postgres'/g" /etc/postgresql/13/main/postgresql.conf
-RUN sed -i "s/ssl\\s*=\\s*.*/ssl = off/g" /etc/postgresql/13/main/postgresql.conf
+RUN sed -i "s/data_directory = '.*'/data_directory = '\/scratch\/postgres'/g" /etc/postgresql/15/main/postgresql.conf
+RUN sed -i "s/ssl\\s*=\\s*.*/ssl = off/g" /etc/postgresql/15/main/postgresql.conf
 RUN sed -i "s/.*datadir\\s*=.*/datadir='\/scratch\/mysql'/g" /etc/mysql/mariadb.conf.d/50-server.cnf
 RUN sed -i "s/.*user\\s*=.*/user=buildbot/g" /etc/mysql/mariadb.conf.d/50-server.cnf
 RUN mkdir -p /scratch \
