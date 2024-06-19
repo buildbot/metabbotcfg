@@ -12,8 +12,8 @@ fi
 rm -rf $DBPATH
 mkdir -p $DBPATH
 
-/usr/lib/postgresql/13/bin/pg_ctl init -D /scratch/postgres
-cp /etc/postgresql/13/main/pg_hba.conf /scratch/postgres/pg_hba.conf
+/usr/lib/postgresql/15/bin/pg_ctl init -D /scratch/postgres
+cp /etc/postgresql/15/main/pg_hba.conf /scratch/postgres/pg_hba.conf
 /etc/init.d/postgresql start
 
 createdb buildbot
