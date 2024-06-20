@@ -68,8 +68,12 @@ RUN mkdir -p /etc/apt/keyrings \
         libopenjp2-7 \
         libopus0 \
         libsecret-1-0 \
+        libsoup2.4-1 \
         libwebpdemux2 \
         libwoff1 \
+        python2-pip-whl \
+        python2-setuptools-whl \
+        python2-wheel-whl \
         python3-dev \
         python3-venv  \
     \
