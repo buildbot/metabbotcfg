@@ -16,8 +16,8 @@ projects:
     repository: https://github.com/buildbot/buildbot
     shallow: 100
     retryFetch: true
-    mode: "full"
-    method: "clobber"
+    mode: "incremental"
+    method: "fresh"
     stages: []
     tags: []
     vcs_type: github
