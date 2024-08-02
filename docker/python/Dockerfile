@@ -5,6 +5,7 @@ USER root
 
 RUN apt-get update \
     && apt-get install -y \
+        bzip2 \
         curl \
         gcc \
         git \
@@ -33,7 +34,10 @@ RUN curl -sL https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/
     && /pyenv/bin/pyenv install 3.9.18 \
     && /pyenv/bin/pyenv install 3.10.13 \
     && /pyenv/bin/pyenv install 3.11.6 \
-    && /pyenv/bin/pyenv install 3.12.0
+    && /pyenv/bin/pyenv install 3.12.0 \
+    && /pyenv/bin/pyenv install pypy3.9-7.3.11 \
+    && /pyenv/bin/pyenv install pypy3.9-7.3.16 \
+    && /pyenv/bin/pyenv install pypy3.10-7.3.16
 
 RUN mkdir /pyenv/pybin \
     && cd /pyenv/pybin \
@@ -45,4 +49,7 @@ RUN mkdir /pyenv/pybin \
     && ln -s /pyenv/versions/3.9.18/bin/python python3.9 \
     && ln -s /pyenv/versions/3.10.13/bin/python python3.10 \
     && ln -s /pyenv/versions/3.11.6/bin/python python3.11 \
-    && ln -s /pyenv/versions/3.12.0/bin/python python3.12
+    && ln -s /pyenv/versions/3.12.0/bin/python python3.12 \
+    && ln -s /pyenv/versions/pypy3.9-7.3.11/bin/python pypy3.9-7.3.11 \
+    && ln -s /pyenv/versions/pypy3.10-7.3.11/bin/python pypy3.10-7.3.11 \
+    && ln -s /pyenv/versions/pypy3.10-7.3.16/bin/python pypy3.10-7.3.16
