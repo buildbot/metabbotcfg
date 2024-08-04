@@ -51,5 +51,5 @@ RUN mkdir /pyenv/pybin \
     && ln -s /pyenv/versions/3.11.6/bin/python python3.11 \
     && ln -s /pyenv/versions/3.12.0/bin/python python3.12 \
     && ln -s /pyenv/versions/pypy3.9-7.3.11/bin/python pypy3.9-7.3.11 \
-    && ln -s /pyenv/versions/pypy3.10-7.3.11/bin/python pypy3.10-7.3.11 \
+    && ln -s /pyenv/versions/pypy3.9-7.3.16/bin/python pypy3.9-7.3.16 \
     && ln -s /pyenv/versions/pypy3.10-7.3.16/bin/python pypy3.10-7.3.16
