@@ -109,20 +109,3 @@ ENV PATH="/pyenv/pybin:${PATH}"
 # Switch to regular user for security reasons
 USER buildbot
 
-# generate cache for the buildbot dependencies
-RUN \
-    mkdir -p /tmp/bb \
-    && curl -sL https://github.com/buildbot/buildbot/archive/master.tar.gz | \
-    tar  --strip-components=1 -C /tmp/bb -xz \
-    && cd /tmp/bb \
-    && python3 -m venv ./sandbox \
-    && . ./sandbox/bin/activate \
-    && pip install -U pip \
-    && pip install -e 'master[test,docs,tls]' \
-    && pip install \
-        -r requirements-ci.txt \
-        -r requirements-cidb.txt \
-        -r requirements-cidocs.txt \
-    && make frontend_deps \
-    && cd / \
-    && rm -rf /tmp/bb
