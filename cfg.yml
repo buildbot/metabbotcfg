@@ -5,49 +5,16 @@ auth:
     groups:
     - buildbot
     type: GitHub
-env: {}
-not_important_files: []
 projects:
 -   branches:
     - master
     github_token: file:metabbotcfg/github_token
     name: buildbot
-    reporter_context: bb%(prop:TESTS:+/)s%(prop:TESTS)s%(prop:TESTS:+/)s%(prop:PYTHON)s%(prop:TESTS:+/tw:)s%(prop:TWISTED)s%(prop:TESTS:+/sqla:)s%(prop:SQLALCHEMY)s%(prop:TESTS:+/db:)s%(prop:BUILDBOT_TEST_DB_URL)s%(prop:TESTS:+/wp:)s%(prop:WORKER_PYTHON)s
-    repository: https://github.com/buildbot/buildbot
     shallow: 100
     retryFetch: true
     mode: "incremental"
     method: "fresh"
     stages: []
-    tags: []
-    vcs_type: github
-    treeStableTimer: 1
--   branches:
-    - master
-    github_token: file:metabbotcfg/github_token
-    name: buildbot_travis
-    reporter_context: bb/%(prop:python)s/
-    repository: https://github.com/buildbot/buildbot_travis
-    shallow: 100
-    retryFetch: true
-    mode: "full"
-    method: "clobber"
-    stages: []
-    tags: []
-    vcs_type: github
-    treeStableTimer: 1
--   branches:
-    - master
-    github_token: file:metabbotcfg/github_token
-    name: metabbotcfg
-    reporter_context: bb/%(prop:python)s/
-    repository: https://github.com/buildbot/metabbotcfg
-    shallow: 100
-    retryFetch: true
-    mode: "full"
-    method: "clobber"
-    stages: []
-    tags: []
     vcs_type: github
     treeStableTimer: 1
 stages: []
