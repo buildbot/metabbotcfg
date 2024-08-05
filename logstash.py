@@ -8,7 +8,10 @@ import traceback
 from datetime import datetime
 
 from twisted import logger
-from twisted.internet import endpoints, protocol, reactor, task
+from twisted.internet import endpoints
+from twisted.internet import protocol
+from twisted.internet import reactor
+from twisted.internet import task
 from twisted.protocols import basic
 from zope import interface
 
@@ -32,8 +35,12 @@ class LogstashBaseFormatter(logging.Formatter):
         try:
             _traceback = failure.getTraceback()
         except Exception:
-            _traceback = u"(UNABLE TO OBTAIN TRACEBACK FROM EVENT)\n"
-            return {"traceback": _traceback, "error": traceback.format_exc(), "failure": repr(failure)}
+            _traceback = "(UNABLE TO OBTAIN TRACEBACK FROM EVENT)\n"
+            return {
+                "traceback": _traceback,
+                "error": traceback.format_exc(),
+                "failure": repr(failure),
+            }
         try:
             innermost_frame = failure.frames.pop(0)
             fields = {
@@ -46,7 +53,11 @@ class LogstashBaseFormatter(logging.Formatter):
                 'traceback': _traceback,
             }
         except Exception:
-            return {"traceback": _traceback, "error": traceback.format_exc(), "failure": repr(failure)}
+            return {
+                "traceback": _traceback,
+                "error": traceback.format_exc(),
+                "failure": repr(failure),
+            }
         return fields
 
     def get_extra_fields(self, record):
@@ -64,7 +75,6 @@ class LogstashBaseFormatter(logging.Formatter):
                 else:
                     fields[key] = repr(value)
         else:
-
             # get every field that isn't prefixed with log_
             for key, value in record.items():
                 if key.startswith('log_'):
@@ -172,8 +182,9 @@ _factory = LogstashFactory()
 
 @interface.implementer(logger.ILogObserver)
 class LogstashLogObserver(object):
-    def __init__(self, host, port=5959, prefix=None, message_type='logstash',
-                 tags=None, fqdn=False):
+    def __init__(
+        self, host, port=5959, prefix=None, message_type='logstash', tags=None, fqdn=False
+    ):
         self.host = host
         self.port = port
         formatter = LogstashFormatterVersion1
@@ -195,11 +206,9 @@ class LogstashLogObserver(object):
             stdout.write(eventline + "\n")
         except Exception as e:
             eventline = json.dumps(
-                dict(
-                    message="unable to format event",
-                    event=repr(event),
-                    exception=str(e)),
-                indent=2)
+                dict(message="unable to format event", event=repr(event), exception=str(e)),
+                indent=2,
+            )
             traceback.print_exc(5, file=stdout)
             pprint.pprint(event, stdout)
         d = task.deferLater(reactor, 0, self._connect, reactor)
@@ -219,10 +228,12 @@ class LogstashLogObserver(object):
 
 if __name__ == '__main__':
     from twisted.python import log
+
     log.addObserver(LogstashLogObserver("localhost", 5556))
 
     def lognow():
         log.msg("hi", "this works", {'a': 'b'})
         reactor.callLater(1, lognow)
+
     lognow()
     reactor.run()
