@@ -57,7 +57,7 @@ class MyWorker(MyWorkerBase, worker.Worker):
 class MyLocalWorker(MyWorkerBase, worker.LocalWorker):
     def __init__(self, name, **kwargs):
         kwargs = self.extract_attrs(name, **kwargs)
-        return worker.LocalWorker.__init__(self, name, **kwargs)
+        worker.LocalWorker.__init__(self, name, **kwargs)
 
 
 # has to be the same for all workers
@@ -95,7 +95,7 @@ class MyKubeWorker(MyWorkerBase, worker.KubeLatentWorker):
     def __init__(self, name, **kwargs):
         kwargs = self.extract_attrs(name, **kwargs)
 
-        return worker.KubeLatentWorker.__init__(
+        worker.KubeLatentWorker.__init__(
             self,
             name,
             kube_config=kube_config,
