@@ -2,7 +2,8 @@ import os
 import random
 import string
 
-from buildbot.plugins import worker, util
+from buildbot.plugins import util
+from buildbot.plugins import worker
 
 
 class MyWorkerBase:
@@ -21,9 +22,7 @@ class MyWorkerBase:
         return remaining
 
     def get_random_pass(self):
-        return ''.join(
-            random.choice(string.ascii_uppercase + string.digits)
-            for _ in range(20))
+        return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(20))
 
     def get_pass(self, name):
         # get the password based on the name
@@ -56,13 +55,9 @@ class MyWorker(MyWorkerBase, worker.Worker):
 
 
 class MyLocalWorker(MyWorkerBase, worker.LocalWorker):
-
     def __init__(self, name, **kwargs):
         kwargs = self.extract_attrs(name, **kwargs)
-        return worker.LocalWorker.__init__(
-            self,
-            name,
-            **kwargs)
+        return worker.LocalWorker.__init__(self, name, **kwargs)
 
 
 # has to be the same for all workers
@@ -70,17 +65,11 @@ kube_config = util.KubeCtlProxyConfigLoader()
 
 
 class MyKubeWorker(MyWorkerBase, worker.KubeLatentWorker):
-
     def getBuildContainerResources(self, build):
         cpu = str(build.getProperty("NUM_CPU", "1"))
         mem = str(build.getProperty("MEMORY_SIZE", "1G"))
 
-        return {
-            "requests": {
-                "cpu": cpu,
-                "memory": mem
-            }
-        }
+        return {"requests": {"cpu": cpu, "memory": mem}}
 
     def get_build_container_volume_mounts(self, build):
         return [
@@ -101,9 +90,7 @@ class MyKubeWorker(MyWorkerBase, worker.KubeLatentWorker):
         ]
 
     def get_node_selector(self, props):
-        return {
-            "bb-pool-type": "work"
-        }
+        return {"bb-pool-type": "work"}
 
     def __init__(self, name, **kwargs):
         kwargs = self.extract_attrs(name, **kwargs)
@@ -112,18 +99,25 @@ class MyKubeWorker(MyWorkerBase, worker.KubeLatentWorker):
             self,
             name,
             kube_config=kube_config,
-            image=util.Interpolate("%(prop:DOCKER_IMAGE:-us-west1-docker.pkg.dev/metabuildbot-227920/metabuildbot-worker/worker)s"),
+            image=util.Interpolate(
+                "%(prop:DOCKER_IMAGE:-us-west1-docker.pkg.dev/metabuildbot-227920/metabuildbot-worker/worker)s"
+            ),
             masterFQDN="buildbot.buildbot.net",
-            **kwargs)
+            **kwargs,
+        )
 
-workers = [
-    # add 40 kube workers
-    MyKubeWorker(f"kube{i:02d}", max_builds=1, build_wait_timeout=0) for i in range(40)
-] + [
-    # add 4 local workers
-    MyLocalWorker('local{:01d}'.format(i), max_builds=1) for i in range(5)
-] + [
-    MyWorker(f"p12-pd-{i}", max_builds=1) for i in range(40)
-] + [
-    MyWorker(f"p12-ep2-{i}", max_builds=1) for i in range(80)
-]
+
+workers = (
+    [
+        # add 40 kube workers
+        MyKubeWorker(f"kube{i:02d}", max_builds=1, build_wait_timeout=0)
+        for i in range(40)
+    ]
+    + [
+        # add 4 local workers
+        MyLocalWorker('local{:01d}'.format(i), max_builds=1)
+        for i in range(5)
+    ]
+    + [MyWorker(f"p12-pd-{i}", max_builds=1) for i in range(40)]
+    + [MyWorker(f"p12-ep2-{i}", max_builds=1) for i in range(80)]
+)
