@@ -8,7 +8,7 @@ def setupWWW(c):
     listen_port = os.environ.get("BB_LISTEN_PORT", None)
     buildbot_url = os.environ.get("BB_URL", None)
     c['www'] = {
-        'change_hook_dialects': {'github': {'codebase': 'buildbot'}},
+        'change_hook_dialects': {'github': {'codebase': 'buildbot', 'verify': True}},
         'plugins': {'console_view': True, 'waterfall_view': True},
     }
     if listen_port is not None and buildbot_url is not None:
