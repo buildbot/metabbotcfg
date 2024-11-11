@@ -100,7 +100,7 @@ class MyKubeWorker(MyWorkerBase, worker.KubeLatentWorker):
             name,
             kube_config=kube_config,
             image=util.Interpolate(
-                "%(prop:DOCKER_IMAGE:-us-west1-docker.pkg.dev/metabuildbot-227920/metabuildbot-worker/worker)s"
+                "%(prop:DOCKER_IMAGE:-europe-west9-docker.pkg.dev/metabuildbot-227920/buildbot/metabbotcfg)s"
             ),
             masterFQDN="buildbot.buildbot.net",
             **kwargs,
