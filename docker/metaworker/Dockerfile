@@ -35,6 +35,8 @@ RUN mkdir -p /etc/apt/keyrings \
         libpq-dev \
         postgresql-15 \
         mariadb-server-10.5 \
+        # tools for debugging in the container, if ever needed
+        nano \
         # selenium is a java thing
         default-jre \
         # chromium needs xvfb even with --headless
