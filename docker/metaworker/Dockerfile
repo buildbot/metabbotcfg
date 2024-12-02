@@ -5,9 +5,9 @@
 # Provided here as a real life example on how to make a customized
 # worker Dockerfile for your project
 
-FROM docker.io/buildbot/metabbotcfg-python AS python-build
+FROM quay.io/buildbot/metabbotcfg-python AS python-build
 
-FROM docker.io/buildbot/buildbot-worker:master
+FROM quay.io/buildbot/buildbot-worker:master
 MAINTAINER  Buildbot Maintainers
 
 # Switch to root to be able to install stuff
