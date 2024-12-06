@@ -84,6 +84,7 @@ class MyKubeWorker(MyWorkerBase, worker.KubeLatentWorker):
             {
                 "name": "scratch-volume",
                 "emptyDir": {
+                    "medium": "Memory",
                     "sizeLimit": "2Gi",
                 },
             }
